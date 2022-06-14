@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
@@ -52,7 +53,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       HomeMenu(
         name: 'Refund'.tr,
-        onTab: () {},
+        onTab: () {
+          _showRefundDialog();
+        },
       ),
       HomeMenu(
         name: 'Safe Mode'.tr,
@@ -298,6 +301,310 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       barrierDismissible: false,
+    );
+  }
+
+  _showRefundDialog() {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    TextEditingController _controllerVoucherNumber = TextEditingController();
+    TextEditingController? _controllerSelectEdit;
+    RefundModel _refundModel = RefundModel.init();
+
+    Get.dialog(
+      AlertDialog(
+        contentPadding: EdgeInsets.all(4.w),
+        backgroundColor: ColorsApp.backgroundDialog,
+        content: StatefulBuilder(
+          builder: (context, setState) => GestureDetector(
+            onTap: () {
+              FocusScope.of(context).requestFocus(FocusNode());
+              _controllerSelectEdit = null;
+              setState(() {});
+            },
+            child: SizedBox(
+              width: 0.95.sw,
+              height: 0.95.sh,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 1.sw,
+                      constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3.r),
+                        border: Border.all(width: 2, color: ColorsApp.blue),
+                        gradient: const LinearGradient(
+                          colors: [
+                            ColorsApp.primaryColor,
+                            ColorsApp.accentColor,
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${'Voucher Number'.tr} : ',
+                                          textAlign: TextAlign.end,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: CustomTextFieldNum(
+                                          controller: _controllerVoucherNumber,
+                                          fillColor: Colors.white,
+                                          decimal: false,
+                                          validator: (value) {
+                                            return Validation.isRequired(value);
+                                          },
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${'POS No'.tr} : ',
+                                          textAlign: TextAlign.end,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(_refundModel.posNo),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${'Original Data'.tr} : ',
+                                          textAlign: TextAlign.end,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(_refundModel.originalDate),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${'Original Time'.tr} : ',
+                                          textAlign: TextAlign.end,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(_refundModel.originalTime),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${'Table No'.tr} : ',
+                                          textAlign: TextAlign.end,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(_refundModel.originalTime),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${'Customer'.tr} : ',
+                                          textAlign: TextAlign.end,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(_refundModel.originalTime),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 10.w),
+                            CustomButton(
+                              fixed: true,
+                              child: Text('Show'.tr),
+                              backgroundColor: ColorsApp.orange,
+                              onPressed: () {
+                                FocusScope.of(context).requestFocus(FocusNode());
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 4.h),
+                      child: Table(
+                        children: [
+                          _buildRowTable(isHeader: true),
+                          _buildRowTable(row: Item(serial: 'aa', name: 'aa', qty: 0, price: 0)),
+                          _buildRowTable(isFooter: true,row: Item(serial: 'aa', name: 'aa', qty: 0, price: 0)),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '${'Total'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                ),
+                                Text(
+                                  '${'Discount'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                ),
+                                Text(
+                                  '${'Net Total'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                ),
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                Text(''),
+                                Text(''),
+                                Text(''),
+                              ],
+                            )
+                          ],
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomButton(
+                          fixed: true,
+                          backgroundColor: ColorsApp.red,
+                          child: Text('Exit'.tr),
+                          onPressed: () {
+                            Get.back();
+                          },
+                        ),
+                        SizedBox(width: 10.w),
+                        CustomButton(
+                          fixed: true,
+                          child: Text('Ok'.tr),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  TableRow _buildRowTable({Item? row, bool isHeader = false, isFooter = false}) {
+    return TableRow(
+      decoration: isHeader
+          ? BoxDecoration(
+              border: Border.all(),
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(3.r), topRight: Radius.circular(3.r)),
+            )
+          : isFooter
+              ? const BoxDecoration(
+                  border: Border(left: BorderSide(), right: BorderSide(), bottom: BorderSide()),
+
+                )
+              : const BoxDecoration(
+                  border: Border(left: BorderSide(), right: BorderSide()),
+                ),
+      children: [
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+            child: Text(
+              isHeader ? 'Serial'.tr : row!.serial,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, fontSize: 12, color: isHeader ? ColorsApp.red : Colors.black),
+            ),
+          ),
+        ),
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+            child: Text(
+              isHeader ? 'Item'.tr : row!.name,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, fontSize: 12, color: isHeader ? ColorsApp.red : Colors.black),
+            ),
+          ),
+        ),
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+            child: Text(
+              isHeader ? 'Qty'.tr : '${row!.qty}',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, fontSize: 12, color: isHeader ? ColorsApp.red : Colors.black),
+            ),
+          ),
+        ),
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+            child: Text(
+              isHeader ? 'R.Qty'.tr : '',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, fontSize: 12, color: isHeader ? ColorsApp.red : Colors.black),
+            ),
+          ),
+        ),
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+            child: Text(
+              isHeader ? 'R.Total'.tr : '',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, fontSize: 12, color: isHeader ? ColorsApp.red : Colors.black),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

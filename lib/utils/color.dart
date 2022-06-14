@@ -40,6 +40,7 @@ class ColorsApp {
   static const Color border = Color(0x7f333639);
   static const Color blue = Color(0xFF4aa5d4);
   static const Color red = Color(0xFFaf0a0a);
+  static const Color orange = Color(0xfff19954);
   static const Color green = Color(0xFF32CD32);
   static const Color gray = Colors.grey;
   static const Color grayLight = Color.fromRGBO(236, 236, 236, 1);

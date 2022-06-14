@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:restaurant_system/utils/text_input_formatters.dart';
 
 class CustomTextFieldNum extends StatelessWidget {
 
@@ -11,7 +12,9 @@ class CustomTextFieldNum extends StatelessWidget {
   final TextInputType? keyboardType;
   final bool enableInteractiveSelection;
   final bool enabled;
+  final bool decimal;
   final void Function()? onTap;
+  final String? Function(String?)? validator;
 
   const CustomTextFieldNum({
     Key? key,
@@ -23,7 +26,9 @@ class CustomTextFieldNum extends StatelessWidget {
     this.keyboardType,
     this.enableInteractiveSelection = false,
     this.enabled = true,
+    this.decimal = true,
     this.onTap,
+    this.validator,
   }) : super(key: key);
 
   @override
@@ -36,9 +41,12 @@ class CustomTextFieldNum extends StatelessWidget {
         enableInteractiveSelection: enableInteractiveSelection,
         style: Theme.of(context).textTheme.bodyText2!.copyWith(color: textColor),
         controller: controller,
-        keyboardType: keyboardType,
+        keyboardType: keyboardType ?? const TextInputType.numberWithOptions(),
         maxLines: 1,
         textAlign: TextAlign.center,
+        inputFormatters: [
+          EnglishDigitsTextInputFormatter(decimal: decimal),
+        ],
         decoration: InputDecoration(
           fillColor: fillColor ?? Colors.transparent,
           filled: true,
@@ -49,6 +57,7 @@ class CustomTextFieldNum extends StatelessWidget {
         ),
         enabled: enabled,
         onTap: onTap,
+        validator: validator,
       ),
     );
   }
