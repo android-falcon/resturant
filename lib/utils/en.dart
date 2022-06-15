@@ -37,4 +37,6 @@ const Map<String, String> en = {
   'Item':'Item',
   'R.Qty':'R.Qty',
   'R.Total':'R.Total',
+  'Quantity must be greater than or equal to':'Quantity must be greater than or equal to',
+  'Quantity must be less than or equal to':'Quantity must be less than or equal to',
 };

@@ -78,244 +78,226 @@ class _HomeScreenState extends State<HomeScreen> {
     int _typeInputCash = 1;
 
     Get.dialog(
-      AlertDialog(
-        contentPadding: EdgeInsets.all(4.w),
-        backgroundColor: ColorsApp.backgroundDialog,
-        content: StatefulBuilder(
-          builder: (context, setState) => GestureDetector(
-            onTap: () {
-              FocusScope.of(context).requestFocus(FocusNode());
-              if (_typeInputCash == 1) {
-                _controllerSelectEdit = _controllerManual;
-              } else {
-                _controllerSelectEdit = null;
-                setState(() {});
-              }
-            },
-            child: SizedBox(
-              width: 0.95.sw,
-              height: 0.95.sh,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Row(
+      CustomDialog(
+        gestureDetectorOnTap: () {
+          _controllerSelectEdit = null;
+        },
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${'Date'.tr} : ${DateFormat('yyyy/MM/dd').format(DateTime.now())}',
+                    style: kStyleTextDefault,
+                  ),
+                ),
+                Text(
+                  type == PayDialogType.payIn ? 'Pay In'.tr : 'Pay Out'.tr,
+                  style: kStyleTextTitle,
+                ),
+                Expanded(
+                  child: Text(
+                    '', //'${'Transaction Number'.tr} : ',
+                    textAlign: TextAlign.end,
+                    style: kStyleTextDefault,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            const Divider(
+              thickness: 1,
+              height: 1,
+            ),
+            Form(
+              key: _keyForm,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: Text(
-                            '${'Date'.tr} : ${DateFormat('yyyy/MM/dd').format(DateTime.now())}',
-                            style: kStyleTextDefault,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: RadioListTile(
+                                value: 1,
+                                groupValue: _typeInputCash,
+                                onChanged: (value) {
+                                  _typeInputCash = value as int;
+                                  MoneyCount.clear();
+                                  _controllerSelectEdit = _controllerManual;
+                                  setState(() {});
+                                },
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(
+                                  'Manual'.tr,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: RadioListTile(
+                                value: 2,
+                                groupValue: _typeInputCash,
+                                onChanged: (value) {
+                                  _controllerManual.text = "0";
+                                  _typeInputCash = value as int;
+                                  MoneyCount.init();
+                                  _controllerSelectEdit = null;
+                                  setState(() {});
+                                },
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(
+                                  'Money Count'.tr,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_typeInputCash == 1)
+                          CustomTextField(
+                            controller: _controllerManual,
+                            label: Text('Value'.tr),
+                            fillColor: Colors.white,
+                            maxLines: 1,
+                            inputFormatters: [
+                              EnglishDigitsTextInputFormatter(decimal: true),
+                            ],
+                            validator: (value) {
+                              return Validation.isRequired(value);
+                            },
+                            enableInteractiveSelection: false,
+                            keyboardType: const TextInputType.numberWithOptions(),
+                            onTap: () {
+                              FocusScope.of(context).requestFocus(FocusNode());
+                              _controllerSelectEdit = _controllerManual;
+                            },
                           ),
+                        CustomTextField(
+                          controller: _controllerRemark,
+                          label: Text('Remark'.tr),
+                          fillColor: Colors.white,
+                          maxLines: 1,
                         ),
-                        Text(
-                          type == PayDialogType.payIn ? 'Pay In'.tr : 'Pay Out'.tr,
-                          style: kStyleTextTitle,
-                        ),
-                        Expanded(
-                          child: Text(
-                            '', //'${'Transaction Number'.tr} : ',
-                            textAlign: TextAlign.end,
-                            style: kStyleTextDefault,
+                        if (_typeInputCash == 2)
+                          Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Cash'.tr,
+                                    textAlign: TextAlign.center,
+                                    style: kStyleTextDefault,
+                                  ),
+                                ],
+                              ),
+                              const Divider(),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Total'.tr,
+                                    textAlign: TextAlign.center,
+                                    style: kStyleTextDefault,
+                                  ),
+                                  Text(
+                                    '${MoneyCount.moneyCount.fold(0.0, (previousValue, element) => (previousValue as double) + (element.value * double.parse(element.qty.text)))}',
+                                    textAlign: TextAlign.center,
+                                    style: kStyleTextDefault.copyWith(color: ColorsApp.red),
+                                  ),
+                                ],
+                              ),
+                              const Divider(),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      'Qty'.tr,
+                                      textAlign: TextAlign.center,
+                                      style: kStyleTextDefault,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      'Total'.tr,
+                                      textAlign: TextAlign.center,
+                                      style: kStyleTextDefault,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              ListView.builder(
+                                itemCount: MoneyCount.moneyCount.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              MoneyCount.moneyCount[index].qty.text = '${int.parse(MoneyCount.moneyCount[index].qty.text) + 1}';
+                                            });
+                                          },
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(vertical: 4.h),
+                                            child: Text(
+                                              MoneyCount.moneyCount[index].name,
+                                              textAlign: TextAlign.center,
+                                              style: kStyleTextDefault,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: CustomTextFieldNum(
+                                          enableInteractiveSelection: false,
+                                          controller: MoneyCount.moneyCount[index].qty,
+                                          fillColor: _controllerSelectEdit == MoneyCount.moneyCount[index].qty ? ColorsApp.primaryColor.withOpacity(0.2) : null,
+                                          onTap: () {
+                                            FocusScope.of(context).requestFocus(FocusNode());
+                                            _controllerSelectEdit = MoneyCount.moneyCount[index].qty;
+                                            setState(() {});
+                                          },
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          (MoneyCount.moneyCount[index].value * double.parse(MoneyCount.moneyCount[index].qty.text)).toStringAsFixed(2),
+                                          textAlign: TextAlign.center,
+                                          style: kStyleTextDefault,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
                           ),
-                        ),
                       ],
                     ),
-                    SizedBox(height: 8.h),
-                    const Divider(
-                      thickness: 1,
-                      height: 1,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: numPadWidget(_controllerSelectEdit, setState),
                     ),
-                    Form(
-                      key: _keyForm,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: RadioListTile(
-                                        value: 1,
-                                        groupValue: _typeInputCash,
-                                        onChanged: (value) {
-                                          _typeInputCash = value as int;
-                                          MoneyCount.clear();
-                                          _controllerSelectEdit = _controllerManual;
-                                          setState(() {});
-                                        },
-                                        dense: true,
-                                        contentPadding: EdgeInsets.zero,
-                                        title: Text(
-                                          'Manual'.tr,
-                                          style: kStyleTextDefault,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: RadioListTile(
-                                        value: 2,
-                                        groupValue: _typeInputCash,
-                                        onChanged: (value) {
-                                          _controllerManual.text = "0";
-                                          _typeInputCash = value as int;
-                                          MoneyCount.init();
-                                          _controllerSelectEdit = null;
-                                          setState(() {});
-                                        },
-                                        dense: true,
-                                        contentPadding: EdgeInsets.zero,
-                                        title: Text(
-                                          'Money Count'.tr,
-                                          style: kStyleTextDefault,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (_typeInputCash == 1)
-                                  CustomTextField(
-                                    controller: _controllerManual,
-                                    label: Text('Value'.tr),
-                                    fillColor: Colors.white,
-                                    maxLines: 1,
-                                    inputFormatters: [
-                                      EnglishDigitsTextInputFormatter(decimal: true),
-                                    ],
-                                    validator: (value) {
-                                      return Validation.isRequired(value);
-                                    },
-                                    enableInteractiveSelection: false,
-                                    keyboardType: const TextInputType.numberWithOptions(),
-                                    onTap: () {
-                                      FocusScope.of(context).requestFocus(FocusNode());
-                                      _controllerSelectEdit = _controllerManual;
-                                    },
-                                  ),
-                                CustomTextField(
-                                  controller: _controllerRemark,
-                                  label: Text('Remark'.tr),
-                                  fillColor: Colors.white,
-                                  maxLines: 1,
-                                ),
-                                if (_typeInputCash == 2)
-                                  Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'Cash'.tr,
-                                            textAlign: TextAlign.center,
-                                            style: kStyleTextDefault,
-                                          ),
-                                        ],
-                                      ),
-                                      const Divider(),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            'Total'.tr,
-                                            textAlign: TextAlign.center,
-                                            style: kStyleTextDefault,
-                                          ),
-                                          Text(
-                                            '${MoneyCount.moneyCount.fold(0.0, (previousValue, element) => (previousValue as double) + (element.value * double.parse(element.qty.text)))}',
-                                            textAlign: TextAlign.center,
-                                            style: kStyleTextDefault.copyWith(color: ColorsApp.red),
-                                          ),
-                                        ],
-                                      ),
-                                      const Divider(),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Container(),
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              'Qty'.tr,
-                                              textAlign: TextAlign.center,
-                                              style: kStyleTextDefault,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              'Total'.tr,
-                                              textAlign: TextAlign.center,
-                                              style: kStyleTextDefault,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      ListView.builder(
-                                        itemCount: MoneyCount.moneyCount.length,
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        itemBuilder: (context, index) {
-                                          return Row(
-                                            children: [
-                                              Expanded(
-                                                child: InkWell(
-                                                  onTap: () {
-                                                    setState(() {
-                                                      MoneyCount.moneyCount[index].qty.text = '${int.parse(MoneyCount.moneyCount[index].qty.text) + 1}';
-                                                    });
-                                                  },
-                                                  child: Padding(
-                                                    padding: EdgeInsets.symmetric(vertical: 4.h),
-                                                    child: Text(
-                                                      MoneyCount.moneyCount[index].name,
-                                                      textAlign: TextAlign.center,
-                                                      style: kStyleTextDefault,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: CustomTextFieldNum(
-                                                  enableInteractiveSelection: false,
-                                                  controller: MoneyCount.moneyCount[index].qty,
-                                                  fillColor: _controllerSelectEdit == MoneyCount.moneyCount[index].qty ? ColorsApp.primaryColor.withOpacity(0.2) : null,
-                                                  onTap: () {
-                                                    FocusScope.of(context).requestFocus(FocusNode());
-                                                    _controllerSelectEdit = MoneyCount.moneyCount[index].qty;
-                                                    setState(() {});
-                                                  },
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Text(
-                                                  (MoneyCount.moneyCount[index].value * double.parse(MoneyCount.moneyCount[index].qty.text)).toStringAsFixed(2),
-                                                  textAlign: TextAlign.center,
-                                                  style: kStyleTextDefault,
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: numPadWidget(_controllerSelectEdit, setState),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ),
+          ],
         ),
       ),
       barrierDismissible: false,
@@ -488,7 +470,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           DataCell(
                             Text('${e.rQty}'),
                             showEditIcon: true,
-                            onTap: () {},
+                            onTap: () async {
+                              e.rQty = await _showQtyDialog(rQty: e.rQty, maxQty: e.qty);
+                              setState(() {});
+                            },
                           ),
                           DataCell(Text('${e.rTotal}')),
                         ],
@@ -565,6 +550,70 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       barrierDismissible: false,
     );
+  }
+
+  Future<int> _showQtyDialog({TextEditingController? controller, int? maxQty, int minQty = 0, required int rQty}) async {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    controller ??= TextEditingController(text: '$rQty');
+    var qty = await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Form(
+              key: _keyForm,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        CustomTextField(
+                          controller: controller,
+                          label: Text('${'Qty'.tr} ${maxQty != null ? '($maxQty)' : ''}'),
+                          fillColor: Colors.white,
+                          maxLines: 1,
+                          inputFormatters: [
+                            EnglishDigitsTextInputFormatter(decimal: false),
+                          ],
+                          validator: (value) {
+                            return Validation.qty(value, minQty, maxQty);
+                          },
+                          enableInteractiveSelection: false,
+                          keyboardType: const TextInputType.numberWithOptions(),
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: numPadWidget(
+                        controller,
+                        setState,
+                        onSubmit: () {
+                          if (_keyForm.currentState!.validate()) {
+                            Get.back(result: controller!.text);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    if (qty == null) {
+      return rQty;
+    }
+    return int.parse(qty);
   }
 
   @override

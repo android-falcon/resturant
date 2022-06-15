@@ -8,4 +8,15 @@ class Validation {
     }
     return null;
   }
+
+  static String? qty(value, minQty, maxQty){
+    if(isEmpty(value)){
+      return 'This field is required'.tr;
+    } else if(minQty != null && int.parse(value) < minQty){
+      return '${'Quantity must be greater than or equal to'.tr} $minQty';
+    } else if(maxQty != null && int.parse(value) > maxQty){
+      return '${'Quantity must be less than or equal to'.tr} $maxQty';
+    }
+    return null;
+  }
 }

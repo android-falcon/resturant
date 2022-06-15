@@ -29,7 +29,7 @@ void hideLoadingDialog() {
   }
 }
 
-Widget numPadWidget(TextEditingController? controller, void Function(Function()) setState) {
+Widget numPadWidget(TextEditingController? controller, void Function(Function()) setState, {Function()? onSubmit}) {
   void addNumber(TextEditingController? controller, int number) {
     if (controller != null) {
       if (controller.text.contains('.')) {
@@ -46,7 +46,7 @@ Widget numPadWidget(TextEditingController? controller, void Function(Function())
 
   return NumPad(
     controller: controller,
-    onSubmit: () {},
+    onSubmit:onSubmit,
     onExit: () {
       Get.back();
     },
