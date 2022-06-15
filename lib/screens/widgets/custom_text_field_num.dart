@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 
 class CustomTextFieldNum extends StatelessWidget {
-
   final EdgeInsetsGeometry? margin;
   final EdgeInsetsGeometry? padding;
   final TextEditingController? controller;
@@ -39,7 +39,7 @@ class CustomTextFieldNum extends StatelessWidget {
       height: 30,
       child: TextFormField(
         enableInteractiveSelection: enableInteractiveSelection,
-        style: Theme.of(context).textTheme.bodyText2!.copyWith(color: textColor),
+        style: kStyleTextDefault.copyWith(color: textColor),
         controller: controller,
         keyboardType: keyboardType ?? const TextInputType.numberWithOptions(),
         maxLines: 1,

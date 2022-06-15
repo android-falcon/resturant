@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:restaurant_system/utils/constant.dart';
 
 class CustomTextField extends StatefulWidget {
   TextEditingController? controller;
@@ -72,7 +73,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       padding: widget.padding,
       child: TextFormField(
         enableInteractiveSelection: widget.enableInteractiveSelection,
-        style: Theme.of(context).textTheme.bodyText2!.copyWith(color: widget.textColor),
+        style: kStyleTextDefault.copyWith(color: widget.textColor),
         controller: widget.controller,
         keyboardType: widget.keyboardType,
         maxLines: widget.obscureText ? 1 : widget.maxLines,

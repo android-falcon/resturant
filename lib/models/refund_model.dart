@@ -28,13 +28,17 @@ class RefundModel {
 class Item {
   String serial;
   String name;
-  double qty;
+  int qty;
   double price;
+  int rQty;
+  double rTotal;
 
   Item({
     required this.serial,
     required this.name,
     required this.qty,
     required this.price,
+    this.rQty = 0,
+    this.rTotal = 0,
   });
 }
