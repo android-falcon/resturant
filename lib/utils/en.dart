@@ -39,4 +39,13 @@ const Map<String, String> en = {
   'R.Total':'R.Total',
   'Quantity must be greater than or equal to':'Quantity must be greater than or equal to',
   'Quantity must be less than or equal to':'Quantity must be less than or equal to',
+  'Vh No':'Vh No',
+  'Table':'Table',
+  'Check':'Check',
+  'Modifier':'Modifier',
+  'Void':'Void',
+  'Delivery':'Delivery',
+  'Line Discount':'Line Discount',
+  'Split':'Split',
+  'Price Change':'Price Change',
 };

@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/refund_model.dart';
+import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_data_table.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -16,6 +17,7 @@ import 'package:restaurant_system/utils/app_config/home_menu.dart';
 import 'package:restaurant_system/utils/app_config/money_count.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/enum_pay_dialog_type.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
@@ -691,7 +693,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Column(
                               children: [
                                 InkWell(
-                                  onTap: () {},
+                                  onTap: () {
+                                    Get.to(() => OrderScreen(type: OrderType.takeAway));
+                                  },
                                   child: Column(
                                     children: [
                                       Image.asset(

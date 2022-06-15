@@ -11,7 +11,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     // TODO: implement initState
@@ -19,8 +18,6 @@ class _SplashScreenState extends State<SplashScreen> {
     ScreenUtil().orientation;
     delayScreen();
   }
-
-
 
   delayScreen() {
     Future.delayed(const Duration(seconds: 3)).then((value) {
@@ -36,7 +33,10 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Image.asset('assets/images/splash.png'),
+        child: Image.asset(
+          'assets/images/falcons.png',
+          width: 0.4.sw,
+        ),
       ),
     );
   }
