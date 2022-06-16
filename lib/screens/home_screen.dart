@@ -620,181 +620,185 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: CustomSingleChildScrollView(
-        child: Stack(
-          children: [
-            Image.asset(
-              'assets/images/background_home.png',
-              width: 1.sw,
-              height: 1.sh,
-              fit: BoxFit.cover,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        height: 50.h,
-                        color: Colors.white,
-                        child: Row(
+
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        body: CustomSingleChildScrollView(
+          child: Stack(
+            children: [
+              Image.asset(
+                'assets/images/background_home.png',
+                width: 1.sw,
+                height: 1.sh,
+                fit: BoxFit.cover,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 50.h,
+                          color: Colors.white,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'Branch'.tr} : ',
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              const VerticalDivider(),
+                              Expanded(
+                                child: Text(
+                                  mySharedPreferences.username,
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              const VerticalDivider(),
+                              Expanded(
+                                child: Text(
+                                  'Shift'.tr,
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              const VerticalDivider(),
+                              Expanded(
+                                child: Text(
+                                  DateFormat('yyyy/MM/dd').format(DateTime.now()),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Text(
-                                '${'Branch'.tr} : ',
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              child: Column(
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      Get.to(() => OrderScreen(type: OrderType.takeAway));
+                                    },
+                                    child: Column(
+                                      children: [
+                                        Image.asset(
+                                          'assets/images/take_away.png',
+                                          width: 150.h,
+                                        ),
+                                        Text(
+                                          'Take Away'.tr,
+                                          style: kStyleTextTitle,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 20.h),
+                                  InkWell(
+                                    onTap: () {},
+                                    child: Column(
+                                      children: [
+                                        Image.asset(
+                                          'assets/images/dine_in.png',
+                                          width: 150.h,
+                                        ),
+                                        Text(
+                                          'Dine In'.tr,
+                                          style: kStyleTextTitle,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const VerticalDivider(),
                             Expanded(
-                              child: Text(
-                                mySharedPreferences.username,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
-                              ),
-                            ),
-                            const VerticalDivider(),
-                            Expanded(
-                              child: Text(
-                                'Shift'.tr,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
-                              ),
-                            ),
-                            const VerticalDivider(),
-                            Expanded(
-                              child: Text(
-                                DateFormat('yyyy/MM/dd').format(DateTime.now()),
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
+                              child: Column(
+                                children: [
+                                  SizedBox(height: 200.h),
+                                  CustomButton(
+                                    child: Text(
+                                      'Exit'.tr,
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                    backgroundColor: ColorsApp.red,
+                                    margin: EdgeInsets.all(16.w),
+                                    onPressed: () {
+                                      if (Platform.isAndroid) {
+                                        SystemNavigator.pop();
+                                      } else if (Platform.isIOS) {
+                                        exit(0);
+                                      }
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w),
-                            child: Column(
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    Get.to(() => OrderScreen(type: OrderType.takeAway));
-                                  },
-                                  child: Column(
-                                    children: [
-                                      Image.asset(
-                                        'assets/images/take_away.png',
-                                        width: 150.h,
-                                      ),
-                                      Text(
-                                        'Take Away'.tr,
-                                        style: kStyleTextTitle,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 20.h),
-                                InkWell(
-                                  onTap: () {},
-                                  child: Column(
-                                    children: [
-                                      Image.asset(
-                                        'assets/images/dine_in.png',
-                                        width: 150.h,
-                                      ),
-                                      Text(
-                                        'Dine In'.tr,
-                                        style: kStyleTextTitle,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: Column(
-                              children: [
-                                SizedBox(height: 200.h),
-                                CustomButton(
-                                  child: Text(
-                                    'Exit'.tr,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  backgroundColor: ColorsApp.red,
-                                  margin: EdgeInsets.all(16.w),
-                                  onPressed: () {
-                                    if (Platform.isAndroid) {
-                                      SystemNavigator.pop();
-                                    } else if (Platform.isIOS) {
-                                      exit(0);
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                Container(
-                  height: 1.sh,
-                  width: 80.w,
-                  constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3.r),
-                    border: Border.all(width: 2, color: ColorsApp.blue),
-                    gradient: const LinearGradient(
-                      colors: [
-                        ColorsApp.primaryColor,
-                        ColorsApp.accentColor,
+                        )
                       ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
                     ),
                   ),
-                  child: ListView.separated(
-                    itemCount: _menu.length,
-                    shrinkWrap: true,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1.h,
-                      thickness: 2,
+                  Container(
+                    height: 1.sh,
+                    width: 80.w,
+                    constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3.r),
+                      border: Border.all(width: 2, color: ColorsApp.blue),
+                      gradient: const LinearGradient(
+                        colors: [
+                          ColorsApp.primaryColor,
+                          ColorsApp.accentColor,
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
                     ),
-                    itemBuilder: (context, index) => InkWell(
-                      onTap: _menu[index].onTab,
-                      child: Container(
-                        padding: EdgeInsets.all(6.w),
-                        width: double.infinity,
-                        child: Text(
-                          _menu[index].name,
-                          style: kStyleTextTitle,
-                          textAlign: TextAlign.center,
+                    child: ListView.separated(
+                      itemCount: _menu.length,
+                      shrinkWrap: true,
+                      separatorBuilder: (context, index) => Divider(
+                        height: 1.h,
+                        thickness: 2,
+                      ),
+                      itemBuilder: (context, index) => InkWell(
+                        onTap: _menu[index].onTab,
+                        child: Container(
+                          padding: EdgeInsets.all(6.w),
+                          width: double.infinity,
+                          child: Text(
+                            _menu[index].name,
+                            style: kStyleTextTitle,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

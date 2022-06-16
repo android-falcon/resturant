@@ -17,7 +17,7 @@ class MySharedPreferences {
     profileImage = '';
   }
 
-  String get language => _sharedPreferences.getString(keyLanguage) ?? "ar";
+  String get language => _sharedPreferences.getString(keyLanguage) ?? "";
 
   set language(String value) {
     _sharedPreferences.setString(keyLanguage, value);
