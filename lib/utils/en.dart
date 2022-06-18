@@ -48,4 +48,13 @@ const Map<String, String> en = {
   'Line Discount':'Line Discount',
   'Split':'Split',
   'Price Change':'Price Change',
+  'Pro-Nam':'Pro-Nam',
+  'Sub Total':'Sub Total',
+  'Price':'Price',
+  'Service':'Service',
+  'Tax':'Tax',
+  'Pay':'Pay',
+  'Order':'Order',
+  'Amount Due':'Amount Due',
+  'Delivery Charge':'Delivery Charge',
 };

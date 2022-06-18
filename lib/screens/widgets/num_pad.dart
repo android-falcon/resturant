@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/utils/color.dart';
+import 'package:restaurant_system/utils/constant.dart';
 
 class NumPad extends StatelessWidget {
   final TextEditingController? controller;
@@ -166,7 +167,7 @@ class NumPad extends StatelessWidget {
               child: CustomButton(
                 margin: marginButton,
                 padding: paddingButton,
-                child: Text('Exit'.tr),
+                child: Text('Exit'.tr , style: kStyleTextButton,),
                 backgroundColor: ColorsApp.red,
                 onPressed: onExit,
               ),
@@ -176,7 +177,7 @@ class NumPad extends StatelessWidget {
               child: CustomButton(
                 margin: marginButton,
                 padding: paddingButton,
-                child: Text('Save'.tr),
+                child: Text('Save'.tr, style: kStyleTextButton,),
                 backgroundColor: ColorsApp.green,
                 onPressed: onSubmit,
               ),

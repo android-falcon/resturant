@@ -531,20 +531,27 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CustomButton(
-                  fixed: true,
-                  backgroundColor: ColorsApp.red,
-                  child: Text('Exit'.tr),
-                  onPressed: () {
-                    Get.back();
-                  },
+                SizedBox(width: 50.w),
+                Expanded(
+                  child: CustomButton(
+                    fixed: true,
+                    backgroundColor: ColorsApp.red,
+                    child: Text('Exit'.tr, style: kStyleTextButton,),
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
                 ),
-                SizedBox(width: 10.w),
-                CustomButton(
-                  fixed: true,
-                  child: Text('Ok'.tr),
-                  onPressed: () {},
+                SizedBox(width: 5.w),
+                Expanded(
+                  child: CustomButton(
+                    fixed: true,
+                    backgroundColor: ColorsApp.green,
+                    child: Text('Ok'.tr, style: kStyleTextButton,),
+                    onPressed: () {},
+                  ),
                 ),
+                SizedBox(width: 50.w),
               ],
             ),
           ],
@@ -738,7 +745,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   CustomButton(
                                     child: Text(
                                       'Exit'.tr,
-                                      style: const TextStyle(color: Colors.white),
+                                      style: kStyleTextButton,
                                     ),
                                     backgroundColor: ColorsApp.red,
                                     margin: EdgeInsets.all(16.w),

@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/category_model.dart';
 import 'package:restaurant_system/models/item_model.dart';
+import 'package:restaurant_system/screens/widgets/custom_button.dart';
+import 'package:restaurant_system/screens/widgets/custom_data_table.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
@@ -285,10 +287,215 @@ class _OrderScreenState extends State<OrderScreen> {
                         ),
                       ),
                     ),
-                    Column(
-                      children: [
-                        Text('ana'),
-                      ],
+                    SingleChildScrollView(
+                      child: Container(
+                        width: 110.w,
+                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                        child: Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(),
+                                borderRadius: BorderRadius.circular(3.r),
+                              ),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                    child: Row(
+                                      children: [
+                                        Expanded(child: Text('Qty'.tr, style: kStyleHeaderTable)),
+                                        Expanded(
+                                            child: Text(
+                                          'Pro-Nam'.tr,
+                                          style: kStyleHeaderTable,
+                                        )),
+                                        Expanded(
+                                            child: Text(
+                                          'Price'.tr,
+                                          style: kStyleHeaderTable,
+                                        )),
+                                        Expanded(
+                                            child: Text(
+                                          'Total'.tr,
+                                          style: kStyleHeaderTable,
+                                        )),
+                                      ],
+                                    ),
+                                  ),
+                                  const Divider(color: Colors.black, height: 1),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                    child: ListView.builder(
+                                      itemCount: 0,
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemBuilder: (context, index) => Text('ana'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // CustomDataTable(
+                            //   minWidth: 106.w,
+                            //   rows: [],
+                            //   columns: [
+                            //     DataColumn(label: Text('Qty'.tr)),
+                            //     DataColumn(label: Text('Pro-Nam'.tr)),
+                            //     DataColumn(label: Text('Price'.tr)),
+                            //     DataColumn(label: Text('Total'.tr)),
+                            //   ],
+                            // ),
+                            Container(
+                              margin: EdgeInsets.symmetric(vertical: 4.h),
+                              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                              decoration: BoxDecoration(
+                                border: Border.all(),
+                                borderRadius: BorderRadius.circular(3.r),
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Total'.tr,
+                                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Text(
+                                        '0.00',
+                                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Delivery Charge'.tr,
+                                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Text(
+                                        '0.00',
+                                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Line Discount'.tr,
+                                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Text(
+                                        '0.00',
+                                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Discount'.tr,
+                                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Text(
+                                        '0.00',
+                                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  const Divider(color: Colors.black),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Sub Total'.tr,
+                                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Text(
+                                        '0.00',
+                                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Service'.tr,
+                                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Text(
+                                        '0.00',
+                                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Tax'.tr,
+                                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Text(
+                                        '0.00',
+                                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Amount Due'.tr,
+                                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Text(
+                                        '0.00',
+                                        style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: CustomButton(
+                                    child: Text('Pay'.tr, style: kStyleTextButton,),
+                                    fixed: true,
+                                    backgroundColor: ColorsApp.green,
+                                    onPressed: () {},
+                                  ),
+                                ),
+                                SizedBox(width: 5.w),
+                                Expanded(
+                                  child: CustomButton(
+                                    child: Text('Order'.tr, style: kStyleTextButton,),
+                                    fixed: true,
+                                    backgroundColor: ColorsApp.red,
+                                    onPressed: () {},
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),

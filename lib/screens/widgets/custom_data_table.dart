@@ -34,6 +34,7 @@ class CustomDataTable extends StatelessWidget {
           showCheckboxColumn: showCheckboxColumn,
           dataRowHeight: dataRowHeight ?? 30.h,
           headingRowHeight: headingRowHeight ?? 30.h,
+          // columnSpacing: 0,
           headingTextStyle: kStyleHeaderTable,
           dataTextStyle: kStyleDataTable,
           rows: rows,
