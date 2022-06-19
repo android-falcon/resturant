@@ -69,6 +69,7 @@ class RestApi {
       final response = await _dio.post("signIn", data: body);
       _networkLog(response);
       if(response.statusCode == 200){
+        mySharedPreferences.isLogin = true;
         Get.offAll(() => HomeScreen());
       }
       hideLoadingDialog();

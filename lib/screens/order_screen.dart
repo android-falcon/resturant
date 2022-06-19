@@ -25,13 +25,8 @@ class OrderScreen extends StatefulWidget {
 class _OrderScreenState extends State<OrderScreen> {
   bool _isShowItem = false;
   int _selectedCategoryId = 0;
-  List<CategoryModel> categories = [
-    CategoryModel(id: 1, name: 'Test', image: 'assets/images/falcons.png', items: [ItemModel(name: 'Item TEst', description: 'description', image: 'assets/images/falcons.png', price: 5.3), ItemModel(name: 'Item sd', description: 'description', image: 'assets/images/falcons.png', price: 4)]),
-    CategoryModel(id: 2, name: 'Test1', image: 'assets/images/falcons.png', items: [ItemModel(name: 'Item TEst2', description: 'description', image: 'assets/images/falcons.png', price: 5.3)]),
-    CategoryModel(id: 3, name: 'Test3', image: 'assets/images/falcons.png', items: [ItemModel(name: 'Item TEst2', description: 'description', image: 'assets/images/falcons.png', price: 5.3)]),
-    CategoryModel(id: 4, name: 'Test3', image: 'assets/images/falcons.png', items: [ItemModel(name: 'Item TEst2', description: 'description', image: 'assets/images/falcons.png', price: 5.3)]),
-    CategoryModel(id: 5, name: 'Test3', image: 'assets/images/falcons.png', items: [ItemModel(name: 'Item TEst2', description: 'description', image: 'assets/images/falcons.png', price: 5.3)]),
-  ];
+  List<CategoryModel> categories = categoryModelFromJson('[{"Id": 1, "CategoryName": "ice cream", "CategoryPic": "image003.png"}, {"Id": 2, "CategoryName": "hot drinks", "CategoryPic": "uuu.png"}]');
+  List<ItemModel> items = itemModelFromJson('[{"Id":2,"ITEM_BARCODE":"112233","Category":{"Id":1,"CategoryName":"ice cream","CategoryPic":"image003.png"},"CategoryId":1,"MENU_NAME":"test item name","Family":{"Id":1,"FamilyName":"test family","FamilyPic":"iconfinder_box-in_299102.png"},"FamilyId":1,"PRICE":5.5,"TaxType":{"Id":1,"TaxTypeName":"free tax"},"TaxTypeId":1,"TaxPerc":{"Id":5,"Percent":16,"AddDate":"2022-05-15T00:00:00"},"TaxPercId":5,"SECONDARY_NAME":"secode name","KITCHEN_ALIAS":"Kitchen name test","Item_STATUS":0,"ITEM_TYPE":null,"DESCRIPTION":"item description test","Unit":null,"UnitId":0,"WASTAGE_PERCENT":null,"DISCOUNT_AVAILABLE":0,"POINT_AVAILABLE":"0","OPEN_PRICE":0,"KitchenPrinter":{"Id":2,"PrinterName":"Printer2"},"KitchenPrinterId":2,"USED":null,"SHOW_IN_MENU":1,"ITEM_PICTURE":null}]');
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +46,7 @@ class _OrderScreenState extends State<OrderScreen> {
               Container(
                 width: double.infinity,
                 height: 50.h,
-                color: Colors.white,
+                color: ColorsApp.gray,
                 child: Row(
                   children: [
                     IconButton(
@@ -137,7 +132,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     Row(
                       children: [
                         Image.asset(
-                          'assets/images/lock.png',
+                          'assets/images/waiter.png',
                           height: 45.h,
                         ),
                         Text(
@@ -157,7 +152,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     Row(
                       children: [
                         Image.asset(
-                          'assets/images/lock.png',
+                          'assets/images/kitchen.png',
                           height: 45.h,
                         ),
                         Text(
@@ -177,7 +172,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     Row(
                       children: [
                         Image.asset(
-                          'assets/images/lock.png',
+                          'assets/images/guests.png',
                           height: 45.h,
                         ),
                         Text(
@@ -202,9 +197,8 @@ class _OrderScreenState extends State<OrderScreen> {
                         child: StaggeredGrid.count(
                           crossAxisCount: _isShowItem ? 2 : 3,
                           children: _isShowItem
-                              ? categories
-                                  .firstWhere((element) => element.id == _selectedCategoryId)
-                                  .items
+                              ? items
+                                  .where((element) => element.categoryId == _selectedCategoryId)
                                   .map(
                                     (e) => Card(
                                       shape: RoundedRectangleBorder(
@@ -219,7 +213,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                           child: Row(
                                             children: [
                                               Image.asset(
-                                                e.image,
+                                                e.itemPicture,
                                                 height: 50.h,
                                                 width: 50.w,
                                                 fit: BoxFit.contain,
@@ -230,7 +224,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    e.name,
+                                                    e.menuName,
                                                     style: kStyleTextTitle,
                                                   ),
                                                   Text(
@@ -269,13 +263,13 @@ class _OrderScreenState extends State<OrderScreen> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Image.asset(
-                                                  e.image,
+                                                  e.categoryPic,
                                                   height: 50.h,
                                                   width: 50.w,
                                                   fit: BoxFit.contain,
                                                 ),
                                                 Text(
-                                                  e.name,
+                                                  e.categoryName,
                                                   style: kStyleTextTitle,
                                                 ),
                                               ],
@@ -304,21 +298,29 @@ class _OrderScreenState extends State<OrderScreen> {
                                     padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
                                     child: Row(
                                       children: [
-                                        Expanded(child: Text('Qty'.tr, style: kStyleHeaderTable)),
+                                        Expanded(
+                                            child: Text(
+                                          'Qty'.tr,
+                                          style: kStyleHeaderTable,
+                                          textAlign: TextAlign.center,
+                                        )),
                                         Expanded(
                                             child: Text(
                                           'Pro-Nam'.tr,
                                           style: kStyleHeaderTable,
+                                          textAlign: TextAlign.center,
                                         )),
                                         Expanded(
                                             child: Text(
                                           'Price'.tr,
                                           style: kStyleHeaderTable,
+                                          textAlign: TextAlign.center,
                                         )),
                                         Expanded(
                                             child: Text(
                                           'Total'.tr,
                                           style: kStyleHeaderTable,
+                                          textAlign: TextAlign.center,
                                         )),
                                       ],
                                     ),
@@ -476,7 +478,10 @@ class _OrderScreenState extends State<OrderScreen> {
                               children: [
                                 Expanded(
                                   child: CustomButton(
-                                    child: Text('Pay'.tr, style: kStyleTextButton,),
+                                    child: Text(
+                                      'Pay'.tr,
+                                      style: kStyleTextButton,
+                                    ),
                                     fixed: true,
                                     backgroundColor: ColorsApp.green,
                                     onPressed: () {},
@@ -485,7 +490,10 @@ class _OrderScreenState extends State<OrderScreen> {
                                 SizedBox(width: 5.w),
                                 Expanded(
                                   child: CustomButton(
-                                    child: Text('Order'.tr, style: kStyleTextButton,),
+                                    child: Text(
+                                      'Order'.tr,
+                                      style: kStyleTextButton,
+                                    ),
                                     fixed: true,
                                     backgroundColor: ColorsApp.red,
                                     onPressed: () {},

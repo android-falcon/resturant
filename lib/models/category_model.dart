@@ -1,15 +1,33 @@
-import 'package:restaurant_system/models/item_model.dart';
+// To parse this JSON data, do
+//
+//     final categoryModel = categoryModelFromJson(jsonString);
+
+import 'dart:convert';
+
+List<CategoryModel> categoryModelFromJson(String str) => List<CategoryModel>.from(json.decode(str).map((x) => CategoryModel.fromJson(x)));
+
+String categoryModelToJson(List<CategoryModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class CategoryModel {
-  int id;
-  String name;
-  String image;
-  List<ItemModel> items;
-
   CategoryModel({
     required this.id,
-    required this.name,
-    required this.image,
-    required this.items,
+    required this.categoryName,
+    required this.categoryPic,
   });
+
+  int id;
+  String categoryName;
+  String categoryPic;
+
+  factory CategoryModel.fromJson(Map<String, dynamic> json) => CategoryModel(
+    id: json["Id"] ?? 0,
+    categoryName: json["CategoryName"] ?? "",
+    categoryPic: json["CategoryPic"] ?? "",
+  );
+
+  Map<String, dynamic> toJson() => {
+    "Id": id,
+    "CategoryName": categoryName,
+    "CategoryPic": categoryPic,
+  };
 }

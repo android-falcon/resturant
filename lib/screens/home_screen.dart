@@ -69,6 +69,16 @@ class _HomeScreenState extends State<HomeScreen> {
         name: 'Cash Drawer'.tr,
         onTab: () {},
       ),
+      HomeMenu(
+        name: 'Exit'.tr,
+        onTab: () {
+          if (Platform.isAndroid) {
+            SystemNavigator.pop();
+          } else if (Platform.isIOS) {
+            exit(0);
+          }
+        },
+      ),
     ];
   }
 
@@ -293,7 +303,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(_controllerSelectEdit, setState),
+                      child: numPadWidget(
+                        _controllerSelectEdit,
+                        setState,
+                        onSubmit: () {},
+                      ),
                     ),
                   ),
                 ],
@@ -536,7 +550,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: CustomButton(
                     fixed: true,
                     backgroundColor: ColorsApp.red,
-                    child: Text('Exit'.tr, style: kStyleTextButton,),
+                    child: Text(
+                      'Exit'.tr,
+                      style: kStyleTextButton,
+                    ),
                     onPressed: () {
                       Get.back();
                     },
@@ -547,7 +564,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: CustomButton(
                     fixed: true,
                     backgroundColor: ColorsApp.green,
-                    child: Text('Ok'.tr, style: kStyleTextButton,),
+                    child: Text(
+                      'Ok'.tr,
+                      style: kStyleTextButton,
+                    ),
                     onPressed: () {},
                   ),
                 ),
@@ -627,7 +647,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -734,28 +753,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  SizedBox(height: 200.h),
-                                  CustomButton(
-                                    child: Text(
-                                      'Exit'.tr,
-                                      style: kStyleTextButton,
-                                    ),
-                                    backgroundColor: ColorsApp.red,
-                                    margin: EdgeInsets.all(16.w),
-                                    onPressed: () {
-                                      if (Platform.isAndroid) {
-                                        SystemNavigator.pop();
-                                      } else if (Platform.isIOS) {
-                                        exit(0);
-                                      }
-                                    },
                                   ),
                                 ],
                               ),
