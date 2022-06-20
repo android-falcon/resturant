@@ -18,7 +18,7 @@ import 'package:restaurant_system/utils/app_config/money_count.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
-import 'package:restaurant_system/utils/enum_pay_dialog_type.dart';
+import 'package:restaurant_system/utils/enum_in_out_type.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
@@ -41,18 +41,32 @@ class _HomeScreenState extends State<HomeScreen> {
     _menu = <HomeMenu>[
       HomeMenu(
         name: 'Time Card'.tr,
-        onTab: () {},
+        onTab: () {
+          _showTimeCardDialog();
+        },
+      ),
+      HomeMenu(
+        name: 'Cash In'.tr,
+        onTab: () {
+          _showInOutDialog(type: InOutType.cashIn);
+        },
+      ),
+      HomeMenu(
+        name: 'Cash Out'.tr,
+        onTab: () {
+          _showInOutDialog(type: InOutType.cashOut);
+        },
       ),
       HomeMenu(
         name: 'Pay In'.tr,
         onTab: () {
-          _showPayInOutDialog(type: PayDialogType.payIn);
+          _showInOutDialog(type: InOutType.payIn);
         },
       ),
       HomeMenu(
         name: 'Pay Out'.tr,
         onTab: () {
-          _showPayInOutDialog(type: PayDialogType.payOut);
+          _showInOutDialog(type: InOutType.payOut);
         },
       ),
       HomeMenu(
@@ -60,10 +74,6 @@ class _HomeScreenState extends State<HomeScreen> {
         onTab: () {
           _showRefundDialog();
         },
-      ),
-      HomeMenu(
-        name: 'Safe Mode'.tr,
-        onTab: () {},
       ),
       HomeMenu(
         name: 'Cash Drawer'.tr,
@@ -82,7 +92,95 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
-  _showPayInOutDialog({required PayDialogType type}) {
+  _showTimeCardDialog() {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    TextEditingController _controllerEmployeeId = TextEditingController();
+
+    Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${'Date'.tr} : ${DateFormat('yyyy/MM/dd hh:mm a').format(DateTime.now())}',
+                    style: kStyleTextDefault,
+                  ),
+                ),
+                Text(
+                  'Time Card'.tr,
+                  style: kStyleTextTitle,
+                ),
+                Expanded(
+                  child: Text(
+                    '',
+                    textAlign: TextAlign.end,
+                    style: kStyleTextDefault,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            const Divider(
+              thickness: 1,
+              height: 1,
+            ),
+            Form(
+              key: _keyForm,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        CustomTextField(
+                          margin: EdgeInsets.only(top: 10.h),
+                          controller: _controllerEmployeeId,
+                          label: Text('Employee Id'.tr),
+                          fillColor: Colors.white,
+                          maxLines: 1,
+                          inputFormatters: [
+                            EnglishDigitsTextInputFormatter(decimal: false),
+                          ],
+                          validator: (value) {
+                            return Validation.isRequired(value);
+                          },
+                          enableInteractiveSelection: false,
+                          keyboardType: const TextInputType.numberWithOptions(),
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                          },
+                        ),
+                        CustomButton(
+                          child: Text('Search'.tr),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: numPadWidget(
+                        _controllerEmployeeId,
+                        setState,
+                        decimal: false,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  _showInOutDialog({required InOutType type}) {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     TextEditingController _controllerManual = TextEditingController(text: '0');
     TextEditingController _controllerRemark = TextEditingController();
@@ -105,7 +203,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Text(
-                  type == PayDialogType.payIn ? 'Pay In'.tr : 'Pay Out'.tr,
+                  type == InOutType.payIn
+                      ? 'Pay In'.tr
+                      : type == InOutType.payOut
+                          ? 'Pay Out'.tr
+                          : type == InOutType.cashIn
+                              ? 'Cash In'
+                              : type == InOutType.cashOut
+                                  ? 'Cash Out'
+                                  : '',
                   style: kStyleTextTitle,
                 ),
                 Expanded(
@@ -306,7 +412,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: numPadWidget(
                         _controllerSelectEdit,
                         setState,
-                        onSubmit: () {},
+                        onSubmit: () {
+                          switch (type) {
+                            case InOutType.payIn:
+                              break;
+                            case InOutType.payOut:
+                              break;
+                            case InOutType.cashIn:
+                              break;
+                            case InOutType.cashOut:
+                              break;
+                          }
+                        },
                       ),
                     ),
                   ),

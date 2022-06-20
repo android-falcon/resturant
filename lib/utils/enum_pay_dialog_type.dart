@@ -1,4 +1,0 @@
-enum PayDialogType {
-  payIn,
-  payOut,
-}

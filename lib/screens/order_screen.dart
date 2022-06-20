@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/category_model.dart';
 import 'package:restaurant_system/models/item_model.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
-import 'package:restaurant_system/screens/widgets/custom_data_table.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
@@ -212,30 +211,36 @@ class _OrderScreenState extends State<OrderScreen> {
                                           padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
                                           child: Row(
                                             children: [
-                                              Image.asset(
+                                              Image.network(
                                                 e.itemPicture,
                                                 height: 50.h,
                                                 width: 50.w,
                                                 fit: BoxFit.contain,
+                                                errorBuilder: (context, object, stackTrace) => SizedBox(
+                                                  height: 50.h,
+                                                  width: 50.w,
+                                                ),
                                               ),
-                                              Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                mainAxisAlignment: MainAxisAlignment.start,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    e.menuName,
-                                                    style: kStyleTextTitle,
-                                                  ),
-                                                  Text(
-                                                    e.description,
-                                                    style: kStyleTextDefault,
-                                                  ),
-                                                  Text(
-                                                    e.price.toStringAsFixed(2),
-                                                    style: kStyleTextTitle,
-                                                  ),
-                                                ],
+                                              Expanded(
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      e.menuName,
+                                                      style: kStyleTextTitle,
+                                                    ),
+                                                    Text(
+                                                      e.description,
+                                                      style: kStyleTextDefault,
+                                                    ),
+                                                    Text(
+                                                      e.price.toStringAsFixed(2),
+                                                      style: kStyleTextTitle,
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -262,11 +267,15 @@ class _OrderScreenState extends State<OrderScreen> {
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Image.asset(
+                                                Image.network(
                                                   e.categoryPic,
                                                   height: 50.h,
                                                   width: 50.w,
                                                   fit: BoxFit.contain,
+                                                  errorBuilder: (context, object, stackTrace) => SizedBox(
+                                                    height: 50.h,
+                                                    width: 50.w,
+                                                  ),
                                                 ),
                                                 Text(
                                                   e.categoryName,
