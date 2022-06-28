@@ -1,16 +1,24 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:restaurant_system/models/category_model.dart';
-import 'package:restaurant_system/models/item_model.dart';
+import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
+import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
+import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/enum_discount_type.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
+import 'package:restaurant_system/utils/global_variable.dart';
+import 'package:restaurant_system/utils/text_input_formatters.dart';
+import 'package:restaurant_system/utils/utils.dart';
 
 class OrderScreen extends StatefulWidget {
   final OrderType type;
@@ -24,8 +32,147 @@ class OrderScreen extends StatefulWidget {
 class _OrderScreenState extends State<OrderScreen> {
   bool _isShowItem = false;
   int _selectedCategoryId = 0;
-  List<CategoryModel> categories = categoryModelFromJson('[{"Id": 1, "CategoryName": "ice cream", "CategoryPic": "image003.png"}, {"Id": 2, "CategoryName": "hot drinks", "CategoryPic": "uuu.png"}]');
-  List<ItemModel> items = itemModelFromJson('[{"Id":2,"ITEM_BARCODE":"112233","Category":{"Id":1,"CategoryName":"ice cream","CategoryPic":"image003.png"},"CategoryId":1,"MENU_NAME":"test item name","Family":{"Id":1,"FamilyName":"test family","FamilyPic":"iconfinder_box-in_299102.png"},"FamilyId":1,"PRICE":5.5,"TaxType":{"Id":1,"TaxTypeName":"free tax"},"TaxTypeId":1,"TaxPerc":{"Id":5,"Percent":16,"AddDate":"2022-05-15T00:00:00"},"TaxPercId":5,"SECONDARY_NAME":"secode name","KITCHEN_ALIAS":"Kitchen name test","Item_STATUS":0,"ITEM_TYPE":null,"DESCRIPTION":"item description test","Unit":null,"UnitId":0,"WASTAGE_PERCENT":null,"DISCOUNT_AVAILABLE":0,"POINT_AVAILABLE":"0","OPEN_PRICE":0,"KitchenPrinter":{"Id":2,"PrinterName":"Printer2"},"KitchenPrinterId":2,"USED":null,"SHOW_IN_MENU":1,"ITEM_PICTURE":null}]');
+  CartModel _cartModel = CartModel.init();
+  int _indexItemSelect = -1;
+
+  Future<double> _showDeliveryDialog({TextEditingController? controller, required double delivery}) async {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    controller ??= TextEditingController(text: '$delivery');
+    if (controller.text.endsWith('.0')) {
+      controller.text = controller.text.replaceFirst('.0', '');
+    }
+    var _delivery = await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Form(
+              key: _keyForm,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        CustomTextField(
+                          controller: controller,
+                          label: Text('Delivery'.tr),
+                          fillColor: Colors.white,
+                          maxLines: 1,
+                          inputFormatters: [
+                            EnglishDigitsTextInputFormatter(decimal: true),
+                          ],
+                          enableInteractiveSelection: false,
+                          keyboardType: const TextInputType.numberWithOptions(),
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: numPadWidget(
+                        controller,
+                        setState,
+                        onSubmit: () {
+                          if (_keyForm.currentState!.validate()) {
+                            Get.back(result: controller!.text);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return _delivery == null ? _delivery : double.parse(_delivery);
+  }
+
+  Future<Map<String, dynamic>> _showDiscountDialog({TextEditingController? controller, required double discount, required DiscountType type}) async {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    controller ??= TextEditingController(text: '$discount');
+    if (controller.text.endsWith('.0')) {
+      controller.text = controller.text.replaceFirst('.0', '');
+    }
+    var _discount = await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Form(
+              key: _keyForm,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        CustomTextField(
+                          controller: controller,
+                          label: Text('Delivery'.tr),
+                          fillColor: Colors.white,
+                          maxLines: 1,
+                          inputFormatters: [
+                            EnglishDigitsTextInputFormatter(decimal: true),
+                          ],
+                          enableInteractiveSelection: false,
+                          keyboardType: const TextInputType.numberWithOptions(),
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                          },
+                        ),
+                        CheckboxListTile(
+                          title: Text('Percentage'.tr),
+                          value: type == DiscountType.percentage,
+                          onChanged: (value) {
+                            type = value! ? DiscountType.percentage : DiscountType.value;
+                            setState(() {});
+                          },
+                        )
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: numPadWidget(
+                        controller,
+                        setState,
+                        onSubmit: () {
+                          if (_keyForm.currentState!.validate()) {
+                            Get.back(result: controller!.text);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return {
+      'discount': _discount == null ? _discount : double.parse(_discount),
+      'type': type,
+    };
+  }
+
+  _calculateOrder() {
+    _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (item.price * item.qty));
+    _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? item.price * item.lineDiscount / 100 : item.lineDiscount) * item.qty));
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -196,7 +343,7 @@ class _OrderScreenState extends State<OrderScreen> {
                         child: StaggeredGrid.count(
                           crossAxisCount: _isShowItem ? 2 : 3,
                           children: _isShowItem
-                              ? items
+                              ? allDataModel.items
                                   .where((element) => element.categoryId == _selectedCategoryId)
                                   .map(
                                     (e) => Card(
@@ -206,7 +353,25 @@ class _OrderScreenState extends State<OrderScreen> {
                                       elevation: 0,
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(5.r),
-                                        onTap: () {},
+                                        onTap: () {
+                                          var indexItem = _cartModel.items.indexWhere((element) => element.id == e.id);
+                                          if (indexItem != -1) {
+                                            _cartModel.items[indexItem].qty += 1;
+                                            _cartModel.items[indexItem].total = _cartModel.items[indexItem].qty * _cartModel.items[indexItem].price;
+                                          } else {
+                                            _cartModel.items.add(CartItemModel(
+                                              id: e.id,
+                                              name: e.menuName,
+                                              qty: 1,
+                                              price: e.price,
+                                              total: e.price,
+                                              discountAvailable: e.discountAvailable == 1,
+                                              openPrice: e.openPrice == 1,
+                                            ));
+                                          }
+                                          _calculateOrder();
+                                          setState(() {});
+                                        },
                                         child: Padding(
                                           padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
                                           child: Row(
@@ -249,7 +414,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                     ),
                                   )
                                   .toList()
-                              : categories
+                              : allDataModel.categories
                                   .map((e) => Card(
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(5.r),
@@ -308,40 +473,87 @@ class _OrderScreenState extends State<OrderScreen> {
                                     child: Row(
                                       children: [
                                         Expanded(
-                                            child: Text(
-                                          'Qty'.tr,
-                                          style: kStyleHeaderTable,
-                                          textAlign: TextAlign.center,
-                                        )),
+                                          child: Text(
+                                            'Qty'.tr,
+                                            style: kStyleHeaderTable,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
                                         Expanded(
-                                            child: Text(
-                                          'Pro-Nam'.tr,
-                                          style: kStyleHeaderTable,
-                                          textAlign: TextAlign.center,
-                                        )),
+                                          flex: 3,
+                                          child: Text(
+                                            'Pro-Nam'.tr,
+                                            style: kStyleHeaderTable,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
                                         Expanded(
-                                            child: Text(
-                                          'Price'.tr,
-                                          style: kStyleHeaderTable,
-                                          textAlign: TextAlign.center,
-                                        )),
+                                          child: Text(
+                                            'Price'.tr,
+                                            style: kStyleHeaderTable,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
                                         Expanded(
-                                            child: Text(
-                                          'Total'.tr,
-                                          style: kStyleHeaderTable,
-                                          textAlign: TextAlign.center,
-                                        )),
+                                          child: Text(
+                                            'Total'.tr,
+                                            style: kStyleHeaderTable,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
                                   const Divider(color: Colors.black, height: 1),
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                    child: ListView.builder(
-                                      itemCount: 0,
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemBuilder: (context, index) => Text('ana'),
+                                  ListView.separated(
+                                    itemCount: _cartModel.items.length,
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
+                                    itemBuilder: (context, index) => InkWell(
+                                      onTap: () {
+                                        _indexItemSelect = index;
+                                        setState(() {});
+                                      },
+                                      child: Container(
+                                        color: index == _indexItemSelect ? ColorsApp.primaryColor : null,
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  '${_cartModel.items[index].qty}',
+                                                  style: kStyleDataTable,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 3,
+                                                child: Text(
+                                                  _cartModel.items[index].name,
+                                                  style: kStyleDataTable,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Text(
+                                                  _cartModel.items[index].price.toStringAsFixed(2),
+                                                  style: kStyleDataTable,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Text(
+                                                  _cartModel.items[index].total.toStringAsFixed(2),
+                                                  style: kStyleDataTable,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -376,7 +588,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '0.00',
+                                        _cartModel.total.toStringAsFixed(2),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -390,7 +602,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '0.00',
+                                        _cartModel.deliveryCharge.toStringAsFixed(2),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -404,7 +616,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '0.00',
+                                        _cartModel.lineDiscount.toStringAsFixed(2),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -418,7 +630,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '0.00',
+                                        _cartModel.discount.toStringAsFixed(2),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -433,7 +645,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '0.00',
+                                        _cartModel.subTotal.toStringAsFixed(2),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -447,7 +659,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '0.00',
+                                        _cartModel.service.toStringAsFixed(2),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -461,7 +673,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '0.00',
+                                        _cartModel.tax.toStringAsFixed(2),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -475,7 +687,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '0.00',
+                                        _cartModel.amountDue.toStringAsFixed(2),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -525,13 +737,24 @@ class _OrderScreenState extends State<OrderScreen> {
                   children: [
                     Expanded(
                       child: InkWell(
-                        onTap: () {},
-                        child: Text(
-                          'Modifier'.tr,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: kStyleTextDefault,
+                        onTap: () {
+                          if (_indexItemSelect != -1) {
+                          } else {
+                            Fluttertoast.showToast(msg: 'Please select the item you want to modifier'.tr);
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Modifier'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -541,13 +764,39 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     Expanded(
                       child: InkWell(
-                        onTap: () {},
-                        child: Text(
-                          'Void'.tr,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: kStyleTextDefault,
+                        onTap: () {
+                          if (_indexItemSelect != -1) {
+                            Get.defaultDialog(
+                              title: '${'Are you sure to remove the'.tr} ${_cartModel.items[_indexItemSelect].name} ${'item'.tr}?',
+                              titleStyle: kStyleTextTitle,
+                              content: Container(),
+                              textCancel: 'Cancel'.tr,
+                              textConfirm: 'Confirm'.tr,
+                              confirmTextColor: Colors.white,
+                              onConfirm: () {
+                                _cartModel.items.removeAt(_indexItemSelect);
+                                _indexItemSelect = -1;
+                                Get.back();
+                              },
+                            ).then((value) {
+                              _calculateOrder();
+                            });
+                          } else {
+                            Fluttertoast.showToast(msg: 'Please select the item you want to remove'.tr);
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Void'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -557,13 +806,22 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     Expanded(
                       child: InkWell(
-                        onTap: () {},
-                        child: Text(
-                          'Delivery'.tr,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: kStyleTextDefault,
+                        onTap: () async {
+                          _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
+                          setState(() {});
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Delivery'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -573,13 +831,35 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     Expanded(
                       child: InkWell(
-                        onTap: () {},
-                        child: Text(
-                          'Line Discount'.tr,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: kStyleTextDefault,
+                        onTap: () async {
+                          if (_indexItemSelect != -1) {
+                            if (_cartModel.items[_indexItemSelect].discountAvailable) {
+                              var result = await _showDiscountDialog(
+                                discount: _cartModel.items[_indexItemSelect].lineDiscount,
+                                type: _cartModel.items[_indexItemSelect].lineDiscountType,
+                              );
+                              _cartModel.items[_indexItemSelect].lineDiscount = result['discount'];
+                              _cartModel.items[_indexItemSelect].lineDiscountType = result['type'];
+                              _calculateOrder();
+                            } else {
+                              Fluttertoast.showToast(msg: 'Line discount is not available for this item'.tr);
+                            }
+                          } else {
+                            Fluttertoast.showToast(msg: 'Please select the item you want to line discount'.tr);
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Line Discount'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -589,13 +869,31 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     Expanded(
                       child: InkWell(
-                        onTap: () {},
-                        child: Text(
-                          'Discount'.tr,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: kStyleTextDefault,
+                        onTap: () async {
+                          if (_cartModel.items.any((element) => element.discountAvailable)) {
+                            var result = await _showDiscountDialog(
+                              discount: _cartModel.items[_indexItemSelect].discount,
+                              type: _cartModel.items[_indexItemSelect].discountType,
+                            );
+                            _cartModel.items[_indexItemSelect].discount = result['discount'];
+                            _cartModel.items[_indexItemSelect].discountType = result['type'];
+                            _calculateOrder();
+                          } else {
+                            Fluttertoast.showToast(msg: 'No items accept discount in order'.tr);
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Discount'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -603,31 +901,54 @@ class _OrderScreenState extends State<OrderScreen> {
                       width: 1,
                       thickness: 2,
                     ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () {},
-                        child: Text(
-                          'Split'.tr,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: kStyleTextDefault,
+                    if (widget.type == OrderType.dineIn)
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {},
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: double.infinity,
+                            child: Center(
+                              child: Text(
+                                'Split'.tr,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: kStyleTextDefault,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
                     const VerticalDivider(
                       width: 1,
                       thickness: 2,
                     ),
                     Expanded(
                       child: InkWell(
-                        onTap: () {},
-                        child: Text(
-                          'Price Change'.tr,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: kStyleTextDefault,
+                        onTap: () {
+                          if (_indexItemSelect != -1) {
+                            if (_cartModel.items[_indexItemSelect].openPrice) {
+                              _calculateOrder();
+                            } else {
+                              Fluttertoast.showToast(msg: 'Price change is not available for this item'.tr);
+                            }
+                          } else {
+                            Fluttertoast.showToast(msg: 'Please select the item you want to price change'.tr);
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Price Change'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
+                            ),
+                          ),
                         ),
                       ),
                     ),

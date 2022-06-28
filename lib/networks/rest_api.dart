@@ -3,8 +3,10 @@ import 'dart:developer' as developer;
 import 'package:dio/dio.dart' as dio;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:restaurant_system/screens/home_screen.dart';
+import 'package:restaurant_system/models/all_data_model.dart';
+import 'package:restaurant_system/networks/api_url.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/utils.dart';
 
@@ -59,25 +61,19 @@ class RestApi {
     developer.log(trace);
   }
 
-  static Future<void> signIn(String username, String password) async {
+  static Future<void> getData() async {
     try {
       showLoadingDialog();
-      var body = jsonEncode({
-        'username': username,
-        'password': password,
-      });
-      mySharedPreferences.isLogin = true;
-      final response = await _dio.post("signIn", data: body);
+      final response = await _dio.get(ApiUrl.GET_DATA);
       _networkLog(response);
       if(response.statusCode == 200){
-        Get.offAll(() => HomeScreen());
+        allDataModel = AllDataModel.fromJson(response.data);
       }
       hideLoadingDialog();
     } on dio.DioError catch (e) {
       _traceError(e);
       hideLoadingDialog();
-      Fluttertoast.showToast(msg: 'Incorrect username or password'.tr, timeInSecForIosWeb: 3);
-      Get.offAll(() => HomeScreen());
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
       hideLoadingDialog();

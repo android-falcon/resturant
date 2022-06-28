@@ -27,8 +27,6 @@ class ItemModel {
     required this.itemStatus,
     required this.itemType,
     required this.description,
-    required this.unit,
-    required this.unitId,
     required this.wastagePercent,
     required this.discountAvailable,
     required this.pointAvailable,
@@ -57,8 +55,6 @@ class ItemModel {
   int itemStatus;
   dynamic itemType;
   String description;
-  dynamic unit;
-  int unitId;
   dynamic wastagePercent;
   int discountAvailable;
   String pointAvailable;
@@ -87,8 +83,6 @@ class ItemModel {
         itemStatus: json["Item_STATUS"] ?? 0,
         itemType: json["ITEM_TYPE"],
         description: json["DESCRIPTION"] ?? "",
-        unit: json["Unit"],
-        unitId: json["UnitId"] ?? 0,
         wastagePercent: json["WASTAGE_PERCENT"],
         discountAvailable: json["DISCOUNT_AVAILABLE"] ?? 0,
         pointAvailable: json["POINT_AVAILABLE"] ?? "",
@@ -118,8 +112,6 @@ class ItemModel {
         "Item_STATUS": itemStatus,
         "ITEM_TYPE": itemType,
         "DESCRIPTION": description,
-        "Unit": unit,
-        "UnitId": unitId,
         "WASTAGE_PERCENT": wastagePercent,
         "DISCOUNT_AVAILABLE": discountAvailable,
         "POINT_AVAILABLE": pointAvailable,

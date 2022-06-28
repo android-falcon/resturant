@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:restaurant_system/screens/home_screen.dart';
 import 'package:restaurant_system/screens/login_screen.dart';
-import 'package:restaurant_system/utils/my_shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -20,12 +18,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   delayScreen() {
-    Future.delayed(const Duration(seconds: 3)).then((value) {
-      if (mySharedPreferences.isLogin) {
-        Get.off(() => HomeScreen());
-      } else {
-        Get.offAll(() => LoginScreen());
-      }
+    Future.delayed(const Duration(seconds: 2)).then((value) {
+      Get.offAll(() => LoginScreen());
     });
   }
 

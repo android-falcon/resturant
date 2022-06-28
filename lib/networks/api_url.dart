@@ -1,3 +1,4 @@
 class ApiUrl{
-  // static String TEST = "/api/Auth/login";
+  // ignore: non_constant_identifier_names
+  static String GET_DATA = "/api/GetData";
 }

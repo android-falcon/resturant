@@ -1,27 +1,68 @@
-
+import 'package:restaurant_system/utils/enum_discount_type.dart';
 
 class CartModel {
   CartModel({
     required this.id,
-    required this.categoryName,
-    required this.categoryPic,
+    required this.total,
+    required this.deliveryCharge,
+    required this.lineDiscount,
+    required this.discount,
+    required this.subTotal,
+    required this.service,
+    required this.tax,
+    required this.amountDue,
+    required this.items,
   });
 
   int id;
-  String categoryName;
-  String categoryPic;
+  double total;
+  double deliveryCharge;
+  double lineDiscount;
+  double discount;
+  double subTotal;
+  double service;
+  double tax;
+  double amountDue;
+  List<CartItemModel> items;
+
+  factory CartModel.init() => CartModel(
+        id: 0,
+        total: 0,
+        deliveryCharge: 0,
+        lineDiscount: 0,
+        discount: 0,
+        subTotal: 0,
+        service: 0,
+        tax: 0,
+        amountDue: 0,
+        items: [],
+      );
 
   factory CartModel.fromJson(Map<String, dynamic> json) => CartModel(
-    id: json["Id"] ?? 0,
-    categoryName: json["CategoryName"] ?? "",
-    categoryPic: json["CategoryPic"] ?? "",
-  );
+        id: json["id"] ?? 0,
+        total: json["total"] == null ? 0.0 : json["total"].toDouble(),
+        deliveryCharge: json["deliveryCharge"] == null ? 0.0 : json["deliveryCharge"].toDouble(),
+        lineDiscount: json["lineDiscount"] == null ? 0.0 : json["lineDiscount"].toDouble(),
+        discount: json["discount"] == null ? 0.0 : json["discount"].toDouble(),
+        subTotal: json["subTotal"] == null ? 0.0 : json["subTotal"].toDouble(),
+        service: json["service"] == null ? 0.0 : json["service"].toDouble(),
+        tax: json["tax"] == null ? 0.0 : json["tax"].toDouble(),
+        amountDue: json["amountDue"] == null ? 0.0 : json["amountDue"].toDouble(),
+        items: json["items"] == null ? [] : List<CartItemModel>.from(json["items"].map((x) => CartItemModel.fromJson(x))),
+      );
 
   Map<String, dynamic> toJson() => {
-    "Id": id,
-    "CategoryName": categoryName,
-    "CategoryPic": categoryPic,
-  };
+        "id": id,
+        "total": total,
+        "deliveryCharge": deliveryCharge,
+        "lineDiscount": lineDiscount,
+        "discount": discount,
+        "subTotal": subTotal,
+        "service": service,
+        "tax": tax,
+        "amountDue": amountDue,
+        "items": items,
+      };
 }
 
 class CartItemModel {
@@ -31,6 +72,12 @@ class CartItemModel {
     required this.qty,
     required this.price,
     required this.total,
+    this.lineDiscountType = DiscountType.percentage,
+    this.lineDiscount = 0,
+    this.discountType = DiscountType.percentage,
+    this.discount = 0,
+    this.discountAvailable = false,
+    this.openPrice = false,
   });
 
   int id;
@@ -38,20 +85,42 @@ class CartItemModel {
   int qty;
   double price;
   double total;
+  DiscountType lineDiscountType;
+  double lineDiscount;
+  DiscountType discountType;
+  double discount;
+  bool discountAvailable;
+  bool openPrice;
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
-    id: json["Id"] ?? 0,
-    name: json["Name"] ?? "",
-    qty: json["Qty"] ?? "",
-    price: json["Price"] ?? "",
-    total: json["Total"] ?? "",
-  );
+        id: json["Id"] ?? 0,
+        name: json["Name"] ?? "",
+        qty: json["Qty"] ?? 0,
+        price: json["Price"] ?? 0,
+        total: json["Total"] ?? 0,
+        lineDiscountType: json["lineDiscountType"] == null
+            ? DiscountType.percentage
+            : json["lineDiscountType"] == 1
+                ? DiscountType.percentage
+                : DiscountType.value,
+        lineDiscount: json["lineDiscount"] ?? 0,
+        discountType: json["discountType"] == null
+            ? DiscountType.percentage
+            : json["discountType"] == 1
+                ? DiscountType.percentage
+                : DiscountType.value,
+        discount: json["discount"] ?? 0,
+        discountAvailable: json["discountAvailable"] ?? false,
+        openPrice: json["openPrice"] ?? false,
+      );
 
   Map<String, dynamic> toJson() => {
-    "Id": id,
-    "Name": name,
-    "Qty": qty,
-    "Price": price,
-    "Total": total,
-  };
+        "Id": id,
+        "Name": name,
+        "Qty": qty,
+        "Price": price,
+        "Total": total,
+        "LineDiscount": lineDiscount,
+        "Discount": discount,
+      };
 }
