@@ -1,11 +1,15 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restaurant_system/models/all_data/category_with_modifire_model.dart';
+import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
+import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -204,7 +208,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           onTap: () {
                             FocusScope.of(context).requestFocus(FocusNode());
                           },
-                          validator: (value){
+                          validator: (value) {
                             return Validation.priceChange(value);
                           },
                         ),
@@ -236,19 +240,275 @@ class _OrderScreenState extends State<OrderScreen> {
     return _priceChange == null ? _priceChange : double.parse(_priceChange);
   }
 
+  Future<List<CartItemModifierModel>> _showModifierDialog({required List<ItemWithModifireModel> modifiersItem, required List<CategoryWithModifireModel> modifiersCategory, required List<CartItemModifierModel> addedModifiers}) async {
+    int _selectedModifierId = 0;
+    List<CartItemModifierModel> modifiers = [];
+    modifiers.addAll(List<CartItemModifierModel>.from(modifiersItem.map((e) => CartItemModifierModel(id: e.modifiresId, name: e.name, modifier: ''))));
+    modifiers.addAll(List<CartItemModifierModel>.from(modifiersCategory.map((e) => CartItemModifierModel(id: e.modifireId, name: e.name, modifier: ''))));
+    modifiers.addAll(List<CartItemModifierModel>.from(addedModifiers.map((e) => CartItemModifierModel(id: e.id, name: e.name, modifier: e.modifier))));
+    var _modifiers = await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Text(
+              'Modifier'.tr,
+              style: kStyleTextTitle,
+            ),
+            const Divider(thickness: 2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Extra'.tr),
+                    onPressed: () {
+                      if (_selectedModifierId != 0) {
+                        modifiers.firstWhere((element) => element.id == _selectedModifierId).modifier = 'Extra'.tr;
+                        setState(() {});
+                      } else {
+                        Fluttertoast.showToast(msg: 'Please select a modifier'.tr);
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('No'.tr),
+                    onPressed: () {
+                      if (_selectedModifierId != 0) {
+                        modifiers.firstWhere((element) => element.id == _selectedModifierId).modifier = 'No'.tr;
+                        setState(() {});
+                      } else {
+                        Fluttertoast.showToast(msg: 'Please select a modifier'.tr);
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Little'.tr),
+                    onPressed: () {
+                      if (_selectedModifierId != 0) {
+                        modifiers.firstWhere((element) => element.id == _selectedModifierId).modifier = 'Little'.tr;
+                        setState(() {});
+                      } else {
+                        Fluttertoast.showToast(msg: 'Please select a modifier'.tr);
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Half'.tr),
+                    onPressed: () {
+                      if (_selectedModifierId != 0) {
+                        modifiers.firstWhere((element) => element.id == _selectedModifierId).modifier = 'Half'.tr;
+                        setState(() {});
+                      } else {
+                        Fluttertoast.showToast(msg: 'Please select a modifier'.tr);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const Divider(thickness: 2),
+            StaggeredGrid.count(
+              crossAxisCount: 3,
+              children: modifiers
+                  .map((e) => CustomButton(
+                        child: Text(
+                          '(${e.id}) - ${e.name} ${e.modifier.isNotEmpty ? '* ${e.modifier}' : ''}',
+                          style: kStyleTextDefault,
+                        ),
+                        backgroundColor: ColorsApp.backgroundDialog,
+                        side: _selectedModifierId == e.id ? const BorderSide(width: 1) : null,
+                        onPressed: () {
+                          _selectedModifierId = e.id;
+                          setState(() {});
+                        },
+                      ))
+                  .toList(),
+            ),
+            Row(
+              children: [
+                Expanded(child: Container()),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Save'.tr),
+                    backgroundColor: ColorsApp.green,
+                    onPressed: () {
+                      Get.back(result: modifiers.where((element) => element.modifier.isNotEmpty).toList());
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Exit'.tr),
+                    backgroundColor: ColorsApp.red,
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                ),
+                Expanded(child: Container()),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return _modifiers ?? [];
+  }
 
+  Future<List<CartItemQuestionModel>> _showForceQuestionDialog({required List<ItemWithQuestionsModel> questionsItem}) async {
+    int _selectedQuestionId = 0;
+    List<CartItemQuestionModel> questions = [];
+    questions.addAll(List<CartItemQuestionModel>.from(questionsItem.map((e) => CartItemQuestionModel(id: e.forceQuestionId, name: e.qtext, modifier: ''))));
+    var _questions = await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Text(
+              'Force Question'.tr,
+              style: kStyleTextTitle,
+            ),
+            const Divider(thickness: 2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Extra'.tr),
+                    onPressed: () {
+                      if (_selectedQuestionId != 0) {
+                        questions.firstWhere((element) => element.id == _selectedQuestionId).modifier = 'Extra'.tr;
+                        setState(() {});
+                      } else {
+                        Fluttertoast.showToast(msg: 'Please select a force question'.tr);
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('No'.tr),
+                    onPressed: () {
+                      if (_selectedQuestionId != 0) {
+                        questions.firstWhere((element) => element.id == _selectedQuestionId).modifier = 'No'.tr;
+                        setState(() {});
+                      } else {
+                        Fluttertoast.showToast(msg: 'Please select a force question'.tr);
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Little'.tr),
+                    onPressed: () {
+                      if (_selectedQuestionId != 0) {
+                        questions.firstWhere((element) => element.id == _selectedQuestionId).modifier = 'Little'.tr;
+                        setState(() {});
+                      } else {
+                        Fluttertoast.showToast(msg: 'Please select a force question'.tr);
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Half'.tr),
+                    onPressed: () {
+                      if (_selectedQuestionId != 0) {
+                        questions.firstWhere((element) => element.id == _selectedQuestionId).modifier = 'Half'.tr;
+                        setState(() {});
+                      } else {
+                        Fluttertoast.showToast(msg: 'Please select a force question'.tr);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const Divider(thickness: 2),
+            StaggeredGrid.count(
+              crossAxisCount: 2,
+              children: questions
+                  .map((e) => CustomButton(
+                        child: Text(
+                          '(${e.id}) - ${e.name}? ${e.modifier.isNotEmpty ? '* ${e.modifier}' : ''}',
+                          style: kStyleTextDefault,
+                        ),
+                        backgroundColor: ColorsApp.backgroundDialog,
+                        side: _selectedQuestionId == e.id ? const BorderSide(width: 1) : null,
+                        onPressed: () {
+                          _selectedQuestionId = e.id;
+                          setState(() {});
+                        },
+                      ))
+                  .toList(),
+            ),
+            Row(
+              children: [
+                Expanded(child: Container()),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Save'.tr),
+                    backgroundColor: ColorsApp.green,
+                    onPressed: () {
+                      Get.back(result: questions.where((element) => element.modifier.isNotEmpty).toList());
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Exit'.tr),
+                    backgroundColor: ColorsApp.red,
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                ),
+                Expanded(child: Container()),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return _questions ?? [];
+  }
 
   _calculateOrder() {
-    if (TaxType.taxable != TaxType.taxable) { // خاضع
+    if (TaxType.taxable != TaxType.taxable) {
+      // خاضع
       _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (item.priceChange * item.qty));
       _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? item.priceChange * (item.lineDiscount / 100) : item.lineDiscount) * item.qty));
-     _cartModel.discount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
+      _cartModel.discount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
       _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.discount;
       _cartModel.service = _cartModel.total * 0.1; // 0.1 10%
       double totalTaxItems = _cartModel.items.fold(0.0, (sum, item) => sum + (_cartModel.total * (item.tax / 100)));
       _cartModel.tax = totalTaxItems + (_cartModel.service * 0.16); // 0.16 16%
       _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
-    } else {  // شامل
+    } else {
+      // شامل
       _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty)));
       _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? (item.priceChange - (item.priceChange * (item.tax / 100))) * (item.lineDiscount / 100) : item.lineDiscount) * item.qty));
       _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.discount;
@@ -440,14 +700,40 @@ class _OrderScreenState extends State<OrderScreen> {
                                       elevation: 0,
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(5.r),
-                                        onTap: () {
+                                        onTap: () async {
                                           var indexItem = _cartModel.items.indexWhere((element) => element.id == e.id);
                                           if (indexItem != -1) {
-                                            _cartModel.items[indexItem].qty += 1;
-                                            _cartModel.items[indexItem].total = _cartModel.items[indexItem].qty * _cartModel.items[indexItem].priceChange;
+                                            var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == _cartModel.items[indexItem].id).toList();
+                                            if (questionsItem.isNotEmpty) {
+                                              var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
+                                              var items = _cartModel.items.where((element) => element.id == e.id).toList();
+                                              var equalItem = items.indexWhere((element) => listsAreEqual(element.questions, questions));
+                                              if (equalItem != -1) {
+                                                items[equalItem].qty += 1;
+                                                items[equalItem].total = items[equalItem].qty * items[equalItem].priceChange;
+                                              } else {
+                                                _cartModel.items.add(CartItemModel(
+                                                  id: e.id,
+                                                  categoryId: e.category.id,
+                                                  name: e.menuName,
+                                                  qty: 1,
+                                                  price: e.price,
+                                                  priceChange: e.price,
+                                                  total: e.price,
+                                                  tax: e.taxPercent.percent,
+                                                  discountAvailable: e.discountAvailable == 1,
+                                                  openPrice: e.openPrice == 1,
+                                                ));
+                                                _cartModel.items.last.questions = questions;
+                                              }
+                                            } else {
+                                              _cartModel.items[indexItem].qty += 1;
+                                              _cartModel.items[indexItem].total = _cartModel.items[indexItem].qty * _cartModel.items[indexItem].priceChange;
+                                            }
                                           } else {
                                             _cartModel.items.add(CartItemModel(
                                               id: e.id,
+                                              categoryId: e.category.id,
                                               name: e.menuName,
                                               qty: 1,
                                               price: e.price,
@@ -457,6 +743,12 @@ class _OrderScreenState extends State<OrderScreen> {
                                               discountAvailable: e.discountAvailable == 1,
                                               openPrice: e.openPrice == 1,
                                             ));
+
+                                            var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == _cartModel.items.last.id).toList();
+                                            if (questionsItem.isNotEmpty) {
+                                              var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
+                                              _cartModel.items.last.questions = questions;
+                                            }
                                           }
                                           _calculateOrder();
                                           setState(() {});
@@ -606,41 +898,82 @@ class _OrderScreenState extends State<OrderScreen> {
                                       },
                                       child: Container(
                                         color: index == _indexItemSelect ? ColorsApp.primaryColor : null,
-                                        child: Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  '${_cartModel.items[index].qty}',
-                                                  style: kStyleDataTable,
-                                                  textAlign: TextAlign.center,
-                                                ),
+                                        child: Column(
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                              child: Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      '${_cartModel.items[index].qty}',
+                                                      style: kStyleDataTable,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    flex: 3,
+                                                    child: Text(
+                                                      _cartModel.items[index].name,
+                                                      style: kStyleDataTable,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      _cartModel.items[index].priceChange.toStringAsFixed(2),
+                                                      style: kStyleDataTable,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      _cartModel.items[index].total.toStringAsFixed(2),
+                                                      style: kStyleDataTable,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                              Expanded(
-                                                flex: 3,
-                                                child: Text(
-                                                  _cartModel.items[index].name,
-                                                  style: kStyleDataTable,
-                                                  textAlign: TextAlign.center,
-                                                ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                              child: Column(
+                                                children: [
+                                                  ListView.builder(
+                                                    itemCount: _cartModel.items[index].questions.length,
+                                                    shrinkWrap: true,
+                                                    physics: const NeverScrollableScrollPhysics(),
+                                                    itemBuilder: (context, indexModifiers) => Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            '• ${_cartModel.items[index].questions[indexModifiers].name.trim()}? * ${_cartModel.items[index].questions[indexModifiers].modifier}',
+                                                            style: kStyleDataTableModifiers,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  ListView.builder(
+                                                    itemCount: _cartModel.items[index].modifiers.length,
+                                                    shrinkWrap: true,
+                                                    physics: const NeverScrollableScrollPhysics(),
+                                                    itemBuilder: (context, indexModifiers) => Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            '• ${_cartModel.items[index].modifiers[indexModifiers].name} * ${_cartModel.items[index].modifiers[indexModifiers].modifier}',
+                                                            style: kStyleDataTableModifiers,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                              Expanded(
-                                                child: Text(
-                                                  _cartModel.items[index].priceChange.toStringAsFixed(2),
-                                                  style: kStyleDataTable,
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Text(
-                                                  _cartModel.items[index].total.toStringAsFixed(2),
-                                                  style: kStyleDataTable,
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                            )
+                                          ],
                                         ),
                                       ),
                                     ),
@@ -826,18 +1159,27 @@ class _OrderScreenState extends State<OrderScreen> {
                   children: [
                     Expanded(
                       child: InkWell(
-                        onTap: () {
-                          // if (_indexItemSelect != -1) {
-                          //   var indexItemModifier = allDataModel.itemWithModifires.indexWhere((element) => element.itemsId == _cartModel.items[_indexItemSelect].id);
-                          //   var indexItemModifier = allDataModel.itemWithModifires.indexWhere((element) => element.itemsId == _cartModel.items[_indexItemSelect].id);
-                          //   if(indexItemModifier != -1){
-                          //
-                          //   } else {
-                          //
-                          //   }
-                          // } else {
-                          //   Fluttertoast.showToast(msg: 'Please select the item you want to modifier'.tr);
-                          // }
+                        onTap: () async {
+                          if (_indexItemSelect != -1) {
+                            var modifiersItem = allDataModel.itemWithModifires.where((element) => element.itemsId == _cartModel.items[_indexItemSelect].id).toList();
+                            var modifiersCategory = allDataModel.categoryWithModifires.where((element) => element.categoryId == _cartModel.items[_indexItemSelect].categoryId).toList();
+                            modifiersCategory.removeWhere((elementCategory) => modifiersItem.any((elementItem) => elementItem.modifiresId == elementCategory.modifireId));
+                            modifiersCategory.removeWhere((elementCategory) => allDataModel.modifires.any((element) => element.id == elementCategory.modifireId && element.active == 0));
+                            modifiersItem.removeWhere((elementItem) => allDataModel.modifires.any((element) => element.id == elementItem.modifiresId && element.active == 0));
+                            if (modifiersItem.isNotEmpty || modifiersCategory.isNotEmpty) {
+                              modifiersCategory.removeWhere((elementCategory) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementCategory.modifireId));
+                              modifiersItem.removeWhere((elementItem) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementItem.modifiresId));
+                              var modifiers = await _showModifierDialog(modifiersItem: modifiersItem, modifiersCategory: modifiersCategory, addedModifiers: _cartModel.items[_indexItemSelect].modifiers);
+                              if (modifiers.isNotEmpty) {
+                                _cartModel.items[_indexItemSelect].modifiers = modifiers;
+                              }
+                              setState(() {});
+                            } else {
+                              Fluttertoast.showToast(msg: 'This item cannot be modified'.tr);
+                            }
+                          } else {
+                            Fluttertoast.showToast(msg: 'Please select the item you want to modifier'.tr);
+                          }
                         },
                         child: SizedBox(
                           width: double.infinity,

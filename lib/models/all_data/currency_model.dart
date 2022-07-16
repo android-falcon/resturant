@@ -19,15 +19,15 @@ class CurrencyModel {
 
   int id;
   String currName;
-  int currVal;
-  int currRate;
+  double currVal;
+  double currRate;
   String currPic;
 
   factory CurrencyModel.fromJson(Map<String, dynamic> json) => CurrencyModel(
         id: json["Id"] ?? 0,
         currName: json["CurrName"] ?? "",
-        currVal: json["CurrVal"] ?? 0,
-        currRate: json["CurrRate"] ?? 0,
+        currVal: json["CurrVal"] == null ? 0 : json["CurrVal"].toDouble(),
+        currRate: json["CurrRate"] == null ? 0 : json["CurrRate"].toDouble(),
         currPic: json["CurrPic"] ?? "",
       );
 

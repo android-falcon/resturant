@@ -9,6 +9,21 @@ bool isNotEmpty(String? s) => s != null && s.isNotEmpty;
 
 bool isEmpty(String? s) => s == null || s.isEmpty;
 
+bool listsAreEqual(List one, List two) {
+  var i = -1;
+  if(one.isEmpty && two.isEmpty) {
+    return true;
+  }
+  if(one.length != two.length) {
+    return false;
+  }
+  return one.every((element) {
+    i++;
+
+    return two[i] == element;
+  });
+}
+
 showLoadingDialog([String? text]) {
   log('showLoadingIndicator Called !!');
   Get.dialog(

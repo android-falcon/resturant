@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:restaurant_system/utils/enum_discount_type.dart';
 
 class CartModel {
@@ -76,6 +77,7 @@ class CartModel {
 class CartItemModel {
   CartItemModel({
     required this.id,
+    required this.categoryId,
     required this.name,
     required this.qty,
     required this.price,
@@ -87,9 +89,12 @@ class CartItemModel {
     this.discount = 0,
     this.discountAvailable = false,
     this.openPrice = false,
+    this.modifiers = const [],
+    this.questions = const [],
   });
 
   int id;
+  int categoryId;
   String name;
   int qty;
   double price;
@@ -101,9 +106,12 @@ class CartItemModel {
   double discount;
   bool discountAvailable;
   bool openPrice;
+  List<CartItemModifierModel> modifiers;
+  List<CartItemQuestionModel> questions;
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
         id: json["Id"] ?? 0,
+        categoryId: json["CategoryId"] ?? 0,
         name: json["Name"] ?? "",
         qty: json["Qty"] ?? 0,
         price: json["Price"] ?? 0,
@@ -119,10 +127,13 @@ class CartItemModel {
         discount: json["discount"] ?? 0,
         discountAvailable: json["discountAvailable"] ?? false,
         openPrice: json["openPrice"] ?? false,
+        modifiers: json["modifiers"] == null ? [] : List<CartItemModifierModel>.from(json["modifiers"].map((x) => CartItemModifierModel.fromJson(x))),
+        questions: json["questions"] == null ? [] : List<CartItemQuestionModel>.from(json["questions"].map((x) => CartItemQuestionModel.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
         "Id": id,
+        "CategoryId": categoryId,
         "Name": name,
         "Qty": qty,
         "Price": price,
@@ -131,5 +142,75 @@ class CartItemModel {
         "Tax": tax,
         "LineDiscount": lineDiscount,
         "Discount": discount,
+        "Modifiers": modifiers,
+        "Questions": questions,
       };
+}
+
+class CartItemModifierModel extends Equatable  {
+  CartItemModifierModel({
+    required this.id,
+    required this.name,
+    required this.modifier,
+  });
+
+  int id;
+  String name;
+  String modifier;
+
+  factory CartItemModifierModel.init() => CartItemModifierModel(
+        id: 0,
+        name: "",
+        modifier: "",
+      );
+
+  factory CartItemModifierModel.fromJson(Map<String, dynamic> json) => CartItemModifierModel(
+        id: json["Id"] ?? 0,
+        name: json["Name"] ?? "",
+        modifier: json["Modifier"] ?? 0,
+      );
+
+  Map<String, dynamic> toJson() => {
+        "Id": id,
+        "Name": name,
+        "Modifier": modifier,
+      };
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id, name, modifier];
+}
+
+class CartItemQuestionModel extends Equatable {
+  CartItemQuestionModel({
+    required this.id,
+    required this.name,
+    required this.modifier,
+  });
+
+  int id;
+  String name;
+  String modifier;
+
+  factory CartItemQuestionModel.init() => CartItemQuestionModel(
+        id: 0,
+        name: "",
+        modifier: "",
+      );
+
+  factory CartItemQuestionModel.fromJson(Map<String, dynamic> json) => CartItemQuestionModel(
+        id: json["Id"] ?? 0,
+        name: json["Name"] ?? "",
+        modifier: json["Modifier"] ?? 0,
+      );
+
+  Map<String, dynamic> toJson() => {
+        "Id": id,
+        "Name": name,
+        "Modifier": modifier,
+      };
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id, name, modifier];
 }

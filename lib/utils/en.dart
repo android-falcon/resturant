@@ -76,4 +76,12 @@ const Map<String, String> en = {
   'Discount cannot be more than %100': 'Discount cannot be more than %100',
   'The discount cannot be greater than the price of an item': 'The discount cannot be greater than the price of an item',
   'The item price cannot be less than zero': 'The item price cannot be less than zero',
+  'This item cannot be modified': 'This item cannot be modified',
+  'Extra': 'Extra',
+  'No': 'No',
+  'Little': 'Little',
+  'Half': 'Half',
+  'Please select a modifier': 'Please select a modifier',
+  'Force Question': 'Force Question',
+  'Please select a force question': 'Please select a force question',
 };
