@@ -56,7 +56,7 @@ class RestApi {
         '╟ Body: ${response.requestOptions.data}\n'
         '╟ Header: ${response.requestOptions.headers}\n'
         '╟ statusCode: ${response.statusCode}\n'
-        '╟ RESPONSE: ${response.data} \n'
+        '╟ RESPONSE: ${jsonEncode(response.data)} \n'
         '╚ [END] ════════════════════════════════════════╝';
     developer.log(trace);
   }
@@ -67,15 +67,20 @@ class RestApi {
       final response = await _dio.get(ApiUrl.GET_DATA);
       _networkLog(response);
       if(response.statusCode == 200){
+        mySharedPreferences.allData = jsonEncode(response.data);
         allDataModel = AllDataModel.fromJson(response.data);
+      } else {
+        allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       }
       hideLoadingDialog();
     } on dio.DioError catch (e) {
       _traceError(e);
+      allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
+      allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }

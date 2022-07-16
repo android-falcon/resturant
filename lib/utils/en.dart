@@ -73,4 +73,7 @@ const Map<String, String> en = {
   'Price change is not available for this item': 'Price change is not available for this item',
   'No items accept discount in order': 'No items accept discount in order',
   'Percentage': 'Percentage',
+  'Discount cannot be more than %100': 'Discount cannot be more than %100',
+  'The discount cannot be greater than the price of an item': 'The discount cannot be greater than the price of an item',
+  'The item price cannot be less than zero': 'The item price cannot be less than zero',
 };

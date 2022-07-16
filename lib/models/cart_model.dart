@@ -7,6 +7,7 @@ class CartModel {
     required this.deliveryCharge,
     required this.lineDiscount,
     required this.discount,
+    this.discountType = DiscountType.percentage,
     required this.subTotal,
     required this.service,
     required this.tax,
@@ -19,6 +20,7 @@ class CartModel {
   double deliveryCharge;
   double lineDiscount;
   double discount;
+  DiscountType discountType;
   double subTotal;
   double service;
   double tax;
@@ -31,6 +33,7 @@ class CartModel {
         deliveryCharge: 0,
         lineDiscount: 0,
         discount: 0,
+        discountType: DiscountType.percentage,
         subTotal: 0,
         service: 0,
         tax: 0,
@@ -44,6 +47,11 @@ class CartModel {
         deliveryCharge: json["deliveryCharge"] == null ? 0.0 : json["deliveryCharge"].toDouble(),
         lineDiscount: json["lineDiscount"] == null ? 0.0 : json["lineDiscount"].toDouble(),
         discount: json["discount"] == null ? 0.0 : json["discount"].toDouble(),
+        discountType: json["discountType"] == null
+            ? DiscountType.percentage
+            : json["discountType"] == 1
+                ? DiscountType.percentage
+                : DiscountType.value,
         subTotal: json["subTotal"] == null ? 0.0 : json["subTotal"].toDouble(),
         service: json["service"] == null ? 0.0 : json["service"].toDouble(),
         tax: json["tax"] == null ? 0.0 : json["tax"].toDouble(),
@@ -71,10 +79,11 @@ class CartItemModel {
     required this.name,
     required this.qty,
     required this.price,
+    required this.priceChange,
     required this.total,
+    required this.tax,
     this.lineDiscountType = DiscountType.percentage,
     this.lineDiscount = 0,
-    this.discountType = DiscountType.percentage,
     this.discount = 0,
     this.discountAvailable = false,
     this.openPrice = false,
@@ -84,10 +93,11 @@ class CartItemModel {
   String name;
   int qty;
   double price;
+  double priceChange;
   double total;
+  double tax;
   DiscountType lineDiscountType;
   double lineDiscount;
-  DiscountType discountType;
   double discount;
   bool discountAvailable;
   bool openPrice;
@@ -97,18 +107,15 @@ class CartItemModel {
         name: json["Name"] ?? "",
         qty: json["Qty"] ?? 0,
         price: json["Price"] ?? 0,
+        priceChange: json["PriceChange"] ?? 0,
         total: json["Total"] ?? 0,
+        tax: json["Tax"] ?? 0,
         lineDiscountType: json["lineDiscountType"] == null
             ? DiscountType.percentage
             : json["lineDiscountType"] == 1
                 ? DiscountType.percentage
                 : DiscountType.value,
         lineDiscount: json["lineDiscount"] ?? 0,
-        discountType: json["discountType"] == null
-            ? DiscountType.percentage
-            : json["discountType"] == 1
-                ? DiscountType.percentage
-                : DiscountType.value,
         discount: json["discount"] ?? 0,
         discountAvailable: json["discountAvailable"] ?? false,
         openPrice: json["openPrice"] ?? false,
@@ -119,7 +126,9 @@ class CartItemModel {
         "Name": name,
         "Qty": qty,
         "Price": price,
+        "PriceChange": priceChange,
         "Total": total,
+        "Tax": tax,
         "LineDiscount": lineDiscount,
         "Discount": discount,
       };

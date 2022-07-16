@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -16,9 +15,11 @@ import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enum_discount_type.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
+import 'package:restaurant_system/utils/enum_tax_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
+import 'package:restaurant_system/utils/validation.dart';
 
 class OrderScreen extends StatefulWidget {
   final OrderType type;
@@ -96,7 +97,7 @@ class _OrderScreenState extends State<OrderScreen> {
     return _delivery == null ? _delivery : double.parse(_delivery);
   }
 
-  Future<Map<String, dynamic>> _showDiscountDialog({TextEditingController? controller, required double discount, required DiscountType type}) async {
+  Future<Map<String, dynamic>> _showDiscountDialog({TextEditingController? controller, required double discount, required double price, required DiscountType type}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     controller ??= TextEditingController(text: '$discount');
     if (controller.text.endsWith('.0')) {
@@ -117,7 +118,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       children: [
                         CustomTextField(
                           controller: controller,
-                          label: Text('Delivery'.tr),
+                          label: Text('${'Discount'.tr} ${DiscountType.value == type ? '($price)' : '(%)'}'),
                           fillColor: Colors.white,
                           maxLines: 1,
                           inputFormatters: [
@@ -127,6 +128,9 @@ class _OrderScreenState extends State<OrderScreen> {
                           keyboardType: const TextInputType.numberWithOptions(),
                           onTap: () {
                             FocusScope.of(context).requestFocus(FocusNode());
+                          },
+                          validator: (value) {
+                            return Validation.discount(type, controller!.text, price);
                           },
                         ),
                         CheckboxListTile(
@@ -168,9 +172,92 @@ class _OrderScreenState extends State<OrderScreen> {
     };
   }
 
+  Future<double> _showPriceChangeDialog({TextEditingController? controller, required double itemPrice, required double priceChange}) async {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    controller ??= TextEditingController(text: '$priceChange');
+    if (controller.text.endsWith('.0')) {
+      controller.text = controller.text.replaceFirst('.0', '');
+    }
+    var _priceChange = await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Form(
+              key: _keyForm,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        CustomTextField(
+                          controller: controller,
+                          label: Text('${'Price Change'.tr} ($itemPrice)'),
+                          fillColor: Colors.white,
+                          maxLines: 1,
+                          inputFormatters: [
+                            EnglishDigitsTextInputFormatter(decimal: true),
+                          ],
+                          enableInteractiveSelection: false,
+                          keyboardType: const TextInputType.numberWithOptions(),
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                          },
+                          validator: (value){
+                            return Validation.priceChange(value);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: numPadWidget(
+                        controller,
+                        setState,
+                        onSubmit: () {
+                          if (_keyForm.currentState!.validate()) {
+                            Get.back(result: controller!.text);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return _priceChange == null ? _priceChange : double.parse(_priceChange);
+  }
+
+
+
   _calculateOrder() {
-    _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (item.price * item.qty));
-    _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? item.price * item.lineDiscount / 100 : item.lineDiscount) * item.qty));
+    if (TaxType.taxable != TaxType.taxable) { // خاضع
+      _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (item.priceChange * item.qty));
+      _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? item.priceChange * (item.lineDiscount / 100) : item.lineDiscount) * item.qty));
+     _cartModel.discount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
+      _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.discount;
+      _cartModel.service = _cartModel.total * 0.1; // 0.1 10%
+      double totalTaxItems = _cartModel.items.fold(0.0, (sum, item) => sum + (_cartModel.total * (item.tax / 100)));
+      _cartModel.tax = totalTaxItems + (_cartModel.service * 0.16); // 0.16 16%
+      _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
+    } else {  // شامل
+      _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty)));
+      _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? (item.priceChange - (item.priceChange * (item.tax / 100))) * (item.lineDiscount / 100) : item.lineDiscount) * item.qty));
+      _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.discount;
+      _cartModel.service = _cartModel.total * 0.1; // 0.1 10%
+      double totalTaxItems = _cartModel.items.fold(0.0, (sum, item) => sum + (_cartModel.total * (item.tax / 100)));
+      _cartModel.tax = totalTaxItems + (_cartModel.service * 0.16); // 0.16 16%
+      _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
+    }
+
     setState(() {});
   }
 
@@ -344,7 +431,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           crossAxisCount: _isShowItem ? 2 : 3,
                           children: _isShowItem
                               ? allDataModel.items
-                                  .where((element) => element.categoryId == _selectedCategoryId)
+                                  .where((element) => element.category.id == _selectedCategoryId)
                                   .map(
                                     (e) => Card(
                                       shape: RoundedRectangleBorder(
@@ -357,14 +444,16 @@ class _OrderScreenState extends State<OrderScreen> {
                                           var indexItem = _cartModel.items.indexWhere((element) => element.id == e.id);
                                           if (indexItem != -1) {
                                             _cartModel.items[indexItem].qty += 1;
-                                            _cartModel.items[indexItem].total = _cartModel.items[indexItem].qty * _cartModel.items[indexItem].price;
+                                            _cartModel.items[indexItem].total = _cartModel.items[indexItem].qty * _cartModel.items[indexItem].priceChange;
                                           } else {
                                             _cartModel.items.add(CartItemModel(
                                               id: e.id,
                                               name: e.menuName,
                                               qty: 1,
                                               price: e.price,
+                                              priceChange: e.price,
                                               total: e.price,
+                                              tax: e.taxPercent.percent,
                                               discountAvailable: e.discountAvailable == 1,
                                               openPrice: e.openPrice == 1,
                                             ));
@@ -538,7 +627,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                               ),
                                               Expanded(
                                                 child: Text(
-                                                  _cartModel.items[index].price.toStringAsFixed(2),
+                                                  _cartModel.items[index].priceChange.toStringAsFixed(2),
                                                   style: kStyleDataTable,
                                                   textAlign: TextAlign.center,
                                                 ),
@@ -588,7 +677,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        _cartModel.total.toStringAsFixed(2),
+                                        _cartModel.total.toStringAsFixed(3),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -602,7 +691,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        _cartModel.deliveryCharge.toStringAsFixed(2),
+                                        _cartModel.deliveryCharge.toStringAsFixed(3),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -616,7 +705,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        _cartModel.lineDiscount.toStringAsFixed(2),
+                                        _cartModel.lineDiscount.toStringAsFixed(3),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -630,7 +719,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        _cartModel.discount.toStringAsFixed(2),
+                                        _cartModel.discount.toStringAsFixed(3),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -645,7 +734,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        _cartModel.subTotal.toStringAsFixed(2),
+                                        _cartModel.subTotal.toStringAsFixed(3),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -659,7 +748,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        _cartModel.service.toStringAsFixed(2),
+                                        _cartModel.service.toStringAsFixed(3),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -673,7 +762,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        _cartModel.tax.toStringAsFixed(2),
+                                        _cartModel.tax.toStringAsFixed(3),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -687,7 +776,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       Text(
-                                        _cartModel.amountDue.toStringAsFixed(2),
+                                        _cartModel.amountDue.toStringAsFixed(3),
                                         style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -738,10 +827,17 @@ class _OrderScreenState extends State<OrderScreen> {
                     Expanded(
                       child: InkWell(
                         onTap: () {
-                          if (_indexItemSelect != -1) {
-                          } else {
-                            Fluttertoast.showToast(msg: 'Please select the item you want to modifier'.tr);
-                          }
+                          // if (_indexItemSelect != -1) {
+                          //   var indexItemModifier = allDataModel.itemWithModifires.indexWhere((element) => element.itemsId == _cartModel.items[_indexItemSelect].id);
+                          //   var indexItemModifier = allDataModel.itemWithModifires.indexWhere((element) => element.itemsId == _cartModel.items[_indexItemSelect].id);
+                          //   if(indexItemModifier != -1){
+                          //
+                          //   } else {
+                          //
+                          //   }
+                          // } else {
+                          //   Fluttertoast.showToast(msg: 'Please select the item you want to modifier'.tr);
+                          // }
                         },
                         child: SizedBox(
                           width: double.infinity,
@@ -808,7 +904,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: InkWell(
                         onTap: () async {
                           _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
-                          setState(() {});
+                          _calculateOrder();
                         },
                         child: SizedBox(
                           width: double.infinity,
@@ -836,6 +932,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             if (_cartModel.items[_indexItemSelect].discountAvailable) {
                               var result = await _showDiscountDialog(
                                 discount: _cartModel.items[_indexItemSelect].lineDiscount,
+                                price: _cartModel.items[_indexItemSelect].priceChange,
                                 type: _cartModel.items[_indexItemSelect].lineDiscountType,
                               );
                               _cartModel.items[_indexItemSelect].lineDiscount = result['discount'];
@@ -872,11 +969,12 @@ class _OrderScreenState extends State<OrderScreen> {
                         onTap: () async {
                           if (_cartModel.items.any((element) => element.discountAvailable)) {
                             var result = await _showDiscountDialog(
-                              discount: _cartModel.items[_indexItemSelect].discount,
-                              type: _cartModel.items[_indexItemSelect].discountType,
+                              discount: _cartModel.discount,
+                              price: _cartModel.total,
+                              type: _cartModel.discountType,
                             );
-                            _cartModel.items[_indexItemSelect].discount = result['discount'];
-                            _cartModel.items[_indexItemSelect].discountType = result['type'];
+                            _cartModel.discount = result['discount'];
+                            _cartModel.discountType = result['type'];
                             _calculateOrder();
                           } else {
                             Fluttertoast.showToast(msg: 'No items accept discount in order'.tr);
@@ -926,9 +1024,10 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     Expanded(
                       child: InkWell(
-                        onTap: () {
+                        onTap: () async {
                           if (_indexItemSelect != -1) {
                             if (_cartModel.items[_indexItemSelect].openPrice) {
+                              _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
                               _calculateOrder();
                             } else {
                               Fluttertoast.showToast(msg: 'Price change is not available for this item'.tr);

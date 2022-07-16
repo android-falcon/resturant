@@ -17,18 +17,18 @@ class ForceQuestionModel {
 
   int id;
   String qText;
-  String isMultible;
+  int isMultible;
 
   factory ForceQuestionModel.init() => ForceQuestionModel(
         id: 0,
         qText: "",
-        isMultible: "",
+        isMultible: 0,
       );
 
   factory ForceQuestionModel.fromJson(Map<String, dynamic> json) => ForceQuestionModel(
         id: json["Id"] ?? 0,
         qText: json["QText"] ?? "",
-        isMultible: json["isMultible"] ?? "",
+        isMultible: json["isMultible"] ?? 0,
       );
 
   Map<String, dynamic> toJson() => {

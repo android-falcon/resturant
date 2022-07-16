@@ -10,11 +10,10 @@ class MySharedPreferences {
   clearData(){
     isLogin = false;
     userId = 0;
-    accessToken = '';
     username = '';
     fullName = '';
     phoneNumber = '';
-    profileImage = '';
+    allData = '';
   }
 
   String get language => _sharedPreferences.getString(keyLanguage) ?? "";
@@ -72,10 +71,10 @@ class MySharedPreferences {
     _sharedPreferences.setString(keyPhoneNumber, value);
   }
 
-  String get profileImage => _sharedPreferences.getString(keyProfileImage) ?? "";
+  String get allData => _sharedPreferences.getString(keyAllData) ?? "";
 
-  set profileImage(String value) {
-    _sharedPreferences.setString(keyProfileImage, value);
+  set allData(String value) {
+    _sharedPreferences.setString(keyAllData, value);
   }
 }
 
@@ -90,4 +89,4 @@ const String keyUserId = "key_user_id";
 const String keyUsername = "key_username";
 const String keyFullName = "key_full_name";
 const String keyPhoneNumber = "key_phone_number";
-const String keyProfileImage = "key_profile_image";
+const String keyAllData = "key_all_data";

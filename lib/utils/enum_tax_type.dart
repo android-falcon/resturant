@@ -1,0 +1,4 @@
+enum TaxType{
+  taxable,
+  nonTaxable
+}
