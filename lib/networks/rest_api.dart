@@ -11,8 +11,8 @@ import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/utils.dart';
 
 class RestApi {
-  static final dio.Dio _dio = dio.Dio(dio.BaseOptions(
-    baseUrl: baseURL,
+  static final dio.Dio restDio = dio.Dio(dio.BaseOptions(
+    baseUrl: mySharedPreferences.baseUrl,
     connectTimeout: 30000,
     receiveTimeout: 30000,
     headers: {
@@ -64,7 +64,7 @@ class RestApi {
   static Future<void> getData() async {
     try {
       showLoadingDialog();
-      final response = await _dio.get(ApiUrl.GET_DATA);
+      final response = await restDio.get(ApiUrl.GET_DATA);
       _networkLog(response);
       if(response.statusCode == 200){
         mySharedPreferences.allData = jsonEncode(response.data);

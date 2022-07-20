@@ -26,7 +26,6 @@ const Map<String, String> en = {
   'Cash': 'Cash',
   'Save': 'Save',
   'Voucher Number': 'Voucher Number',
-  'POS No': 'POS No',
   'Original Data': 'Original Data',
   'Original Time': 'Original Time',
   'Table No': 'Table No',
@@ -84,4 +83,11 @@ const Map<String, String> en = {
   'Please select a modifier': 'Please select a modifier',
   'Force Question': 'Force Question',
   'Please select a force question': 'Please select a force question',
+  'Base URL': 'Base URL',
+  'POS No': 'POS No',
+  'Cash No': 'Cash No',
+  'Store No': 'Store No',
+  'In Voc No': 'Store No',
+  'Out Voc No': 'Store No',
+
 };

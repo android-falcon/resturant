@@ -11,6 +11,4 @@ final kStyleTextButton = TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp,
 
 
 const placeholderImage = 'assets/images/logo.png';
-const baseURL = 'http://173.249.1.117:8081';
-
 

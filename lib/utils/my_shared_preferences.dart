@@ -7,13 +7,19 @@ class MySharedPreferences {
     _sharedPreferences = await SharedPreferences.getInstance();
   }
 
-  clearData(){
+  clearData() {
     isLogin = false;
     userId = 0;
     username = '';
     fullName = '';
     phoneNumber = '';
     allData = '';
+    baseUrl = '';
+    inVocNo = 1;
+    outVocNo = 1;
+    posNo = 0;
+    cashNo = 0;
+    storeNo = 0;
   }
 
   String get language => _sharedPreferences.getString(keyLanguage) ?? "";
@@ -76,6 +82,42 @@ class MySharedPreferences {
   set allData(String value) {
     _sharedPreferences.setString(keyAllData, value);
   }
+
+  String get baseUrl => _sharedPreferences.getString(keyBaseUrl) ?? "";
+
+  set baseUrl(String value) {
+    _sharedPreferences.setString(keyBaseUrl, value);
+  }
+
+  int get inVocNo => _sharedPreferences.getInt(keyInVocNo) ?? 1;
+
+  set inVocNo(int value) {
+    _sharedPreferences.setInt(keyInVocNo, value);
+  }
+
+  int get outVocNo => _sharedPreferences.getInt(keyOutVocNo) ?? 1;
+
+  set outVocNo(int value) {
+    _sharedPreferences.setInt(keyOutVocNo, value);
+  }
+
+  int get posNo => _sharedPreferences.getInt(keyPosNo) ?? 0;
+
+  set posNo(int value) {
+    _sharedPreferences.setInt(keyPosNo, value);
+  }
+
+  int get cashNo => _sharedPreferences.getInt(keyCashNo) ?? 0;
+
+  set cashNo(int value) {
+    _sharedPreferences.setInt(keyCashNo, value);
+  }
+  int get storeNo => _sharedPreferences.getInt(keyStoreNo) ?? 0;
+
+  set storeNo(int value) {
+    _sharedPreferences.setInt(keyStoreNo, value);
+  }
+
 }
 
 final mySharedPreferences = MySharedPreferences();
@@ -90,3 +132,9 @@ const String keyUsername = "key_username";
 const String keyFullName = "key_full_name";
 const String keyPhoneNumber = "key_phone_number";
 const String keyAllData = "key_all_data";
+const String keyBaseUrl = "key_base_url";
+const String keyInVocNo = "key_in_voc_no";
+const String keyOutVocNo = "key_out_voc_no";
+const String keyPosNo = "key_pos_no";
+const String keyCashNo = "key_cash_no";
+const String keyStoreNo = "key_store_no";

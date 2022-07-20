@@ -12,10 +12,10 @@ class CustomSingleChildScrollView extends StatelessWidget {
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
       },
-      child: SingleChildScrollView(
-        child: SizedBox(
-          width: 1.sw,
-          height: 1.sh,
+      child: SizedBox(
+        width: 1.sw,
+        height: 1.sh,
+        child: SingleChildScrollView(
           child: SafeArea(
             child: child,
           ),
