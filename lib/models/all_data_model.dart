@@ -11,9 +11,11 @@ import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/all_data/families_model.dart';
 import 'package:restaurant_system/models/all_data/force_question_model.dart';
 import 'package:restaurant_system/models/all_data/item_model.dart';
+import 'package:restaurant_system/models/all_data/item_sub_items_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
 import 'package:restaurant_system/models/all_data/modifier_model.dart';
+import 'package:restaurant_system/models/all_data/modifire_force_questions_model.dart';
 import 'package:restaurant_system/models/all_data/tables_model.dart';
 import 'package:restaurant_system/models/all_data/void_reason_model.dart';
 
@@ -30,6 +32,7 @@ class AllDataModel {
     required this.families,
     required this.modifires,
     required this.forceQuestions,
+    required this.modifireForceQuestions,
     required this.employees,
     required this.itemWithQuestions,
     required this.itemWithModifires,
@@ -37,6 +40,7 @@ class AllDataModel {
     required this.currencies,
     required this.voidReason,
     required this.tables,
+    required this.itemSubItems,
   });
 
   DateTime serverTime;
@@ -46,6 +50,7 @@ class AllDataModel {
   List<FamiliesModel> families;
   List<ModifierModel> modifires;
   List<ForceQuestionModel> forceQuestions;
+  List<ModifireForceQuestionsModel> modifireForceQuestions;
   List<EmployeeModel> employees;
   List<ItemWithQuestionsModel> itemWithQuestions;
   List<ItemWithModifireModel> itemWithModifires;
@@ -53,6 +58,7 @@ class AllDataModel {
   List<CurrencyModel> currencies;
   List<VoidReasonModel> voidReason;
   List<TablesModel> tables;
+  List<ItemSubItemsModel> itemSubItems;
 
   factory AllDataModel.init() => AllDataModel(
         serverTime: DateTime.now(),
@@ -62,6 +68,7 @@ class AllDataModel {
         families: [],
         modifires: [],
         forceQuestions: [],
+        modifireForceQuestions: [],
         employees: [],
         itemWithQuestions: [],
         itemWithModifires: [],
@@ -69,6 +76,7 @@ class AllDataModel {
         currencies: [],
         voidReason: [],
         tables: [],
+        itemSubItems: [],
       );
 
   factory AllDataModel.fromJson(Map<String, dynamic> json) => AllDataModel(
@@ -79,6 +87,7 @@ class AllDataModel {
         families: json["Families"] == null ? [] : List<FamiliesModel>.from(json["Families"].map((x) => FamiliesModel.fromJson(x))),
         modifires: json["Modifires"] == null ? [] : List<ModifierModel>.from(json["Modifires"].map((x) => ModifierModel.fromJson(x))),
         forceQuestions: json["ForceQuestions"] == null ? [] : List<ForceQuestionModel>.from(json["ForceQuestions"].map((x) => ForceQuestionModel.fromJson(x))),
+        modifireForceQuestions: json["ModifireForceQuestions"] == null ? [] : List<ModifireForceQuestionsModel>.from(json["ModifireForceQuestions"].map((x) => ModifireForceQuestionsModel.fromJson(x))),
         employees: json["Employees"] == null ? [] : List<EmployeeModel>.from(json["Employees"].map((x) => EmployeeModel.fromJson(x))),
         itemWithQuestions: json["ItemWithQuestions"] == null ? [] : List<ItemWithQuestionsModel>.from(json["ItemWithQuestions"].map((x) => ItemWithQuestionsModel.fromJson(x))),
         itemWithModifires: json["ItemWithModifires"] == null ? [] : List<ItemWithModifireModel>.from(json["ItemWithModifires"].map((x) => ItemWithModifireModel.fromJson(x))),
@@ -86,6 +95,7 @@ class AllDataModel {
         currencies: json["Currencies"] == null ? [] : List<CurrencyModel>.from(json["Currencies"].map((x) => CurrencyModel.fromJson(x))),
         voidReason: json["VoidReason"] == null ? [] : List<VoidReasonModel>.from(json["VoidReason"].map((x) => VoidReasonModel.fromJson(x))),
         tables: json["Tables"] == null ? [] : List<TablesModel>.from(json["Tables"].map((x) => TablesModel.fromJson(x))),
+        itemSubItems: json["ItemSubItems"] == null ? [] : List<ItemSubItemsModel>.from(json["ItemSubItems"].map((x) => ItemSubItemsModel.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -96,6 +106,7 @@ class AllDataModel {
         "Families": List<dynamic>.from(families.map((x) => x.toJson())),
         "Modifires": List<dynamic>.from(modifires.map((x) => x.toJson())),
         "ForceQuestions": List<dynamic>.from(forceQuestions.map((x) => x)),
+        "ModifireForceQuestions": List<dynamic>.from(modifireForceQuestions.map((x) => x)),
         "Employees": List<dynamic>.from(employees.map((x) => x.toJson())),
         "ItemWithQuestions": List<dynamic>.from(itemWithQuestions.map((x) => x)),
         "ItemWithModifires": List<dynamic>.from(itemWithModifires.map((x) => x.toJson())),
@@ -103,5 +114,6 @@ class AllDataModel {
         "Currencies": List<dynamic>.from(currencies.map((x) => x.toJson())),
         "VoidReason": List<dynamic>.from(voidReason.map((x) => x.toJson())),
         "Tables": List<dynamic>.from(tables.map((x) => x.toJson())),
+        "ItemSubItems": List<dynamic>.from(itemSubItems.map((x) => x.toJson())),
       };
 }

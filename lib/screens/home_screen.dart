@@ -19,6 +19,7 @@ import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/enum_in_out_type.dart';
+import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
@@ -801,7 +802,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const VerticalDivider(),
                               Expanded(
                                 child: Text(
-                                  mySharedPreferences.username,
+                                  allDataModel.companyConfig.first.companyName,
                                   textAlign: TextAlign.center,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,

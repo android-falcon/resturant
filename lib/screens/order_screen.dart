@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
@@ -11,6 +12,7 @@ import 'package:restaurant_system/models/all_data/category_with_modifire_model.d
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
+import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
@@ -37,8 +39,14 @@ class OrderScreen extends StatefulWidget {
 class _OrderScreenState extends State<OrderScreen> {
   bool _isShowItem = false;
   int _selectedCategoryId = 0;
-  CartModel _cartModel = CartModel.init();
+  late CartModel _cartModel;
   int _indexItemSelect = -1;
+
+  @override
+  initState() {
+    super.initState();
+    _cartModel = CartModel.init(orderType: widget.type);
+  }
 
   Future<double> _showDeliveryDialog({TextEditingController? controller, required double delivery}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
@@ -370,143 +378,97 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Future<List<CartItemQuestionModel>> _showForceQuestionDialog({required List<ItemWithQuestionsModel> questionsItem}) async {
-    int _selectedQuestionId = 0;
+    int _questionNumber = 0;
     List<CartItemQuestionModel> questions = [];
     questions.addAll(List<CartItemQuestionModel>.from(questionsItem.map((e) => CartItemQuestionModel(id: e.forceQuestionId, name: e.qtext, modifier: ''))));
-    var _questions = await Get.dialog(
-      CustomDialog(
-        builder: (context, setState, constraints) => Column(
-          children: [
-            Text(
-              'Force Question'.tr,
-              style: kStyleTextTitle,
-            ),
-            const Divider(thickness: 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: CustomButton(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('Extra'.tr),
-                    onPressed: () {
-                      if (_selectedQuestionId != 0) {
-                        questions.firstWhere((element) => element.id == _selectedQuestionId).modifier = 'Extra'.tr;
-                        setState(() {});
-                      } else {
-                        Fluttertoast.showToast(msg: 'Please select a force question'.tr);
-                      }
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: CustomButton(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('No'.tr),
-                    onPressed: () {
-                      if (_selectedQuestionId != 0) {
-                        questions.firstWhere((element) => element.id == _selectedQuestionId).modifier = 'No'.tr;
-                        setState(() {});
-                      } else {
-                        Fluttertoast.showToast(msg: 'Please select a force question'.tr);
-                      }
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: CustomButton(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('Little'.tr),
-                    onPressed: () {
-                      if (_selectedQuestionId != 0) {
-                        questions.firstWhere((element) => element.id == _selectedQuestionId).modifier = 'Little'.tr;
-                        setState(() {});
-                      } else {
-                        Fluttertoast.showToast(msg: 'Please select a force question'.tr);
-                      }
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: CustomButton(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('Half'.tr),
-                    onPressed: () {
-                      if (_selectedQuestionId != 0) {
-                        questions.firstWhere((element) => element.id == _selectedQuestionId).modifier = 'Half'.tr;
-                        setState(() {});
-                      } else {
-                        Fluttertoast.showToast(msg: 'Please select a force question'.tr);
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const Divider(thickness: 2),
-            StaggeredGrid.count(
-              crossAxisCount: 2,
-              children: questions
-                  .map((e) => CustomButton(
-                        child: Text(
-                          '(${e.id}) - ${e.name}? ${e.modifier.isNotEmpty ? '* ${e.modifier}' : ''}',
-                          style: kStyleTextDefault,
-                        ),
-                        backgroundColor: ColorsApp.backgroundDialog,
-                        side: _selectedQuestionId == e.id ? const BorderSide(width: 1) : null,
-                        onPressed: () {
-                          _selectedQuestionId = e.id;
-                          setState(() {});
-                        },
-                      ))
-                  .toList(),
-            ),
-            Row(
-              children: [
-                Expanded(child: Container()),
-                Expanded(
-                  child: CustomButton(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('Save'.tr),
-                    backgroundColor: ColorsApp.green,
-                    onPressed: () {
-                      Get.back(result: questions.where((element) => element.modifier.isNotEmpty).toList());
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: CustomButton(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('Exit'.tr),
-                    backgroundColor: ColorsApp.red,
-                    onPressed: () {
-                      Get.back();
-                    },
-                  ),
-                ),
-                Expanded(child: Container()),
-              ],
-            ),
-          ],
-        ),
-      ),
-      barrierDismissible: false,
-    );
-    return _questions ?? [];
+
+    // var _questions = await Get.dialog(
+    //   CustomDialog(
+    //     builder: (context, setState, constraints) => Column(
+    //       children: [
+    //         Text(
+    //           'Force Question'.tr,
+    //           style: kStyleTextTitle,
+    //         ),
+    //         const Divider(thickness: 2),
+    //         // questions.firstWhere((element) => element.id == _selectedQuestionId).modifier = 'Extra'.tr;
+    //
+    //         StaggeredGrid.count(
+    //           crossAxisCount: 2,
+    //           children: questions
+    //               .map((e) => CustomButton(
+    //                     child: Text(
+    //                       '(${e.id}) - ${e.name}? ${e.modifier.isNotEmpty ? '* ${e.modifier}' : ''}',
+    //                       style: kStyleTextDefault,
+    //                     ),
+    //                     backgroundColor: ColorsApp.backgroundDialog,
+    //                     side: _selectedQuestionId == e.id ? const BorderSide(width: 1) : null,
+    //                     onPressed: () {
+    //                       _selectedQuestionId = e.id;
+    //                       setState(() {});
+    //                     },
+    //                   ))
+    //               .toList(),
+    //         ),
+    //         Row(
+    //           children: [
+    //             Expanded(child: Container()),
+    //             Expanded(
+    //               child: CustomButton(
+    //                 margin: const EdgeInsets.symmetric(horizontal: 16),
+    //                 child: Text('Save'.tr),
+    //                 backgroundColor: ColorsApp.green,
+    //                 onPressed: () {
+    //                   Get.back(result: questions.where((element) => element.modifier.isNotEmpty).toList());
+    //                 },
+    //               ),
+    //             ),
+    //             Expanded(
+    //               child: CustomButton(
+    //                 margin: const EdgeInsets.symmetric(horizontal: 16),
+    //                 child: Text('Exit'.tr),
+    //                 backgroundColor: ColorsApp.red,
+    //                 onPressed: () {
+    //                   Get.back();
+    //                 },
+    //               ),
+    //             ),
+    //             Expanded(child: Container()),
+    //           ],
+    //         ),
+    //       ],
+    //     ),
+    //   ),
+    //   barrierDismissible: false,
+    // );
+    // return _questions ?? [];
+    return [];
   }
 
   _calculateOrder() {
-    if (TaxType.taxable != TaxType.taxable) {
+    if (allDataModel.companyConfig.first.taxCalcMethod == 0) {
       // خاضع
       _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (item.priceChange * item.qty));
       _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? item.priceChange * (item.lineDiscount / 100) : item.lineDiscount) * item.qty));
       _cartModel.discount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
       _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.discount;
-      _cartModel.service = _cartModel.total * 0.1; // 0.1 10%
-      double totalTaxItems = _cartModel.items.fold(0.0, (sum, item) => sum + (_cartModel.total * (item.tax / 100)));
-      _cartModel.tax = totalTaxItems + (_cartModel.service * 0.16); // 0.16 16%
+      _cartModel.service = _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
+      _cartModel.serviceTax = _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+      _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + (item.taxType == 2 ? 0 : (item.priceChange * item.qty) * (item.tax / 100)));
+      _cartModel.tax = _cartModel.itemsTax + _cartModel.serviceTax;
       _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
+      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? (item.priceChange * item.qty) : 0));
+      for (var element in _cartModel.items) {
+        element.total = element.priceChange * element.qty;
+        element.tax = element.taxType == 2 ? 0 : (element.priceChange * element.qty) * (element.tax / 100);
+        if (element.discountAvailable) {
+          element.discount = _cartModel.discount * (element.total / totalDiscountAvailableItem);
+        } else {
+          element.discount = 0;
+        }
+        element.service = _cartModel.service * (element.total / _cartModel.total);
+        element.serviceTax = element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+      }
     } else {
       // شامل
       _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty)));
@@ -713,8 +675,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                                 items[equalItem].total = items[equalItem].qty * items[equalItem].priceChange;
                                               } else {
                                                 _cartModel.items.add(CartItemModel(
+                                                  orderType: widget.type,
                                                   id: e.id,
                                                   categoryId: e.category.id,
+                                                  taxType: e.taxType.id,
+                                                  taxPercent: e.taxPercent.percent,
                                                   name: e.menuName,
                                                   qty: 1,
                                                   price: e.price,
@@ -723,6 +688,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                   tax: e.taxPercent.percent,
                                                   discountAvailable: e.discountAvailable == 1,
                                                   openPrice: e.openPrice == 1,
+                                                  rowSerial: _cartModel.items.length + 1,
                                                 ));
                                                 _cartModel.items.last.questions = questions;
                                               }
@@ -732,8 +698,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                             }
                                           } else {
                                             _cartModel.items.add(CartItemModel(
+                                              orderType: widget.type,
                                               id: e.id,
                                               categoryId: e.category.id,
+                                              taxType: e.taxType.id,
+                                              taxPercent: e.taxPercent.percent,
                                               name: e.menuName,
                                               qty: 1,
                                               price: e.price,
@@ -742,6 +711,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                               tax: e.taxPercent.percent,
                                               discountAvailable: e.discountAvailable == 1,
                                               openPrice: e.openPrice == 1,
+                                              rowSerial: _cartModel.items.length + 1,
                                             ));
 
                                             var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == _cartModel.items.last.id).toList();
@@ -1120,28 +1090,40 @@ class _OrderScreenState extends State<OrderScreen> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: CustomButton(
-                                    child: Text(
-                                      'Pay'.tr,
-                                      style: kStyleTextButton,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                                    child: CustomButton(
+                                      child: Text(
+                                        'Pay'.tr,
+                                        style: kStyleTextButton,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.green,
+                                      onPressed: () {
+                                        if (_cartModel.items.isNotEmpty) {
+                                          Get.to(()=> PayScreen(cart :_cartModel));
+                                        } else {
+                                          Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.green,
-                                    onPressed: () {},
                                   ),
                                 ),
-                                SizedBox(width: 5.w),
-                                Expanded(
-                                  child: CustomButton(
-                                    child: Text(
-                                      'Order'.tr,
-                                      style: kStyleTextButton,
+                                if (widget.type == OrderType.dineIn)
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                                      child: CustomButton(
+                                        child: Text(
+                                          'Order'.tr,
+                                          style: kStyleTextButton,
+                                        ),
+                                        fixed: true,
+                                        backgroundColor: ColorsApp.red,
+                                        onPressed: () {},
+                                      ),
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.red,
-                                    onPressed: () {},
                                   ),
-                                ),
                               ],
                             ),
                           ],

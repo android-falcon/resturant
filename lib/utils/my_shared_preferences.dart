@@ -10,7 +10,6 @@ class MySharedPreferences {
   clearData() {
     isLogin = false;
     userId = 0;
-    username = '';
     fullName = '';
     phoneNumber = '';
     allData = '';
@@ -56,13 +55,6 @@ class MySharedPreferences {
 
   set userId(int value) {
     _sharedPreferences.setInt(keyUserId, value);
-  }
-
-
-  String get username => _sharedPreferences.getString(keyUsername) ?? "";
-
-  set username(String value) {
-    _sharedPreferences.setString(keyUsername, value);
   }
 
   String get fullName => _sharedPreferences.getString(keyFullName) ?? "";
@@ -128,7 +120,6 @@ const String keyLanguage = "key_language";
 const String keyIsLogin = "key_is_login";
 const String keyIsGMS = "key_is_gms";
 const String keyUserId = "key_user_id";
-const String keyUsername = "key_username";
 const String keyFullName = "key_full_name";
 const String keyPhoneNumber = "key_phone_number";
 const String keyAllData = "key_all_data";

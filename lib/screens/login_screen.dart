@@ -81,7 +81,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               RestApi.getData();
                             });
                           } else if (_keyForm.currentState!.validate()) {
-                            if (allDataModel.employees.any((element) => element.username == _controllerUsername.text && element.password == _controllerPassword.text)) {
+                            var indexEmployee = allDataModel.employees.indexWhere((element) => element.username == _controllerUsername.text && element.password == _controllerPassword.text);
+                            if (indexEmployee != -1) {
+                              mySharedPreferences.userId = allDataModel.employees[indexEmployee].id;
+                              mySharedPreferences.fullName = allDataModel.employees[indexEmployee].empName;
+                              mySharedPreferences.phoneNumber = allDataModel.employees[indexEmployee].mobileNo;
                               Get.offAll(() => const HomeScreen());
                             } else {
                               Fluttertoast.showToast(msg: 'Incorrect username or password'.tr, timeInSecForIosWeb: 3);

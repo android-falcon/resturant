@@ -16,6 +16,8 @@ class CompanyConfigModel {
     required  this.email,
     required  this.companyLogo,
     required  this.taxCalcMethod,
+    required  this.servicePerc,
+    required  this.serviceTaxPerc,
   });
 
   String companyName;
@@ -24,6 +26,8 @@ class CompanyConfigModel {
   String email;
   String companyLogo;
   int taxCalcMethod;
+  double servicePerc;
+  double serviceTaxPerc;
 
   factory CompanyConfigModel.fromJson(Map<String, dynamic> json) => CompanyConfigModel(
     companyName: json["CompanyName"] ?? "",
@@ -32,6 +36,8 @@ class CompanyConfigModel {
     email: json["Email"] ?? "",
     companyLogo: json["CompanyLogo"] ?? "",
     taxCalcMethod: json["TaxCalcMethod"] ?? 0,
+    servicePerc: json["ServicePerc"] == null ? 0 : json["ServicePerc"].toDouble(),
+    serviceTaxPerc: json["ServiceTaxPerc"] == null ? 0 : json["ServiceTaxPerc"].toDouble(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -41,5 +47,7 @@ class CompanyConfigModel {
     "Email": email,
     "CompanyLogo": companyLogo,
     "TaxCalcMethod": taxCalcMethod,
+    "ServicePerc": servicePerc,
+    "ServiceTaxPerc": serviceTaxPerc,
   };
 }

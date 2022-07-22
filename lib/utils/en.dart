@@ -89,5 +89,5 @@ const Map<String, String> en = {
   'Store No': 'Store No',
   'In Voc No': 'Store No',
   'Out Voc No': 'Store No',
-
+  'Please add items to complete an order': 'Please add items to complete an order',
 };
