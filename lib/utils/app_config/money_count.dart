@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:restaurant_system/utils/global_variable.dart';
 
 class MoneyCount {
   String name;
@@ -13,17 +14,11 @@ class MoneyCount {
     this.value = 0,
   });
 
-  static init(){
-    moneyCount = [
-      MoneyCount(name: '1', value: 1, icon: '', qty: TextEditingController(text: '0')),
-      MoneyCount(name: '5', value: 5, icon: '', qty: TextEditingController(text: '0')),
-      MoneyCount(name: '10', value: 10, icon: '', qty: TextEditingController(text: '0')),
-      MoneyCount(name: '20', value: 20, icon: '', qty: TextEditingController(text: '0')),
-      MoneyCount(name: '50', value: 50, icon: '', qty: TextEditingController(text: '0')),
-    ];
+  static init() {
+    moneyCount = allDataModel.currencies.map((e) => MoneyCount(name: '${e.currVal} ${e.currName}', value: e.currVal, icon: e.currPic, qty: TextEditingController(text: '0'))).toList();
   }
 
-  static clear(){
+  static clear() {
     moneyCount = [];
   }
 

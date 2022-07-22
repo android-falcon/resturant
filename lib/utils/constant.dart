@@ -8,6 +8,7 @@ final kStyleHeaderTable =TextStyle(fontWeight: FontWeight.bold, fontSize: 12.sp,
 final kStyleDataTable = TextStyle(fontWeight: FontWeight.normal, fontSize: 12.sp, color: Colors.black);
 final kStyleDataTableModifiers = TextStyle(fontWeight: FontWeight.normal, fontSize: 12.sp, color: Colors.redAccent);
 final kStyleTextButton = TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, color: Colors.white);
+final kStyleButtonPayment = TextStyle(fontWeight: FontWeight.bold, fontSize: 17.sp);
 
 
 const placeholderImage = 'assets/images/logo.png';

@@ -1,7 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -23,6 +19,7 @@ import 'package:restaurant_system/utils/enum_discount_type.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/enum_tax_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
+import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
 import 'package:restaurant_system/utils/validation.dart';
@@ -534,7 +531,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     Expanded(
                       child: Text(
-                        '${'Vh No'.tr} : ',
+                        '${'VocNo'.tr} : ${mySharedPreferences.inVocNo}',
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
@@ -580,66 +577,69 @@ class _OrderScreenState extends State<OrderScreen> {
                         style: kStyleTextDefault,
                       ),
                     ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
-                    Row(
-                      children: [
-                        Image.asset(
-                          'assets/images/waiter.png',
-                          height: 45.h,
-                        ),
-                        Text(
-                          'Ali Ahmad',
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: kStyleTextDefault,
-                        ),
-                      ],
-                    ),
-                    SizedBox(width: 4.w),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
-                    Row(
-                      children: [
-                        Image.asset(
-                          'assets/images/kitchen.png',
-                          height: 45.h,
-                        ),
-                        Text(
-                          '2',
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: kStyleTextDefault,
-                        ),
-                      ],
-                    ),
-                    SizedBox(width: 4.w),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
-                    Row(
-                      children: [
-                        Image.asset(
-                          'assets/images/guests.png',
-                          height: 45.h,
-                        ),
-                        Text(
-                          '2',
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: kStyleTextDefault,
-                        ),
-                      ],
-                    ),
-                    SizedBox(width: 4.w),
+                    if (widget.type == OrderType.dineIn)
+                      Row(
+                        children: [
+                          const VerticalDivider(
+                            width: 1,
+                            thickness: 2,
+                          ),
+                          Image.asset(
+                            'assets/images/waiter.png',
+                            height: 45.h,
+                          ),
+                          Text(
+                            'Ali Ahmad',
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: kStyleTextDefault,
+                          ),
+                        ],
+                      ),
+                    if (widget.type == OrderType.dineIn)
+                      Row(
+                        children: [
+                          SizedBox(width: 4.w),
+                          const VerticalDivider(
+                            width: 1,
+                            thickness: 2,
+                          ),
+                          Image.asset(
+                            'assets/images/kitchen.png',
+                            height: 45.h,
+                          ),
+                          Text(
+                            '2',
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: kStyleTextDefault,
+                          ),
+                        ],
+                      ),
+                    if (widget.type == OrderType.dineIn)
+                      Row(
+                        children: [
+                          SizedBox(width: 4.w),
+                          const VerticalDivider(
+                            width: 1,
+                            thickness: 2,
+                          ),
+                          Image.asset(
+                            'assets/images/guests.png',
+                            height: 45.h,
+                          ),
+                          Text(
+                            '2',
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: kStyleTextDefault,
+                          ),
+                          SizedBox(width: 4.w),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -1101,7 +1101,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                       backgroundColor: ColorsApp.green,
                                       onPressed: () {
                                         if (_cartModel.items.isNotEmpty) {
-                                          Get.to(()=> PayScreen(cart :_cartModel));
+                                          Get.to(() => PayScreen(cart: _cartModel));
                                         } else {
                                           Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
                                         }

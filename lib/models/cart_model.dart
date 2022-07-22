@@ -20,6 +20,12 @@ class CartModel {
     required this.tax,
     required this.amountDue,
     required this.items,
+    this.cash = 0,
+    this.credit = 0,
+    this.cheque = 0,
+    this.coupon = 0,
+    this.gift = 0,
+    this.point = 0,
   });
 
   OrderType orderType;
@@ -36,6 +42,12 @@ class CartModel {
   double tax;
   double amountDue;
   List<CartItemModel> items;
+  double cash;
+  double credit;
+  double cheque;
+  double coupon;
+  double gift;
+  double point;
 
   factory CartModel.init({required OrderType orderType}) => CartModel(
         orderType: orderType,
@@ -70,12 +82,12 @@ class CartModel {
         "DeliveryCharge": deliveryCharge, // مجموع توصيل
         "InvNetTotal": amountDue, // المجموع نهائي بعد كل اشي
         "PayType": 0, // 0
-        "CashVal": 0, // كم دفع كاش
-        "CardsVal": 0, // كم دفع كردت
-        "ChequeVal": 0, // كم دفع شيكات
-        "CouponVal": 0, // كم دفع كوبونات
-        "GiftVal": 0, //
-        "PointsVal": 0, //
+        "CashVal": cash, // كم دفع كاش
+        "CardsVal": credit, // كم دفع كردت
+        "ChequeVal": cheque, // كم دفع شيكات
+        "CouponVal": coupon, // كم دفع كوبونات
+        "GiftVal": gift, //
+        "PointsVal": point, //
         "UserId": orderType == OrderType.takeAway ? mySharedPreferences.userId : 0, // Take away - EmplyeId, Dine In -
         "ShiftId": 0, //
         "WaiterId":  orderType == OrderType.takeAway ? mySharedPreferences.userId : 0, //Take away - EmplyeId, Dine In -

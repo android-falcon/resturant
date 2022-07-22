@@ -8,6 +8,7 @@ class CustomButton extends StatelessWidget {
   void Function()? onLongPress;
   EdgeInsetsGeometry? margin;
   double? width;
+  double? height;
   bool? fixed;
   BorderSide? side;
   double? borderRadius;
@@ -19,6 +20,7 @@ class CustomButton extends StatelessWidget {
     this.padding,
     this.borderRadius,
     this.width,
+    this.height,
     this.fixed = false,
     this.onPressed,
     this.side,
@@ -31,6 +33,7 @@ class CustomButton extends StatelessWidget {
     return Container(
       margin: margin ?? const EdgeInsets.symmetric(vertical: 8),
       width: fixed! ? width : double.infinity,
+      height: height,
       child: ElevatedButton(
         child:  child,
         style: ElevatedButton.styleFrom(
