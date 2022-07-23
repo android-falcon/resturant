@@ -103,4 +103,5 @@ const Map<String, String> en = {
   'The entered value cannot be greater than the balance': 'The entered value cannot be greater than the balance',
   'The remainder should be 0': 'The remainder should be 0',
   'VocNo': 'Voc No',
+  'Print': 'Print',
 };

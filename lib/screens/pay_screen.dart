@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -32,7 +33,7 @@ class _PayScreenState extends State<PayScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    remaining = widget.cart.amountDue;
+    SchedulerBinding.instance!.addPostFrameCallback((_) => calculateRemaining());
   }
 
   calculateRemaining() {
@@ -149,6 +150,315 @@ class _PayScreenState extends State<PayScreen> {
       _received = balance;
     }
     return _received;
+  }
+
+  Future<void> _showPrintDialog() async {
+    await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomButton(
+                  fixed: true,
+                  child: Text('Print'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+            const Divider(thickness: 2),
+            Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${'Date'.tr} : '),
+                      SizedBox(height: 15.h),
+                      Text('${'Invoice No'.tr} : '),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(DateFormat('yyyy-MM-dd hh:mm:ss a').format(DateTime.now())),
+                      SizedBox(height: 15.h),
+                      Text('${mySharedPreferences.inVocNo - 1}'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const Divider(thickness: 2),
+            Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Qty'.tr,
+                          style: kStyleHeaderTable,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          'Pro-Nam'.tr,
+                          style: kStyleHeaderTable,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Price'.tr,
+                          style: kStyleHeaderTable,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Total'.tr,
+                          style: kStyleHeaderTable,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(color: Colors.black, height: 1),
+                ListView.separated(
+                  itemCount: widget.cart.items.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
+                  itemBuilder: (context, index) => Container(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${widget.cart.items[index].qty}',
+                                  style: kStyleDataTable,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  widget.cart.items[index].name,
+                                  style: kStyleDataTable,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  widget.cart.items[index].priceChange.toStringAsFixed(2),
+                                  style: kStyleDataTable,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  widget.cart.items[index].total.toStringAsFixed(2),
+                                  style: kStyleDataTable,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                          child: Column(
+                            children: [
+                              ListView.builder(
+                                itemCount: widget.cart.items[index].questions.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, indexModifiers) => Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '• ${widget.cart.items[index].questions[indexModifiers].name.trim()}? * ${widget.cart.items[index].questions[indexModifiers].modifier}',
+                                        style: kStyleDataTableModifiers,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              ListView.builder(
+                                itemCount: widget.cart.items[index].modifiers.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, indexModifiers) => Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '• ${widget.cart.items[index].modifiers[indexModifiers].name} * ${widget.cart.items[index].modifiers[indexModifiers].modifier}',
+                                        style: kStyleDataTableModifiers,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const Divider(thickness: 2),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 4.h),
+              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Total'.tr,
+                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Text(
+                        widget.cart.total.toStringAsFixed(3),
+                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Delivery Charge'.tr,
+                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Text(
+                        widget.cart.deliveryCharge.toStringAsFixed(3),
+                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Line Discount'.tr,
+                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Text(
+                        widget.cart.lineDiscount.toStringAsFixed(3),
+                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Discount'.tr,
+                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Text(
+                        widget.cart.discount.toStringAsFixed(3),
+                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Sub Total'.tr,
+                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Text(
+                        widget.cart.subTotal.toStringAsFixed(3),
+                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Service'.tr,
+                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Text(
+                        widget.cart.service.toStringAsFixed(3),
+                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Tax'.tr,
+                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Text(
+                        widget.cart.tax.toStringAsFixed(3),
+                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Amount Due'.tr,
+                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Text(
+                        widget.cart.amountDue.toStringAsFixed(3),
+                        style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 15.h),
+                  Image.asset(
+                    'assets/images/welcome.png',
+                    height: 60.h,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   @override
@@ -476,7 +786,7 @@ class _PayScreenState extends State<PayScreen> {
                                     ),
                                     Text(
                                       widget.cart.amountDue.toStringAsFixed(3),
-                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
+                                      style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -490,7 +800,7 @@ class _PayScreenState extends State<PayScreen> {
                                       ),
                                     ),
                                     Text(
-                                      '0.000',
+                                      widget.cart.amountDue.toStringAsFixed(3),
                                       style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -504,7 +814,7 @@ class _PayScreenState extends State<PayScreen> {
                                       ),
                                     ),
                                     Text(
-                                      '0.000',
+                                      (widget.cart.cash + widget.cart.credit + widget.cart.cheque + widget.cart.gift + widget.cart.coupon + widget.cart.point).toStringAsFixed(3),
                                       style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -518,7 +828,7 @@ class _PayScreenState extends State<PayScreen> {
                                       ),
                                     ),
                                     Text(
-                                      widget.cart.amountDue.toStringAsFixed(3),
+                                      remaining.toStringAsFixed(3),
                                       style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -540,7 +850,9 @@ class _PayScreenState extends State<PayScreen> {
                                             if (remaining == 0) {
                                               RestApi.invoice(widget.cart);
                                               mySharedPreferences.inVocNo++;
-                                              Get.offAll(HomeScreen());
+                                              _showPrintDialog().then((value) {
+                                                Get.offAll(HomeScreen());
+                                              });
                                             } else {
                                               Fluttertoast.showToast(msg: 'The remainder should be 0'.tr);
                                             }
