@@ -51,9 +51,10 @@ class NetworkTable {
     return await db.query(tableName);
   }
 
-  static Future<List<Map<String, dynamic>>> queryRows(status) async {
+  static Future<List<NetworkTableModel>> queryRows({required int status}) async {
     Database db = await DatabaseHelper.instance.database;
-    return await db.query(tableName, where: "$columnStatus = $status"); // LIKE '%$name%'
+    var query = await db.query(tableName, where: "$columnStatus = $status");
+    return List<NetworkTableModel>.from(query.map((e) => NetworkTableModel.fromMap(e))); // LIKE '%$name%'
   }
 
   static Future<int?> queryRowCount() async {
@@ -64,6 +65,12 @@ class NetworkTable {
   static Future<NetworkTableModel?> queryLastRow() async {
     Database db = await DatabaseHelper.instance.database;
     var query = await db.query(tableName, orderBy: '$columnId DESC', limit: 1);
+    return query.isEmpty ? null : NetworkTableModel.fromMap(query.first);
+  }
+
+  static Future<NetworkTableModel?> queryById({required int id}) async {
+    Database db = await DatabaseHelper.instance.database;
+    var query = await db.query(tableName,  where: "$columnId = $id");
     return query.isEmpty ? null : NetworkTableModel.fromMap(query.first);
   }
 

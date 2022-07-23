@@ -13,10 +13,15 @@ import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/utils.dart';
 
 class RestApi {
-  static final dio.Dio restDio = dio.Dio(dio.BaseOptions(baseUrl: mySharedPreferences.baseUrl, connectTimeout: 30000, receiveTimeout: 30000, headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer ${mySharedPreferences.accessToken}',
-  }));
+  static final dio.Dio restDio = dio.Dio(dio.BaseOptions(
+    baseUrl: mySharedPreferences.baseUrl,
+    connectTimeout: 30000,
+    receiveTimeout: 30000,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${mySharedPreferences.accessToken}',
+    },
+  ));
 
   static void _traceError(dio.DioError e) {
     String trace = '════════════════════════════════════════ \n'
@@ -56,6 +61,54 @@ class RestApi {
         '╟ RESPONSE: ${jsonEncode(response.data)} \n'
         '╚ [END] ════════════════════════════════════════╝';
     developer.log(trace);
+  }
+
+  static Future<void> uploadNetworkTable(NetworkTableModel model) async {
+    try {
+      final dio.Dio uploadNetworkTableDio = dio.Dio(dio.BaseOptions(
+        baseUrl: model.baseUrl,
+        connectTimeout: 30000,
+        receiveTimeout: 30000,
+        headers: model.headers.isEmpty
+            ? {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ${mySharedPreferences.accessToken}',
+              }
+            : jsonDecode(model.headers),
+      ));
+      late dio.Response response;
+      switch (model.method) {
+        case "GET":
+          response = await uploadNetworkTableDio.get(
+            model.path,
+            queryParameters: model.params.isEmpty ? null : jsonDecode(model.params),
+          );
+          break;
+        case 'POST':
+          response = await uploadNetworkTableDio.post(
+            model.path,
+            data: model.body,
+            queryParameters: model.params.isEmpty ? null : jsonDecode(model.params),
+          );
+          break;
+        default:
+          response = await uploadNetworkTableDio.get('');
+          break;
+      }
+      _networkLog(response);
+      if (response.statusCode == 200) {
+        var networkModel = await NetworkTable.queryById(id: model.id);
+        if (networkModel != null) {
+          networkModel.status = 2;
+          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
+          await NetworkTable.update(networkModel);
+        }
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+    } catch (e) {
+      _traceCatch(e);
+    }
   }
 
   static Future<void> getData() async {
@@ -108,6 +161,7 @@ class RestApi {
         var networkModel = await NetworkTable.queryLastRow();
         if (networkModel != null) {
           networkModel.status = 2;
+          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
           await NetworkTable.update(networkModel);
         }
       }

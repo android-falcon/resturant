@@ -1,9 +1,13 @@
+import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:restaurant_system/database/network_table.dart';
+import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/splash_screen.dart';
 import 'package:restaurant_system/utils/app_themes.dart';
 import 'package:restaurant_system/utils/my_http_overrides.dart';
@@ -49,6 +53,16 @@ class _RestaurantSystemState extends State<RestaurantSystem> {
         }
       }
     }
+    Timer.periodic(const Duration(seconds: 30), (Timer t) async {
+      var networkModel = await NetworkTable.queryRows(status: 1);
+      log('NetworkModel : ${networkModel.length}');
+      for (var element in networkModel) {
+        var difference = DateTime.now().difference(DateTime.fromMicrosecondsSinceEpoch(element.createdAt));
+        if (difference.inSeconds > 70) {
+          RestApi.uploadNetworkTable(element);
+        }
+      }
+    });
   }
 
   @override
