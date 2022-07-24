@@ -90,7 +90,7 @@ class CartModel {
         "PointsVal": point, //
         "UserId": orderType == OrderType.takeAway ? mySharedPreferences.userId : 0, // Take away - EmplyeId, Dine In -
         "ShiftId": 0, //
-        "WaiterId":  orderType == OrderType.takeAway ? mySharedPreferences.userId : 0, //Take away - EmplyeId, Dine In -
+        "WaiterId": orderType == OrderType.takeAway ? mySharedPreferences.userId : 0, //Take away - EmplyeId, Dine In -
         "TableId": 0, //
         "NoOfSeats": 0 //
       };
@@ -206,33 +206,27 @@ class CartItemModifierModel extends Equatable {
 class CartItemQuestionModel extends Equatable {
   CartItemQuestionModel({
     required this.id,
-    required this.name,
-    required this.modifier,
+    required this.question,
+    required this.modifiers,
   });
 
   int id;
-  String name;
-  String modifier;
+  String question;
+  List<String> modifiers;
 
   factory CartItemQuestionModel.init() => CartItemQuestionModel(
         id: 0,
-        name: "",
-        modifier: "",
-      );
-
-  factory CartItemQuestionModel.fromJson(Map<String, dynamic> json) => CartItemQuestionModel(
-        id: json["Id"] ?? 0,
-        name: json["Name"] ?? "",
-        modifier: json["Modifier"] ?? 0,
+        question: "",
+        modifiers: const [],
       );
 
   Map<String, dynamic> toJson() => {
         "Id": id,
-        "Name": name,
-        "Modifier": modifier,
+        "Name": question,
+        "Modifier": modifiers,
       };
 
   @override
   // TODO: implement props
-  List<Object?> get props => [id, name, modifier];
+  List<Object?> get props => [id, question,modifiers];
 }

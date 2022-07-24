@@ -293,12 +293,35 @@ class _PayScreenState extends State<PayScreen> {
                                 itemCount: widget.cart.items[index].questions.length,
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, indexModifiers) => Row(
+                                itemBuilder: (context, indexQuestions) => Column(
                                   children: [
-                                    Expanded(
-                                      child: Text(
-                                        '• ${widget.cart.items[index].questions[indexModifiers].name.trim()}? * ${widget.cart.items[index].questions[indexModifiers].modifier}',
-                                        style: kStyleDataTableModifiers,
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            '• ${widget.cart.items[index].questions[indexQuestions].question.trim()}?',
+                                            style: kStyleDataTableModifiers,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    ListView.builder(
+                                      itemCount: widget.cart.items[index].questions[indexQuestions].modifiers.length,
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemBuilder: (context, indexModifiers) => Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  '   * ${widget.cart.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
+                                                  style: kStyleDataTableModifiers,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],

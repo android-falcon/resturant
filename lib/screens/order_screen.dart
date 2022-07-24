@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -7,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/all_data/category_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
+import 'package:restaurant_system/models/all_data/modifire_force_questions_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
@@ -375,71 +378,144 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Future<List<CartItemQuestionModel>> _showForceQuestionDialog({required List<ItemWithQuestionsModel> questionsItem}) async {
-    int _questionNumber = 0;
-    List<CartItemQuestionModel> questions = [];
-    questions.addAll(List<CartItemQuestionModel>.from(questionsItem.map((e) => CartItemQuestionModel(id: e.forceQuestionId, name: e.qtext, modifier: ''))));
-
-    // var _questions = await Get.dialog(
-    //   CustomDialog(
-    //     builder: (context, setState, constraints) => Column(
-    //       children: [
-    //         Text(
-    //           'Force Question'.tr,
-    //           style: kStyleTextTitle,
-    //         ),
-    //         const Divider(thickness: 2),
-    //         // questions.firstWhere((element) => element.id == _selectedQuestionId).modifier = 'Extra'.tr;
-    //
-    //         StaggeredGrid.count(
-    //           crossAxisCount: 2,
-    //           children: questions
-    //               .map((e) => CustomButton(
-    //                     child: Text(
-    //                       '(${e.id}) - ${e.name}? ${e.modifier.isNotEmpty ? '* ${e.modifier}' : ''}',
-    //                       style: kStyleTextDefault,
-    //                     ),
-    //                     backgroundColor: ColorsApp.backgroundDialog,
-    //                     side: _selectedQuestionId == e.id ? const BorderSide(width: 1) : null,
-    //                     onPressed: () {
-    //                       _selectedQuestionId = e.id;
-    //                       setState(() {});
-    //                     },
-    //                   ))
-    //               .toList(),
-    //         ),
-    //         Row(
-    //           children: [
-    //             Expanded(child: Container()),
-    //             Expanded(
-    //               child: CustomButton(
-    //                 margin: const EdgeInsets.symmetric(horizontal: 16),
-    //                 child: Text('Save'.tr),
-    //                 backgroundColor: ColorsApp.green,
-    //                 onPressed: () {
-    //                   Get.back(result: questions.where((element) => element.modifier.isNotEmpty).toList());
-    //                 },
-    //               ),
-    //             ),
-    //             Expanded(
-    //               child: CustomButton(
-    //                 margin: const EdgeInsets.symmetric(horizontal: 16),
-    //                 child: Text('Exit'.tr),
-    //                 backgroundColor: ColorsApp.red,
-    //                 onPressed: () {
-    //                   Get.back();
-    //                 },
-    //               ),
-    //             ),
-    //             Expanded(child: Container()),
-    //           ],
-    //         ),
-    //       ],
-    //     ),
-    //   ),
-    //   barrierDismissible: false,
-    // );
-    // return _questions ?? [];
-    return [];
+    List<CartItemQuestionModel> answersModifire = List<CartItemQuestionModel>.from(questionsItem.map((e) => CartItemQuestionModel(id: e.forceQuestionId, question: e.qtext, modifiers: [])));
+    int i = 0;
+    while (i < answersModifire.length) {
+      var modifireForceQuestions = allDataModel.modifireForceQuestions.indexWhere((element) => element.forceQuestion.id == answersModifire[i].id);
+      if (modifireForceQuestions == -1) {
+        i++;
+      } else {
+        await Get.dialog(
+          WillPopScope(
+            onWillPop: () async => false,
+            child: CustomDialog(
+              builder: (context, setState, constraints) => Column(
+                children: [
+                  Text(
+                    'Force Question'.tr,
+                    style: kStyleTextTitle,
+                  ),
+                  const Divider(thickness: 2),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.h),
+                    child: Text(
+                      '(${answersModifire[i].id}) - ${answersModifire[i].question}?',
+                      style: kStyleTextTitle,
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${'Answers'.tr} :',
+                        style: kStyleForceQuestion,
+                      ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires.length,
+                        itemBuilder: (context, indexModifire) {
+                          if (allDataModel.modifireForceQuestions[modifireForceQuestions].forceQuestion.isMultible == 1) {
+                            return CheckboxListTile(
+                              title: Text(
+                                allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name,
+                                style: kStyleForceQuestion,
+                              ),
+                              value: answersModifire[i].modifiers.any((element) => element == allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name),
+                              onChanged: (value) {
+                                if (value!) {
+                                  answersModifire[i].modifiers.add(allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name);
+                                } else {
+                                  answersModifire[i].modifiers.remove(allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name);
+                                }
+                                log('modifiers : ${answersModifire[i].modifiers}');
+                                setState(() {});
+                              },
+                            );
+                          } else {
+                            return RadioListTile(
+                              title: Text(
+                                allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name,
+                                style: kStyleForceQuestion,
+                              ),
+                              value: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name,
+                              groupValue: answersModifire[i].modifiers.isEmpty ? '' : answersModifire[i].modifiers.first,
+                              onChanged: (value) {
+                                if (answersModifire[i].modifiers.isEmpty) {
+                                  answersModifire[i].modifiers.add(value as String);
+                                } else {
+                                  answersModifire[i].modifiers[0] = value as String;
+                                }
+                                log('modifiers : ${answersModifire[i].modifiers}');
+                                setState(() {});
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: Container()),
+                      if (i > 0)
+                        Expanded(
+                          child: CustomButton(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text('Previous'.tr),
+                            backgroundColor: ColorsApp.primaryColor,
+                            onPressed: () {
+                              i--;
+                              Get.back();
+                            },
+                          ),
+                        ),
+                      if (i + 1 < answersModifire.length)
+                        Expanded(
+                          child: CustomButton(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text('Next'.tr),
+                            backgroundColor: ColorsApp.primaryColor,
+                            onPressed: () {
+                              if (answersModifire[i].modifiers.isNotEmpty) {
+                                i++;
+                                Get.back();
+                              } else {
+                                Fluttertoast.showToast(msg: 'Please answer a question'.tr);
+                              }
+                            },
+                          ),
+                        ),
+                      if (i + 1 == answersModifire.length)
+                        Expanded(
+                          child: CustomButton(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text('Save'.tr),
+                            backgroundColor: ColorsApp.primaryColor,
+                            onPressed: () {
+                              if (answersModifire[i].modifiers.isNotEmpty) {
+                                i++;
+                                Get.back();
+                              } else {
+                                Fluttertoast.showToast(msg: 'Please answer a question'.tr);
+                              }
+                            },
+                          ),
+                        ),
+                      Expanded(child: Container()),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          barrierDismissible: false,
+        );
+      }
+    }
+    answersModifire.removeWhere((element) => element.modifiers.isEmpty);
+    return answersModifire;
   }
 
   _calculateOrder() {
@@ -914,12 +990,35 @@ class _OrderScreenState extends State<OrderScreen> {
                                                     itemCount: _cartModel.items[index].questions.length,
                                                     shrinkWrap: true,
                                                     physics: const NeverScrollableScrollPhysics(),
-                                                    itemBuilder: (context, indexModifiers) => Row(
+                                                    itemBuilder: (context, indexQuestions) => Column(
                                                       children: [
-                                                        Expanded(
-                                                          child: Text(
-                                                            '• ${_cartModel.items[index].questions[indexModifiers].name.trim()}? * ${_cartModel.items[index].questions[indexModifiers].modifier}',
-                                                            style: kStyleDataTableModifiers,
+                                                        Row(
+                                                          children: [
+                                                            Expanded(
+                                                              child: Text(
+                                                                '• ${_cartModel.items[index].questions[indexQuestions].question.trim()}?',
+                                                                style: kStyleDataTableModifiers,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        ListView.builder(
+                                                          itemCount: _cartModel.items[index].questions[indexQuestions].modifiers.length,
+                                                          shrinkWrap: true,
+                                                          physics: const NeverScrollableScrollPhysics(),
+                                                          itemBuilder: (context, indexModifiers) => Column(
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      '   * ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
+                                                                      style: kStyleDataTableModifiers,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
                                                           ),
                                                         ),
                                                       ],
@@ -1139,6 +1238,45 @@ class _OrderScreenState extends State<OrderScreen> {
                 color: ColorsApp.accentColor,
                 child: Row(
                   children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          if (_indexItemSelect != -1) {
+                            var subItem = allDataModel.itemSubItems.where((element) => element.itemsId == _cartModel.items[_indexItemSelect].id).toList();
+                            if (subItem.isNotEmpty) {
+                              // modifiersCategory.removeWhere((elementCategory) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementCategory.modifireId));
+                              // modifiersItem.removeWhere((elementItem) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementItem.modifiresId));
+                              // var modifiers = await _showModifierDialog(modifiersItem: modifiersItem, modifiersCategory: modifiersCategory, addedModifiers: _cartModel.items[_indexItemSelect].modifiers);
+                              // if (modifiers.isNotEmpty) {
+                              //   _cartModel.items[_indexItemSelect].modifiers = modifiers;
+                              // }
+                              setState(() {});
+                            } else {
+                              Fluttertoast.showToast(msg: 'This item cannot be sub item'.tr);
+                            }
+                          } else {
+                            Fluttertoast.showToast(msg: 'Please select the item you want to sub item'.tr);
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Sub Item'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const VerticalDivider(
+                      width: 1,
+                      thickness: 2,
+                    ),
                     Expanded(
                       child: InkWell(
                         onTap: () async {

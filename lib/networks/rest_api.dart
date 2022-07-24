@@ -3,11 +3,13 @@ import 'dart:developer' as developer;
 import 'package:dio/dio.dart' as dio;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:restaurant_system/database/network_table.dart';
 import 'package:restaurant_system/models/all_data_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/networks/api_url.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/enum_in_out_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/utils.dart';
@@ -156,6 +158,53 @@ class RestApi {
         uploadedAt: DateTime.now().microsecondsSinceEpoch,
       ));
       final response = await restDio.post(ApiUrl.INVOICE, data: body);
+      _networkLog(response);
+      if (response.statusCode == 200) {
+        var networkModel = await NetworkTable.queryLastRow();
+        if (networkModel != null) {
+          networkModel.status = 2;
+          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
+          await NetworkTable.update(networkModel);
+        }
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
+
+  static Future<void> payInOut({required double value, required int type, String remark = ''}) async {
+    try {
+      var body = jsonEncode({
+        "CoYear": DateTime.now().year,
+        "VoucherType": type,
+        "VoucherNo": 0,
+        "PosNo": mySharedPreferences.posNo,
+        "CashNo": mySharedPreferences.cashNo,
+        "VoucherDate": DateFormat('yyyy-MM-ddTHH:mm:ss').format(DateTime.now()),
+        "VoucherTime": DateFormat('HH:mm:ss').format(DateTime.now()),
+        "VoucherValue": value,
+        "Remark": remark,
+        "UserId": mySharedPreferences.userId,
+        "ShiftId": 0,
+      });
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'PAY_IN_OUT',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.PAY_IN_OUT,
+        method: 'POST',
+        params: '',
+        body: body,
+        headers: '',
+        createdAt: DateTime.now().microsecondsSinceEpoch,
+        uploadedAt: DateTime.now().microsecondsSinceEpoch,
+      ));
+      final response = await restDio.post(ApiUrl.PAY_IN_OUT, data: body);
       _networkLog(response);
       if (response.statusCode == 200) {
         var networkModel = await NetworkTable.queryLastRow();

@@ -104,4 +104,11 @@ const Map<String, String> en = {
   'The remainder should be 0': 'The remainder should be 0',
   'VocNo': 'Voc No',
   'Print': 'Print',
+  'Previous': 'Previous',
+  'Next': 'Next',
+  'Answers': 'Answers',
+  'Please answer a question': 'Please answer a question',
+  'This item cannot be sub item': 'This item cannot be sub item',
+  'Please select the item you want to sub item': 'Please select the item you want to sub item',
+  'Sub Item': 'Sub Item',
 };
