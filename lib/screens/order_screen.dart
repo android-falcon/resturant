@@ -878,7 +878,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(5.r),
                                         onTap: () async {
-                                          var indexItem = _cartModel.items.indexWhere((element) => element.id == e.id);
+                                          var indexItem = _cartModel.items.indexWhere((element) => element.id == e.id && !element.isDeleted);
                                           if (indexItem != -1) {
                                             var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == _cartModel.items[indexItem].id).toList();
                                             if (questionsItem.isNotEmpty) {
@@ -1521,9 +1521,29 @@ class _OrderScreenState extends State<OrderScreen> {
                                 for (var element in _cartModel.items) {
                                   if (element.parentItemId == _cartModel.items[_indexItemSelect].id && element.parentItemIndex == _indexItemSelect) {
                                     element.isDeleted = true;
+                                    element.price = 0;
+                                    element.priceChange = 0;
+                                    element.total = 0;
+                                    element.tax = 0;
+                                    element.taxPercent = 0;
+                                    element.serviceTax = 0;
+                                    element.service = 0;
+                                    element.qty = 0;
+                                    element.discount = 0;
+                                    element.lineDiscount = 0;
                                   }
                                 }
                                 _cartModel.items[_indexItemSelect].isDeleted = true;
+                                _cartModel.items[_indexItemSelect].price = 0;
+                                _cartModel.items[_indexItemSelect].priceChange = 0;
+                                _cartModel.items[_indexItemSelect].total = 0;
+                                _cartModel.items[_indexItemSelect].tax = 0;
+                                _cartModel.items[_indexItemSelect].taxPercent = 0;
+                                _cartModel.items[_indexItemSelect].serviceTax = 0;
+                                _cartModel.items[_indexItemSelect].service = 0;
+                                _cartModel.items[_indexItemSelect].qty = 0;
+                                _cartModel.items[_indexItemSelect].discount = 0;
+                                _cartModel.items[_indexItemSelect].lineDiscount = 0;
                                 _indexItemSelect = -1;
                                 Get.back();
                               },
