@@ -127,13 +127,17 @@ class RestApi {
       hideLoadingDialog();
     } on dio.DioError catch (e) {
       _traceError(e);
-      allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       hideLoadingDialog();
+      if (mySharedPreferences.allData.isNotEmpty) {
+        allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
+      }
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
-      allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       hideLoadingDialog();
+      if (mySharedPreferences.allData.isNotEmpty) {
+        allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
+      }
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
   }
