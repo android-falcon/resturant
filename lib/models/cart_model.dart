@@ -119,10 +119,15 @@ class CartItemModel {
     this.openPrice = false,
     this.modifiers = const [],
     this.questions = const [],
+    this.parentItemId = 0,
+    this.parentItemIndex = 0,
+    this.isDeleted = false,
   });
 
   OrderType orderType;
   int id;
+  int parentItemId;
+  int parentItemIndex;
   int categoryId;
   int taxType;
   double taxPercent;
@@ -142,6 +147,7 @@ class CartItemModel {
   int rowSerial;
   List<CartItemModifierModel> modifiers;
   List<CartItemQuestionModel> questions;
+  bool isDeleted = true;
 
   Map<String, dynamic> toInvoice() => {
         "CoYear": DateTime.now().year,

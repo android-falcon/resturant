@@ -142,7 +142,7 @@ class RestApi {
     try {
       var body = jsonEncode({
         "InvoiceMaster": cart.toInvoice(),
-        "InvoiceDetails": List<dynamic>.from(cart.items.map((e) => e.toInvoice())).toList(),
+        "InvoiceDetails": List<dynamic>.from(cart.items.where((element) => !element.isDeleted).map((e) => e.toInvoice())).toList(),
       });
       await NetworkTable.insert(NetworkTableModel(
         id: 0,
@@ -181,7 +181,7 @@ class RestApi {
       var body = jsonEncode({
         "CoYear": DateTime.now().year,
         "VoucherType": type,
-        "VoucherNo": 0,
+        "VoucherNo": mySharedPreferences.inVocNo,
         "PosNo": mySharedPreferences.posNo,
         "CashNo": mySharedPreferences.cashNo,
         "VoucherDate": DateFormat('yyyy-MM-ddTHH:mm:ss').format(DateTime.now()),
@@ -191,6 +191,7 @@ class RestApi {
         "UserId": mySharedPreferences.userId,
         "ShiftId": 0,
       });
+      mySharedPreferences.inVocNo++;
       await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'PAY_IN_OUT',

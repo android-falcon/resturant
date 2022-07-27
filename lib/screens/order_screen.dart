@@ -7,9 +7,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/all_data/category_with_modifire_model.dart';
+import 'package:restaurant_system/models/all_data/item_model.dart';
+import 'package:restaurant_system/models/all_data/item_sub_items_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
-import 'package:restaurant_system/models/all_data/modifire_force_questions_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
@@ -20,7 +21,6 @@ import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enum_discount_type.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
-import 'package:restaurant_system/utils/enum_tax_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
@@ -518,6 +518,132 @@ class _OrderScreenState extends State<OrderScreen> {
     return answersModifire;
   }
 
+  Future<List<CartItemModel>> _showSubItemDialog({required List<ItemSubItemsModel> subItems, required int parentIndex, required int parentId, required int parentQty}) async {
+    List<CartItemModel> _cartSubItem = [];
+    List<ItemModel> _subItems = allDataModel.items.where((item) => subItems.any((subItem) => item.id == subItem.subitemId)).toList();
+    await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Text(
+              'Sub Item'.tr,
+              style: kStyleTextTitle,
+            ),
+            const Divider(thickness: 2),
+            StaggeredGrid.count(
+              crossAxisCount: 2,
+              children: _subItems
+                  .map((e) => Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.r),
+                          side: _cartSubItem.any((element) => element.id == e.id) ? const BorderSide(width: 1) : BorderSide.none,
+                        ),
+                        elevation: 0,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(5.r),
+                          onTap: () async {
+                            var indexSubItem = _cartSubItem.indexWhere((element) => element.id == e.id);
+                            if (indexSubItem != -1) {
+                              _cartSubItem.removeAt(indexSubItem);
+                            } else {
+                              _cartSubItem.add(CartItemModel(
+                                orderType: widget.type,
+                                id: e.id,
+                                categoryId: e.category.id,
+                                taxType: e.taxType.id,
+                                taxPercent: e.taxPercent.percent,
+                                name: e.menuName,
+                                qty: parentQty,
+                                price: e.price,
+                                priceChange: e.price,
+                                total: e.price * parentQty,
+                                tax: e.taxPercent.percent,
+                                discountAvailable: e.discountAvailable == 1,
+                                openPrice: e.openPrice == 1,
+                                rowSerial: 0,
+                                parentItemId: parentId,
+                                parentItemIndex: parentIndex,
+                              ));
+                            }
+                            setState(() {});
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                            child: Row(
+                              children: [
+                                Image.network(
+                                  e.itemPicture,
+                                  height: 50.h,
+                                  width: 50.w,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, object, stackTrace) => SizedBox(
+                                    height: 50.h,
+                                    width: 50.w,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        e.menuName,
+                                        style: kStyleTextTitle,
+                                      ),
+                                      Text(
+                                        e.description,
+                                        style: kStyleTextDefault,
+                                      ),
+                                      Text(
+                                        e.price.toStringAsFixed(2),
+                                        style: kStyleTextTitle,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ))
+                  .toList(),
+            ),
+            Row(
+              children: [
+                Expanded(child: Container()),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Save'.tr),
+                    backgroundColor: ColorsApp.green,
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Exit'.tr),
+                    backgroundColor: ColorsApp.red,
+                    onPressed: () {
+                      _cartSubItem = [];
+                      Get.back();
+                    },
+                  ),
+                ),
+                Expanded(child: Container()),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return _cartSubItem;
+  }
+
   _calculateOrder() {
     if (allDataModel.companyConfig.first.taxCalcMethod == 0) {
       // خاضع
@@ -544,15 +670,28 @@ class _OrderScreenState extends State<OrderScreen> {
       }
     } else {
       // شامل
-      _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty)));
+      _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty));
       _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? (item.priceChange - (item.priceChange * (item.tax / 100))) * (item.lineDiscount / 100) : item.lineDiscount) * item.qty));
+      _cartModel.discount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
       _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.discount;
-      _cartModel.service = _cartModel.total * 0.1; // 0.1 10%
-      double totalTaxItems = _cartModel.items.fold(0.0, (sum, item) => sum + (_cartModel.total * (item.tax / 100)));
-      _cartModel.tax = totalTaxItems + (_cartModel.service * 0.16); // 0.16 16%
+      _cartModel.service = _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
+      _cartModel.serviceTax = _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+      _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + (item.taxType == 2 ? 0 : ((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty) * (item.tax / 100)));
+      _cartModel.tax = _cartModel.itemsTax + _cartModel.serviceTax;
       _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
+      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? ((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty) : 0));
+      for (var element in _cartModel.items) {
+        element.total = ((element.priceChange - (element.priceChange * (element.tax / 100))) * element.qty);
+        element.tax = element.taxType == 2 ? 0 : ((element.priceChange - (element.priceChange * (element.tax / 100))) * element.qty) * (element.tax / 100);
+        if (element.discountAvailable) {
+          element.discount = _cartModel.discount * (element.total / totalDiscountAvailableItem);
+        } else {
+          element.discount = 0;
+        }
+        element.service = _cartModel.service * (element.total / _cartModel.total);
+        element.serviceTax = element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+      }
     }
-
     setState(() {});
   }
 
@@ -937,115 +1076,166 @@ class _OrderScreenState extends State<OrderScreen> {
                                     shrinkWrap: true,
                                     physics: const NeverScrollableScrollPhysics(),
                                     separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
-                                    itemBuilder: (context, index) => InkWell(
-                                      onTap: () {
-                                        _indexItemSelect = index;
-                                        setState(() {});
-                                      },
-                                      child: Container(
-                                        color: index == _indexItemSelect ? ColorsApp.primaryColor : null,
-                                        child: Column(
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      '${_cartModel.items[index].qty}',
-                                                      style: kStyleDataTable,
-                                                      textAlign: TextAlign.center,
-                                                    ),
+                                    itemBuilder: (context, index) {
+                                      if (_cartModel.items[index].parentItemId != 0 || _cartModel.items[index].isDeleted) {
+                                        return Container();
+                                      } else {
+                                        var subItem = _cartModel.items.where((element) => element.parentItemId == _cartModel.items[index].id && element.parentItemIndex == index).toList();
+                                        return InkWell(
+                                          onTap: () {
+                                            _indexItemSelect = index;
+                                            setState(() {});
+                                          },
+                                          child: Container(
+                                            color: index == _indexItemSelect ? ColorsApp.primaryColor : null,
+                                            child: Column(
+                                              children: [
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          '${_cartModel.items[index].qty}',
+                                                          style: kStyleDataTable,
+                                                          textAlign: TextAlign.center,
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 3,
+                                                        child: Text(
+                                                          _cartModel.items[index].name,
+                                                          style: kStyleDataTable,
+                                                          textAlign: TextAlign.center,
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          _cartModel.items[index].priceChange.toStringAsFixed(2),
+                                                          style: kStyleDataTable,
+                                                          textAlign: TextAlign.center,
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          _cartModel.items[index].total.toStringAsFixed(2),
+                                                          style: kStyleDataTable,
+                                                          textAlign: TextAlign.center,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  Expanded(
-                                                    flex: 3,
-                                                    child: Text(
-                                                      _cartModel.items[index].name,
-                                                      style: kStyleDataTable,
-                                                      textAlign: TextAlign.center,
-                                                    ),
-                                                  ),
-                                                  Expanded(
-                                                    child: Text(
-                                                      _cartModel.items[index].priceChange.toStringAsFixed(2),
-                                                      style: kStyleDataTable,
-                                                      textAlign: TextAlign.center,
-                                                    ),
-                                                  ),
-                                                  Expanded(
-                                                    child: Text(
-                                                      _cartModel.items[index].total.toStringAsFixed(2),
-                                                      style: kStyleDataTable,
-                                                      textAlign: TextAlign.center,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                              child: Column(
-                                                children: [
-                                                  ListView.builder(
-                                                    itemCount: _cartModel.items[index].questions.length,
-                                                    shrinkWrap: true,
-                                                    physics: const NeverScrollableScrollPhysics(),
-                                                    itemBuilder: (context, indexQuestions) => Column(
-                                                      children: [
-                                                        Row(
+                                                ),
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                                  child: Column(
+                                                    children: [
+                                                      ListView.builder(
+                                                        itemCount: _cartModel.items[index].questions.length,
+                                                        shrinkWrap: true,
+                                                        physics: const NeverScrollableScrollPhysics(),
+                                                        itemBuilder: (context, indexQuestions) => Column(
+                                                          children: [
+                                                            Row(
+                                                              children: [
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    '• ${_cartModel.items[index].questions[indexQuestions].question.trim()}?',
+                                                                    style: kStyleDataTableModifiers,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            ListView.builder(
+                                                              itemCount: _cartModel.items[index].questions[indexQuestions].modifiers.length,
+                                                              shrinkWrap: true,
+                                                              physics: const NeverScrollableScrollPhysics(),
+                                                              itemBuilder: (context, indexModifiers) => Column(
+                                                                children: [
+                                                                  Row(
+                                                                    children: [
+                                                                      Expanded(
+                                                                        child: Text(
+                                                                          '   * ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
+                                                                          style: kStyleDataTableModifiers,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      ListView.builder(
+                                                        itemCount: _cartModel.items[index].modifiers.length,
+                                                        shrinkWrap: true,
+                                                        physics: const NeverScrollableScrollPhysics(),
+                                                        itemBuilder: (context, indexModifiers) => Row(
                                                           children: [
                                                             Expanded(
                                                               child: Text(
-                                                                '• ${_cartModel.items[index].questions[indexQuestions].question.trim()}?',
+                                                                '• ${_cartModel.items[index].modifiers[indexModifiers].name} * ${_cartModel.items[index].modifiers[indexModifiers].modifier}',
                                                                 style: kStyleDataTableModifiers,
                                                               ),
                                                             ),
                                                           ],
                                                         ),
+                                                      ),
+                                                      if (subItem.isNotEmpty)
                                                         ListView.builder(
-                                                          itemCount: _cartModel.items[index].questions[indexQuestions].modifiers.length,
-                                                          shrinkWrap: true,
-                                                          physics: const NeverScrollableScrollPhysics(),
-                                                          itemBuilder: (context, indexModifiers) => Column(
-                                                            children: [
-                                                              Row(
-                                                                children: [
-                                                                  Expanded(
-                                                                    child: Text(
-                                                                      '   * ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
-                                                                      style: kStyleDataTableModifiers,
+                                                            itemCount: subItem.length,
+                                                            shrinkWrap: true,
+                                                            physics: const NeverScrollableScrollPhysics(),
+                                                            itemBuilder: (context, indexSubItem) {
+                                                              return Container(
+                                                                child: Row(
+                                                                  children: [
+                                                                    Expanded(
+                                                                      child: Text(
+                                                                        '• ',
+                                                                        style: kStyleDataTableModifiers,
+                                                                        textAlign: TextAlign.center,
+                                                                      ),
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
+                                                                    Expanded(
+                                                                      flex: 3,
+                                                                      child: Text(
+                                                                        subItem[indexSubItem].name,
+                                                                        style: kStyleDataTableModifiers,
+                                                                        textAlign: TextAlign.center,
+                                                                        maxLines: 1,
+                                                                        overflow: TextOverflow.ellipsis,
+                                                                      ),
+                                                                    ),
+                                                                    Expanded(
+                                                                      child: Text(
+                                                                        subItem[indexSubItem].priceChange.toStringAsFixed(2),
+                                                                        style: kStyleDataTableModifiers,
+                                                                        textAlign: TextAlign.center,
+                                                                      ),
+                                                                    ),
+                                                                    Expanded(
+                                                                      child: Text(
+                                                                        subItem[indexSubItem].total.toStringAsFixed(2),
+                                                                        style: kStyleDataTableModifiers,
+                                                                        textAlign: TextAlign.center,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              );
+                                                            }),
+                                                    ],
                                                   ),
-                                                  ListView.builder(
-                                                    itemCount: _cartModel.items[index].modifiers.length,
-                                                    shrinkWrap: true,
-                                                    physics: const NeverScrollableScrollPhysics(),
-                                                    itemBuilder: (context, indexModifiers) => Row(
-                                                      children: [
-                                                        Expanded(
-                                                          child: Text(
-                                                            '• ${_cartModel.items[index].modifiers[indexModifiers].name} * ${_cartModel.items[index].modifiers[indexModifiers].modifier}',
-                                                            style: kStyleDataTableModifiers,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
                                   ),
                                 ],
                               ),
@@ -1242,14 +1432,10 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: InkWell(
                         onTap: () async {
                           if (_indexItemSelect != -1) {
-                            var subItem = allDataModel.itemSubItems.where((element) => element.itemsId == _cartModel.items[_indexItemSelect].id).toList();
-                            if (subItem.isNotEmpty) {
-                              // modifiersCategory.removeWhere((elementCategory) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementCategory.modifireId));
-                              // modifiersItem.removeWhere((elementItem) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementItem.modifiresId));
-                              // var modifiers = await _showModifierDialog(modifiersItem: modifiersItem, modifiersCategory: modifiersCategory, addedModifiers: _cartModel.items[_indexItemSelect].modifiers);
-                              // if (modifiers.isNotEmpty) {
-                              //   _cartModel.items[_indexItemSelect].modifiers = modifiers;
-                              // }
+                            var subItems = allDataModel.itemSubItems.where((element) => element.subitemId == _cartModel.items[_indexItemSelect].id).toList();
+                            if (subItems.isNotEmpty) {
+                              var cartSubItems = await _showSubItemDialog(subItems: subItems, parentIndex: _indexItemSelect, parentId: _cartModel.items[_indexItemSelect].id, parentQty: _cartModel.items[_indexItemSelect].qty);
+                              _cartModel.items.addAll(cartSubItems);
                               setState(() {});
                             } else {
                               Fluttertoast.showToast(msg: 'This item cannot be sub item'.tr);
@@ -1332,7 +1518,12 @@ class _OrderScreenState extends State<OrderScreen> {
                               textConfirm: 'Confirm'.tr,
                               confirmTextColor: Colors.white,
                               onConfirm: () {
-                                _cartModel.items.removeAt(_indexItemSelect);
+                                for (var element in _cartModel.items) {
+                                  if (element.parentItemId == _cartModel.items[_indexItemSelect].id && element.parentItemIndex == _indexItemSelect) {
+                                    element.isDeleted = true;
+                                  }
+                                }
+                                _cartModel.items[_indexItemSelect].isDeleted = true;
                                 _indexItemSelect = -1;
                                 Get.back();
                               },
