@@ -1462,7 +1462,6 @@ class _OrderScreenState extends State<OrderScreen> {
                                     ],
                                   ),
                                 ),
-
                               ],
                             ),
                           ),
@@ -1555,13 +1554,17 @@ class _OrderScreenState extends State<OrderScreen> {
                     Expanded(
                       child: InkWell(
                         onTap: () async {
-                          _cartModel.items[_indexItemSelect].qty = await _showQtyDialog(rQty: _cartModel.items[_indexItemSelect].qty, minQty: 1);
-                          for (var element in _cartModel.items) {
-                            if (element.parentItemId == _cartModel.items[_indexItemSelect].id && element.parentItemIndex == _indexItemSelect) {
-                              element.qty = _cartModel.items[_indexItemSelect].qty;
+                          if (_indexItemSelect != -1) {
+                            _cartModel.items[_indexItemSelect].qty = await _showQtyDialog(rQty: _cartModel.items[_indexItemSelect].qty, minQty: 1);
+                            for (var element in _cartModel.items) {
+                              if (element.parentItemId == _cartModel.items[_indexItemSelect].id && element.parentItemIndex == _indexItemSelect) {
+                                element.qty = _cartModel.items[_indexItemSelect].qty;
+                              }
                             }
+                            _calculateOrder();
+                          } else {
+                            Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
                           }
-                          _calculateOrder();
                         },
                         child: SizedBox(
                           width: double.infinity,

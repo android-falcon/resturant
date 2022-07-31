@@ -180,6 +180,31 @@ class RestApi {
     }
   }
 
+  static Future<void> getRefundInvoice({required int invNo}) async {
+    try {
+      showLoadingDialog();
+      var queryParameters = {
+        "PosNo": mySharedPreferences.posNo,
+        "CashNo": mySharedPreferences.cashNo,
+        "InvNo": invNo,
+      };
+      final response = await restDio.get(ApiUrl.REFUND_INVOICE, queryParameters: queryParameters);
+      _networkLog(response);
+      if (response.statusCode == 200) {
+
+      }
+      hideLoadingDialog();
+    } on dio.DioError catch (e) {
+      hideLoadingDialog();
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    } catch (e) {
+      hideLoadingDialog();
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
+
   static Future<void> payInOut({required double value, required int type, String remark = ''}) async {
     try {
       var body = jsonEncode({

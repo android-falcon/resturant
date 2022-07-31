@@ -120,4 +120,5 @@ const Map<String, String> en = {
   'Close Cash': 'Close Cash',
   'Daily Close': 'Daily Close',
   'Are you sure?': 'Are you sure?',
+  'Please select the item you want to change quantity': 'Please select the item you want to change quantity',
 };

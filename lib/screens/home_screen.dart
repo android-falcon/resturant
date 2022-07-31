@@ -43,12 +43,12 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
     _menu = <HomeMenu>[
-      HomeMenu(
-        name: 'Time Card'.tr,
-        onTab: () {
-          _showTimeCardDialog();
-        },
-      ),
+      // HomeMenu(
+      //   name: 'Time Card'.tr,
+      //   onTab: () {
+      //     _showTimeCardDialog();
+      //   },
+      // ),
       // HomeMenu(
       //   name: 'Cash In'.tr,
       //   onTab: () {
@@ -79,10 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
           _showRefundDialog();
         },
       ),
-      HomeMenu(
-        name: 'Cash Drawer'.tr,
-        onTab: () {},
-      ),
+      // HomeMenu(
+      //   name: 'Cash Drawer'.tr,
+      //   onTab: () {},
+      // ),
       HomeMenu(
         name: 'Daily Close'.tr,
         onTab: () {
@@ -550,7 +550,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  '${'POS No'.tr} : ',
+                                  '${'POS No'.tr} : ${mySharedPreferences.posNo}',
                                   textAlign: TextAlign.end,
                                   style: kStyleTextDefault,
                                 ),
@@ -634,6 +634,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       backgroundColor: ColorsApp.orange,
                       onPressed: () {
                         FocusScope.of(context).requestFocus(FocusNode());
+                        RestApi.getRefundInvoice(invNo: int.parse(_controllerVoucherNumber.text ));
                       },
                     ),
                   ],
@@ -840,29 +841,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.white,
                           child: Row(
                             children: [
-                              Expanded(
-                                child: Text(
-                                  '${'Branch'.tr} : ',
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: kStyleTextDefault,
-                                ),
+                              const SizedBox(width: 20),
+                              CachedNetworkImage(
+                                imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'COMPANY_LOGO')?.imgPath ?? ''}${allDataModel.companyConfig.first.companyLogo}',
+                                fit: BoxFit.contain,
+                                placeholder: (context, url) => Container(),
+                                errorWidget: (context, url, error) => Container(),
                               ),
-                              const VerticalDivider(),
                               Expanded(
                                 child: Text(
-                                  allDataModel.companyConfig.first.companyName,
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: kStyleTextDefault,
-                                ),
-                              ),
-                              const VerticalDivider(),
-                              Expanded(
-                                child: Text(
-                                  'Shift'.tr,
+                                  '${'Branch'.tr}: ${allDataModel.companyConfig.first.companyName}',
                                   textAlign: TextAlign.center,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
