@@ -535,7 +535,7 @@ class _PayScreenState extends State<PayScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      DateFormat('yyyy/MM/dd hh:mm a').format(DateTime.now()),
+                      DateFormat('yyyy-MM-dd hh:mm a').format(DateTime.now()),
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,

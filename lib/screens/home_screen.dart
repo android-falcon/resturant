@@ -108,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    '${'Date'.tr} : ${DateFormat('yyyy/MM/dd hh:mm a').format(DateTime.now())}',
+                    '${'Date'.tr} : ${DateFormat('yyyy-MM-dd hh:mm a').format(DateTime.now())}',
                     style: kStyleTextDefault,
                   ),
                 ),
@@ -204,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      '${'Date'.tr} : ${DateFormat('yyyy/MM/dd').format(DateTime.now())}',
+                      '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
                       style: kStyleTextDefault,
                     ),
                   ),
@@ -855,7 +855,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const VerticalDivider(),
                               Expanded(
                                 child: Text(
-                                  DateFormat('yyyy/MM/dd').format(DateTime.now()),
+                                  DateFormat('yyyy-MM-dd').format(DateTime.now()),
                                   textAlign: TextAlign.center,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
