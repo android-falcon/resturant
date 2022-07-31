@@ -84,6 +84,23 @@ class _HomeScreenState extends State<HomeScreen> {
         onTab: () {},
       ),
       HomeMenu(
+        name: 'Daily Close'.tr,
+        onTab: () {
+          Get.defaultDialog(
+            title: 'Daily Close'.tr,
+            titleStyle: kStyleTextTitle,
+            content: Text('Are you sure?'.tr),
+            textCancel: 'Cancel'.tr,
+            textConfirm: 'Confirm'.tr,
+            confirmTextColor: Colors.white,
+            onConfirm: () {
+              Get.back();
+              RestApi.posDailyClose();
+            },
+          );
+        },
+      ),
+      HomeMenu(
         name: 'Exit'.tr,
         onTab: () {
           if (Platform.isAndroid) {

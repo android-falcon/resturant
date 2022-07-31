@@ -117,4 +117,7 @@ const Map<String, String> en = {
   'Close': 'Close',
   'Check Out': 'Check Out',
   'Floor': 'Floor',
+  'Close Cash': 'Close Cash',
+  'Daily Close': 'Daily Close',
+  'Are you sure?': 'Are you sure?',
 };

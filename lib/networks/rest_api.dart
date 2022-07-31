@@ -227,4 +227,45 @@ class RestApi {
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
   }
+
+  static Future<void> posDailyClose() async {
+    try {
+      var body = jsonEncode({
+        "CoYear": DateTime.now().year,
+        "PosNo": mySharedPreferences.posNo,
+        "UserId": mySharedPreferences.userId,
+        "CloseDate": DateTime.now().toIso8601String(),
+      });
+      mySharedPreferences.inVocNo++;
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'POS_DAILY_CLOSE',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.POS_DAILY_CLOSE,
+        method: 'POST',
+        params: '',
+        body: body,
+        headers: '',
+        createdAt: DateTime.now().microsecondsSinceEpoch,
+        uploadedAt: DateTime.now().microsecondsSinceEpoch,
+      ));
+      final response = await restDio.post(ApiUrl.POS_DAILY_CLOSE, data: body);
+      _networkLog(response);
+      if (response.statusCode == 200) {
+        var networkModel = await NetworkTable.queryLastRow();
+        if (networkModel != null) {
+          networkModel.status = 2;
+          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
+          await NetworkTable.update(networkModel);
+        }
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
 }
