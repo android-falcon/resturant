@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
+import 'package:restaurant_system/screens/table_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_data_table.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -874,7 +875,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   SizedBox(height: 20.h),
                                   InkWell(
-                                    onTap: () {},
+                                    onTap: () {
+                                      Get.to(() => TableScreen());
+
+
+                                    },
                                     child: Column(
                                       children: [
                                         Image.asset(

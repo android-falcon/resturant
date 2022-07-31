@@ -111,4 +111,10 @@ const Map<String, String> en = {
   'This item cannot be sub item': 'This item cannot be sub item',
   'Please select the item you want to sub item': 'Please select the item you want to sub item',
   'Sub Item': 'Sub Item',
+  'Move': 'Move',
+  'Merge': 'Merge',
+  'Reservation': 'Reservation',
+  'Close': 'Close',
+  'Check Out': 'Check Out',
+  'Floor': 'Floor',
 };

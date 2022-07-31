@@ -188,7 +188,7 @@ class RestApi {
         "VoucherNo": mySharedPreferences.inVocNo,
         "PosNo": mySharedPreferences.posNo,
         "CashNo": mySharedPreferences.cashNo,
-        "VoucherDate": DateFormat('yyyy-MM-ddTHH:mm:ss').format(DateTime.now()),
+        "VoucherDate": DateTime.now().toIso8601String(),
         "VoucherTime": DateFormat('HH:mm:ss').format(DateTime.now()),
         "VoucherValue": value,
         "Remark": remark,

@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:intl/intl.dart';
 import 'package:restaurant_system/utils/enum_discount_type.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
@@ -66,6 +65,52 @@ class CartModel {
         items: [],
       );
 
+  factory CartModel.fromJson(Map<String, dynamic> json) => CartModel(
+        orderType: OrderType.values[json['orderType']],
+        id: json['id'],
+        total: json['total'] == null ? 0 : json['total'].toDouble(),
+        deliveryCharge: json['deliveryCharge'] == null ? 0 : json['deliveryCharge'].toDouble(),
+        lineDiscount: json['lineDiscount'] == null ? 0 : json['lineDiscount'].toDouble(),
+        discount: json['discount'] == null ? 0 : json['discount'].toDouble(),
+        discountType: DiscountType.values[json['discountType']],
+        subTotal: json['subTotal'] == null ? 0 : json['subTotal'].toDouble(),
+        service: json['service'] == null ? 0 : json['service'].toDouble(),
+        serviceTax: json['serviceTax'] == null ? 0 : json['serviceTax'].toDouble(),
+        itemsTax: json['itemsTax'] == null ? 0 : json['itemsTax'].toDouble(),
+        tax: json['tax'] == null ? 0 : json['tax'].toDouble(),
+        amountDue: json['amountDue'] == null ? 0 : json['amountDue'].toDouble(),
+        items: List<CartItemModel>.from(json['items'].map((e) => CartItemModel.fromJson(e))),
+        cash: json['cash'] == null ? 0 : json['cash'].toDouble(),
+        credit: json['credit'] == null ? 0 : json['credit'].toDouble(),
+        cheque: json['cheque'] == null ? 0 : json['cheque'].toDouble(),
+        coupon: json['coupon'] == null ? 0 : json['coupon'].toDouble(),
+        gift: json['gift'] == null ? 0 : json['gift'].toDouble(),
+        point: json['point'] == null ? 0 : json['point'].toDouble(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'orderType': orderType.index,
+        'id': id,
+        'total': total,
+        'deliveryCharge': deliveryCharge,
+        'lineDiscount': lineDiscount,
+        'discount': discount,
+        'discountType': discountType.index,
+        'subTotal': subTotal,
+        'service': service,
+        'serviceTax': serviceTax,
+        'itemsTax': itemsTax,
+        'tax': tax,
+        'amountDue': amountDue,
+        'items': List<dynamic>.from(items.map((e) => e.toJson())),
+        'cash': cash,
+        'credit': credit,
+        'cheque': cheque,
+        'coupon': coupon,
+        'gift': gift,
+        'point': point,
+      };
+
   Map<String, dynamic> toInvoice() => {
         "CoYear": DateTime.now().year,
         "InvType": orderType.index, // 0 - Take away , 1 - Dine In
@@ -73,7 +118,7 @@ class CartModel {
         "InvNo": mySharedPreferences.inVocNo, // الرقم الي بعد منو VocNo
         "PosNo": mySharedPreferences.posNo, // PosNo
         "CashNo": mySharedPreferences.cashNo, // CashNo
-        "InvDate": DateFormat('yyyy-MM-ddTHH:mm:ss').format(DateTime.now()),
+        "InvDate": DateTime.now().toIso8601String(),
         "TotalService": service, // مجموع سيرفس قبل الضريبة
         "TotalServiceTax": serviceTax, // ضريبة السيرفس فقط
         "TotalTax": itemsTax, // ضريبة بدو ضريبة السيرفس
@@ -149,6 +194,60 @@ class CartItemModel {
   List<CartItemQuestionModel> questions;
   bool isDeleted = true;
 
+  factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
+        orderType: OrderType.values[json['orderType']],
+        id: json['id'],
+        parentItemId: json['parentItemId'],
+        parentItemIndex: json['parentItemIndex'],
+        categoryId: json['categoryId'],
+        taxType: json['taxType'],
+        taxPercent: json['taxPercent'] == null ? 0 : json['taxPercent'].toDouble(),
+        name: json['name'],
+        qty: json['qty'],
+        price: json['price'] == null ? 0 : json['price'].toDouble(),
+        priceChange: json['priceChange'] == null ? 0 : json['priceChange'].toDouble(),
+        total: json['total'] == null ? 0 : json['total'].toDouble(),
+        tax: json['tax'] == null ? 0 : json['tax'].toDouble(),
+        lineDiscountType: DiscountType.values[json['lineDiscountType']],
+        lineDiscount: json['lineDiscount'] == null ? 0 : json['lineDiscount'].toDouble(),
+        discount: json['discount'] == null ? 0 : json['discount'].toDouble(),
+        service: json['service'] == null ? 0 : json['service'].toDouble(),
+        serviceTax: json['serviceTax'] == null ? 0 : json['serviceTax'].toDouble(),
+        discountAvailable: json['discountAvailable'],
+        openPrice: json['openPrice'],
+        rowSerial: json['rowSerial'],
+        modifiers: List<CartItemModifierModel>.from(json['modifiers'].map((e) => CartItemModifierModel.fromJson(e))),
+        questions: List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
+        isDeleted: json['isDeleted'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "orderType": orderType.index,
+        "id": id,
+        "parentItemId": parentItemId,
+        "parentItemIndex": parentItemIndex,
+        "categoryId": categoryId,
+        "taxType": taxType,
+        "taxPercent": taxPercent,
+        "name": name,
+        "qty": qty,
+        "price": price,
+        "priceChange": priceChange,
+        "total": total,
+        "tax": tax,
+        "lineDiscountType": lineDiscountType.index,
+        "lineDiscount": lineDiscount,
+        "discount": discount,
+        "service": service,
+        "serviceTax": serviceTax,
+        "discountAvailable": discountAvailable,
+        "openPrice": openPrice,
+        "rowSerial": rowSerial,
+        "modifiers": List<dynamic>.from(modifiers.map((e) => e.toJson())),
+        "questions": List<dynamic>.from(questions.map((e) => e.toJson())),
+        "isDeleted": isDeleted,
+      };
+
   Map<String, dynamic> toInvoice() => {
         "CoYear": DateTime.now().year,
         "InvType": orderType.index, // 0 - Take away , 1 - Dine In
@@ -157,7 +256,7 @@ class CartItemModel {
         "PosNo": mySharedPreferences.posNo, // PosNo
         "CashNo": mySharedPreferences.cashNo, // CashNo
         "StoreNo": mySharedPreferences.storeNo, // StoreNo
-        "InvDate": DateFormat('yyyy-MM-ddTHH:mm:ss').format(DateTime.now()),
+        "InvDate": DateTime.now().toIso8601String(),
         "RowSerial": rowSerial, // رقم الايتم بناء على ليست في شاشة index + 1
         "ItemId": id,
         "Qty": qty,
@@ -226,6 +325,12 @@ class CartItemQuestionModel extends Equatable {
         modifiers: const [],
       );
 
+  factory CartItemQuestionModel.fromJson(Map<String, dynamic> json) => CartItemQuestionModel(
+        id: json["Id"] ?? 0,
+        question: json["Name"] ?? "",
+        modifiers: json["Modifier"] == null ? [] : List<String>.from(json["Modifier"].map((e) => e)),
+      );
+
   Map<String, dynamic> toJson() => {
         "Id": id,
         "Name": question,
@@ -234,5 +339,5 @@ class CartItemQuestionModel extends Equatable {
 
   @override
   // TODO: implement props
-  List<Object?> get props => [id, question,modifiers];
+  List<Object?> get props => [id, question, modifiers];
 }
