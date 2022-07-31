@@ -27,7 +27,7 @@ class CurrencyModel {
         id: json["Id"] ?? 0,
         currName: json["CurrName"] ?? "",
         currVal: json["CurrVal"] == null ? 0 : json["CurrVal"].toDouble(),
-        currRate: json["CurrRate"] == null ? 0 : json["CurrRate"].toDouble(),
+        currRate: json["CurrRate"] == null ? 1 : json["CurrRate"].toDouble(),
         currPic: json["CurrPic"] ?? "",
       );
 

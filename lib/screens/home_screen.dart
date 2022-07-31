@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -196,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _controllerSelectEdit = null;
         },
         builder: (context, setState, constraints) {
-          double moneyCount = MoneyCount.moneyCount.fold(0.0, (previousValue, element) => (previousValue) + (element.value * double.parse(element.qty.text)));
+          double moneyCount = MoneyCount.moneyCount.fold(0.0, (previousValue, element) => (previousValue) + ((element.value * element.rate) * double.parse(element.qty.text)));
           return Column(
             children: [
               Row(
@@ -341,6 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Row(
                                   children: [
                                     Expanded(
+                                      flex: 2,
                                       child: Container(),
                                     ),
                                     Expanded(
@@ -367,6 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     return Row(
                                       children: [
                                         Expanded(
+                                          flex: 2,
                                           child: InkWell(
                                             onTap: () {
                                               setState(() {
@@ -375,10 +378,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                             },
                                             child: Padding(
                                               padding: EdgeInsets.symmetric(vertical: 4.h),
-                                              child: Text(
-                                                MoneyCount.moneyCount[index].name,
-                                                textAlign: TextAlign.center,
-                                                style: kStyleTextDefault,
+                                              child: Row(
+                                                children: [
+                                                  CachedNetworkImage(
+                                                    imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Currencies')?.imgPath ?? ''}${MoneyCount.moneyCount[index].icon}',
+                                                    height: 20.h,
+                                                    fit: BoxFit.contain,
+                                                    placeholder: (context, url) => Container(),
+                                                    errorWidget: (context, url, error) => Container(),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      MoneyCount.moneyCount[index].name,
+                                                      textAlign: TextAlign.center,
+                                                      style: kStyleTextDefault,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ),
@@ -397,7 +413,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                         Expanded(
                                           child: Text(
-                                            (MoneyCount.moneyCount[index].value * double.parse(MoneyCount.moneyCount[index].qty.text)).toStringAsFixed(2),
+                                            ((MoneyCount.moneyCount[index].value * MoneyCount.moneyCount[index].rate) * double.parse(MoneyCount.moneyCount[index].qty.text)).toStringAsFixed(3),
                                             textAlign: TextAlign.center,
                                             style: kStyleTextDefault,
                                           ),
@@ -877,8 +893,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                   InkWell(
                                     onTap: () {
                                       Get.to(() => TableScreen());
-
-
                                     },
                                     child: Column(
                                       children: [

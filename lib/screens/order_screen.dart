@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -381,7 +382,7 @@ class _OrderScreenState extends State<OrderScreen> {
     List<CartItemQuestionModel> answersModifire = List<CartItemQuestionModel>.from(questionsItem.map((e) => CartItemQuestionModel(id: e.forceQuestionId, question: e.qtext, modifiers: [])));
     int i = 0;
     while (i < answersModifire.length) {
-      var modifireForceQuestions = allDataModel.modifireForceQuestions.indexWhere((element) => element.forceQuestion.id == answersModifire[i].id);
+      var modifireForceQuestions = allDataModel.modifireForceQuestions.indexWhere((element) => element.forceQuestion.id == answersModifire[i].id && element.modifires.isNotEmpty);
       if (modifireForceQuestions == -1) {
         i++;
       } else {
@@ -571,12 +572,16 @@ class _OrderScreenState extends State<OrderScreen> {
                             padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
                             child: Row(
                               children: [
-                                Image.network(
-                                  e.itemPicture,
+                                CachedNetworkImage(
+                                  imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
                                   height: 50.h,
                                   width: 50.w,
                                   fit: BoxFit.contain,
-                                  errorBuilder: (context, object, stackTrace) => SizedBox(
+                                  placeholder: (context, url) => SizedBox(
+                                    height: 50.h,
+                                    width: 50.w,
+                                  ),
+                                  errorWidget: (context, url, error) => SizedBox(
                                     height: 50.h,
                                     width: 50.w,
                                   ),
@@ -942,12 +947,16 @@ class _OrderScreenState extends State<OrderScreen> {
                                           padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
                                           child: Row(
                                             children: [
-                                              Image.network(
-                                                e.itemPicture,
+                                              CachedNetworkImage(
+                                                imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
                                                 height: 50.h,
                                                 width: 50.w,
                                                 fit: BoxFit.contain,
-                                                errorBuilder: (context, object, stackTrace) => SizedBox(
+                                                placeholder: (context, url) => SizedBox(
+                                                  height: 50.h,
+                                                  width: 50.w,
+                                                ),
+                                                errorWidget: (context, url, error) => SizedBox(
                                                   height: 50.h,
                                                   width: 50.w,
                                                 ),
@@ -998,12 +1007,16 @@ class _OrderScreenState extends State<OrderScreen> {
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Image.network(
-                                                  e.categoryPic,
+                                                CachedNetworkImage(
+                                                  imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
                                                   height: 50.h,
                                                   width: 50.w,
                                                   fit: BoxFit.contain,
-                                                  errorBuilder: (context, object, stackTrace) => SizedBox(
+                                                  placeholder: (context, url) => SizedBox(
+                                                    height: 50.h,
+                                                    width: 50.w,
+                                                  ),
+                                                  errorWidget: (context, url, error) => SizedBox(
                                                     height: 50.h,
                                                     width: 50.w,
                                                   ),

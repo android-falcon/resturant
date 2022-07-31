@@ -10,6 +10,7 @@ import 'package:restaurant_system/models/all_data/currency_model.dart';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/all_data/families_model.dart';
 import 'package:restaurant_system/models/all_data/force_question_model.dart';
+import 'package:restaurant_system/models/all_data/image_path_model.dart';
 import 'package:restaurant_system/models/all_data/item_model.dart';
 import 'package:restaurant_system/models/all_data/item_sub_items_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
@@ -27,6 +28,7 @@ class AllDataModel {
   AllDataModel({
     required this.serverTime,
     required this.companyConfig,
+    required this.imagePaths,
     required this.items,
     required this.categories,
     required this.families,
@@ -45,6 +47,7 @@ class AllDataModel {
 
   DateTime serverTime;
   List<CompanyConfigModel> companyConfig;
+  List<ImagePathModel> imagePaths;
   List<ItemModel> items;
   List<CategoryModel> categories;
   List<FamiliesModel> families;
@@ -63,6 +66,7 @@ class AllDataModel {
   factory AllDataModel.init() => AllDataModel(
         serverTime: DateTime.now(),
         companyConfig: [],
+        imagePaths: [],
         items: [],
         categories: [],
         families: [],
@@ -82,12 +86,13 @@ class AllDataModel {
   factory AllDataModel.fromJson(Map<String, dynamic> json) => AllDataModel(
         serverTime: json["serverDate"] == null ? DateTime.now() : DateFormat('M/dd/yyyy h:mm:ss a').parse(json["serverDate"]),
         companyConfig: json["CompanyConfig"] == null ? [] : List<CompanyConfigModel>.from(json["CompanyConfig"].map((x) => CompanyConfigModel.fromJson(x))),
+        imagePaths: json["ImagePaths"] == null ? [] : List<ImagePathModel>.from(json["ImagePaths"].map((x) => ImagePathModel.fromJson(x))),
         items: json["Items"] == null ? [] : List<ItemModel>.from(json["Items"].map((x) => ItemModel.fromJson(x))),
         categories: json["Categories"] == null ? [] : List<CategoryModel>.from(json["Categories"].map((x) => CategoryModel.fromJson(x))),
         families: json["Families"] == null ? [] : List<FamiliesModel>.from(json["Families"].map((x) => FamiliesModel.fromJson(x))),
         modifires: json["Modifires"] == null ? [] : List<ModifierModel>.from(json["Modifires"].map((x) => ModifierModel.fromJson(x))),
         forceQuestions: json["ForceQuestions"] == null ? [] : List<ForceQuestionModel>.from(json["ForceQuestions"].map((x) => ForceQuestionModel.fromJson(x))),
-        modifireForceQuestions: json["ModifireForceQuestions"] == null ? [] : List<ModifireForceQuestionsModel>.from(json["ModifireForceQuestions"].map((x) => ModifireForceQuestionsModel.fromJson(x))),
+        modifireForceQuestions: json["ForceQuestionModViewModels"] == null ? [] : List<ModifireForceQuestionsModel>.from(json["ForceQuestionModViewModels"].map((x) => ModifireForceQuestionsModel.fromJson(x))),
         employees: json["Employees"] == null ? [] : List<EmployeeModel>.from(json["Employees"].map((x) => EmployeeModel.fromJson(x))),
         itemWithQuestions: json["ItemWithQuestions"] == null ? [] : List<ItemWithQuestionsModel>.from(json["ItemWithQuestions"].map((x) => ItemWithQuestionsModel.fromJson(x))),
         itemWithModifires: json["ItemWithModifires"] == null ? [] : List<ItemWithModifireModel>.from(json["ItemWithModifires"].map((x) => ItemWithModifireModel.fromJson(x))),
@@ -101,12 +106,13 @@ class AllDataModel {
   Map<String, dynamic> toJson() => {
         "serverDate": DateFormat('M/dd/yyyy h:mm:ss a').format(serverTime),
         "CompanyConfig": List<dynamic>.from(companyConfig.map((x) => x.toJson())),
+        "ImagePaths": List<dynamic>.from(imagePaths.map((x) => x.toJson())),
         "Items": List<dynamic>.from(items.map((x) => x.toJson())),
         "Categories": List<dynamic>.from(categories.map((x) => x.toJson())),
         "Families": List<dynamic>.from(families.map((x) => x.toJson())),
         "Modifires": List<dynamic>.from(modifires.map((x) => x.toJson())),
         "ForceQuestions": List<dynamic>.from(forceQuestions.map((x) => x)),
-        "ModifireForceQuestions": List<dynamic>.from(modifireForceQuestions.map((x) => x)),
+        "ForceQuestionModViewModels": List<dynamic>.from(modifireForceQuestions.map((x) => x)),
         "Employees": List<dynamic>.from(employees.map((x) => x.toJson())),
         "ItemWithQuestions": List<dynamic>.from(itemWithQuestions.map((x) => x)),
         "ItemWithModifires": List<dynamic>.from(itemWithModifires.map((x) => x.toJson())),

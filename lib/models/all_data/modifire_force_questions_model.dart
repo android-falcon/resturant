@@ -25,12 +25,12 @@ class ModifireForceQuestionsModel {
   factory ModifireForceQuestionsModel.fromJson(Map<String, dynamic> json) => ModifireForceQuestionsModel(
         id: json["Id"] ?? 0,
         forceQuestion: json["forceQuestion"] == null ? ForceQuestionModel.init() : ForceQuestionModel.fromJson(json["forceQuestion"]),
-        modifires: json["modifires"] == null ? [] : [ModifierModel.fromJson(json["modifires"])],
+        modifires: json["modifires"] == null ? [] : List<ModifierModel>.from(json["modifires"].map((e) => ModifierModel.fromJson(e))),
       );
 
   Map<String, dynamic> toJson() => {
         "Id": id,
         "forceQuestion": forceQuestion.toJson(),
-        "modifires":  List<dynamic>.from(modifires.map((x) => x.toJson())),
+        "modifires": List<dynamic>.from(modifires.map((x) => x.toJson())),
       };
 }

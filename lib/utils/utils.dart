@@ -54,7 +54,7 @@ Widget numPadWidget(
     if (controller != null) {
       if (controller.text.contains('.')) {
         var split = controller.text.split('.');
-        if (split[1].length < 2) {
+        if (split[1].length < 3) {
           controller.text += '$number';
         }
       } else {
