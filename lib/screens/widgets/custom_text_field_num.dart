@@ -15,6 +15,7 @@ class CustomTextFieldNum extends StatelessWidget {
   final bool decimal;
   final void Function()? onTap;
   final String? Function(String?)? validator;
+  final void Function(String)? onChanged;
 
   const CustomTextFieldNum({
     Key? key,
@@ -29,6 +30,7 @@ class CustomTextFieldNum extends StatelessWidget {
     this.decimal = true,
     this.onTap,
     this.validator,
+    this.onChanged,
   }) : super(key: key);
 
   @override
@@ -58,6 +60,7 @@ class CustomTextFieldNum extends StatelessWidget {
         enabled: enabled,
         onTap: onTap,
         validator: validator,
+        onChanged: onChanged,
       ),
     );
   }

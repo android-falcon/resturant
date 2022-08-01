@@ -491,10 +491,8 @@ class _HomeScreenState extends State<HomeScreen> {
   _showRefundDialog() {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     TextEditingController _controllerVoucherNumber = TextEditingController();
+    List<RefundModel> _refundModel = [];
     TextEditingController? _controllerSelectEdit;
-    RefundModel _refundModel = RefundModel.init();
-    _refundModel.items.add(Item(serial: 'aa', name: 'aa', qty: 5, price: 0));
-    _refundModel.items.add(Item(serial: 'c', name: 'aaaa', qty: 3, price: 10));
     Get.dialog(
       CustomDialog(
         gestureDetectorOnTap: () {
@@ -542,21 +540,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                   validator: (value) {
                                     return Validation.isRequired(value);
                                   },
+                                  onChanged: (value) {
+                                    _refundModel = [];
+                                    setState(() {});
+                                  },
                                 ),
                               )
                             ],
                           ),
+                          const SizedBox(height: 10),
                           Row(
                             children: [
                               Expanded(
                                 child: Text(
-                                  '${'POS No'.tr} : ${mySharedPreferences.posNo}',
+                                  '${'POS No'.tr} : ',
                                   textAlign: TextAlign.end,
                                   style: kStyleTextDefault,
                                 ),
                               ),
                               Expanded(
-                                child: Text(_refundModel.posNo),
+                                child: Text(
+                                  '${mySharedPreferences.posNo}',
+                                  style: kStyleTextDefault,
+                                ),
                               ),
                             ],
                           ),
@@ -578,7 +584,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Expanded(
-                                child: Text(_refundModel.originalDate),
+                                child: Text(
+                                  _refundModel.isEmpty ? '' : DateFormat('yyyy-MM-dd').format(_refundModel.first.invDate),
+                                  style: kStyleTextDefault,
+                                ),
                               ),
                             ],
                           ),
@@ -592,7 +601,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Expanded(
-                                child: Text(_refundModel.originalTime),
+                                child: Text(
+                                  _refundModel.isEmpty ? '' : DateFormat('hh:mm:ss a').format(_refundModel.first.invDate),
+                                  style: kStyleTextDefault,
+                                ),
                               ),
                             ],
                           ),
@@ -606,7 +618,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Expanded(
-                                child: Text(_refundModel.originalTime),
+                                child: Text(
+                                  '',
+                                  style: kStyleTextDefault,
+                                ),
                               ),
                             ],
                           ),
@@ -620,7 +635,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Expanded(
-                                child: Text(_refundModel.originalTime),
+                                child: Text(
+                                  '',
+                                  style: kStyleTextDefault,
+                                ),
                               ),
                             ],
                           ),
@@ -632,9 +650,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       fixed: true,
                       child: Text('Show'.tr),
                       backgroundColor: ColorsApp.orange,
-                      onPressed: () {
+                      onPressed: () async {
                         FocusScope.of(context).requestFocus(FocusNode());
-                        RestApi.getRefundInvoice(invNo: int.parse(_controllerVoucherNumber.text ));
+                        _refundModel = await RestApi.getRefundInvoice(invNo: int.parse(_controllerVoucherNumber.text));
+                        setState(() {});
                       },
                     ),
                   ],
@@ -645,29 +664,29 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.symmetric(vertical: 4.h),
               child: CustomDataTable(
                 minWidth: constraints.minWidth,
-                rows: _refundModel.items
+                rows: _refundModel
                     .map(
                       (e) => DataRow(
                         cells: [
-                          DataCell(Text(e.serial)),
-                          DataCell(Text(e.name)),
+                          DataCell(Text('${e.itemId}')),
+                          // DataCell(Text('${e.name}')),
                           DataCell(Text('${e.qty}')),
                           DataCell(
-                            Text('${e.rQty}'),
+                            Text('${e.returnedQty}'),
                             showEditIcon: true,
                             onTap: () async {
-                              e.rQty = await _showQtyDialog(rQty: e.rQty, maxQty: e.qty);
+                              e.returnedQty = await _showQtyDialog(rQty: e.returnedQty, maxQty: e.qty);
                               setState(() {});
                             },
                           ),
-                          DataCell(Text('${e.rTotal}')),
+                          DataCell(Text('${e.returnedQty * (e.price + e.itemTaxVal)}')),
                         ],
                       ),
                     )
                     .toList(),
                 columns: [
                   DataColumn(label: Text('Serial'.tr)),
-                  DataColumn(label: Text('Item'.tr)),
+                  // DataColumn(label: Text('Item'.tr)),
                   DataColumn(label: Text('Qty'.tr)),
                   DataColumn(label: Text('R.Qty'.tr)),
                   DataColumn(label: Text('R.Total'.tr)),
@@ -685,12 +704,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Text(
                           '${'Total'.tr} : ',
-                          textAlign: TextAlign.end,
                           style: kStyleTextDefault,
                         ),
                         Text(
                           '${'Discount'.tr} : ',
-                          textAlign: TextAlign.end,
                           style: kStyleTextDefault,
                         ),
                         Text(
@@ -701,10 +718,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(''),
-                        Text(''),
-                        Text(''),
+                        Text(
+                          (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + (element.returnedQty * (element.price + element.itemTaxVal)))).toStringAsFixed(3),
+                          style: kStyleTextDefault,
+                        ),
+                        Text(
+                          (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + (element.returnedQty * element.invDisc))).toStringAsFixed(3),
+                          style: kStyleTextDefault,
+                        ),
+                        Text(
+                          (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + (element.returnedQty * (element.price + element.itemTaxVal - element.invDisc)))).toStringAsFixed(3),
+                          style: kStyleTextDefault,
+                        ),
                       ],
                     )
                   ],
@@ -737,7 +765,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       'Ok'.tr,
                       style: kStyleTextButton,
                     ),
-                    onPressed: () {},
+                    onPressed: () async {
+                      if (_refundModel.isNotEmpty && _refundModel.any((element) => element.returnedQty > 0)) {
+                        RestApi.refundInvoice(invNo: int.parse(_controllerVoucherNumber.text), refundModel: _refundModel);
+                        Get.back();
+                      }
+                    },
                   ),
                 ),
                 SizedBox(width: 50.w),

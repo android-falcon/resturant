@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:restaurant_system/database/network_table.dart';
 import 'package:restaurant_system/models/all_data_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
+import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/api_url.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enum_in_out_type.dart';
@@ -180,7 +181,7 @@ class RestApi {
     }
   }
 
-  static Future<void> getRefundInvoice({required int invNo}) async {
+  static Future<List<RefundModel>> getRefundInvoice({required int invNo}) async {
     try {
       showLoadingDialog();
       var queryParameters = {
@@ -191,15 +192,59 @@ class RestApi {
       final response = await restDio.get(ApiUrl.REFUND_INVOICE, queryParameters: queryParameters);
       _networkLog(response);
       if (response.statusCode == 200) {
-
+        List<RefundModel> refundModel = List<RefundModel>.from(response.data.map((e) => RefundModel.fromJson(e)));
+        hideLoadingDialog();
+        return refundModel;
+      } else {
+        hideLoadingDialog();
+        return [];
       }
-      hideLoadingDialog();
     } on dio.DioError catch (e) {
       hideLoadingDialog();
       _traceError(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return [];
     } catch (e) {
       hideLoadingDialog();
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return [];
+    }
+  }
+
+  static Future<void> refundInvoice({required List<RefundModel> refundModel, required int invNo}) async {
+    try {
+      var queryParameters = {
+        'orgInvNo': invNo,
+      };
+      var body = jsonEncode(List<dynamic>.from(refundModel.map((e) => e.toReturnInvoice())));
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'INVOICE_RETURNED_QTY',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.INVOICE_RETURNED_QTY,
+        method: 'POST',
+        params: jsonEncode(queryParameters),
+        body: body,
+        headers: '',
+        createdAt: DateTime.now().microsecondsSinceEpoch,
+        uploadedAt: DateTime.now().microsecondsSinceEpoch,
+      ));
+      final response = await restDio.post(ApiUrl.INVOICE_RETURNED_QTY, data: body, queryParameters: queryParameters);
+      _networkLog(response);
+      if (response.statusCode == 200) {
+        var networkModel = await NetworkTable.queryLastRow();
+        if (networkModel != null) {
+          networkModel.status = 2;
+          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
+          await NetworkTable.update(networkModel);
+        }
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    } catch (e) {
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
