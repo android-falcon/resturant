@@ -53,6 +53,7 @@ class _TableScreenState extends State<TableScreen> {
     ];
     floors = allDataModel.tables.map((e) => e.floorNo).toSet();
     _selectFloor = floors.first;
+
   }
 
   @override

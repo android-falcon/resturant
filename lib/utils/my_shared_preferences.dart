@@ -75,6 +75,12 @@ class MySharedPreferences {
     _sharedPreferences.setString(keyAllData, value);
   }
 
+  String get dineIn => _sharedPreferences.getString(keyDineIn) ?? "";
+
+  set dineIn(String value) {
+    _sharedPreferences.setString(keyDineIn, value);
+  }
+
   String get baseUrl => _sharedPreferences.getString(keyBaseUrl) ?? "";
 
   set baseUrl(String value) {
@@ -123,6 +129,7 @@ const String keyUserId = "key_user_id";
 const String keyFullName = "key_full_name";
 const String keyPhoneNumber = "key_phone_number";
 const String keyAllData = "key_all_data";
+const String keyDineIn = "key_dine_in";
 const String keyBaseUrl = "key_base_url";
 const String keyInVocNo = "key_in_voc_no";
 const String keyOutVocNo = "key_out_voc_no";

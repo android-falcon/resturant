@@ -7,10 +7,12 @@ import 'package:intl/intl.dart';
 import 'package:restaurant_system/database/network_table.dart';
 import 'package:restaurant_system/models/all_data_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
+import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/api_url.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enum_in_out_type.dart';
+import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/utils.dart';
@@ -125,6 +127,38 @@ class RestApi {
       } else {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       }
+      if (allDataModel.tables.isNotEmpty) {
+        var dineIn = List<DineInModel>.from(
+          allDataModel.tables.map(
+            (e) => DineInModel(
+              isOpen: e.isOpened == 1,
+              isReservation: false,
+              tableNo: e.tableNo,
+              floorNo: e.floorNo,
+              cart: CartModel.init(orderType: OrderType.dineIn),
+            ),
+          ),
+        );
+        if (mySharedPreferences.dineIn.isEmpty) {
+          mySharedPreferences.dineIn = jsonEncode(List<dynamic>.from(dineIn.map((e) => e.toJson())));
+        } else {
+          var dineInSaved = List<DineInModel>.from(jsonDecode(mySharedPreferences.dineIn).map((e) => DineInModel.fromJson(e)));
+          dineInSaved.removeWhere((elementSaved) => dineIn.every((element) => elementSaved.tableNo != element.tableNo));
+          for (var element in dineIn) {
+            var dineInSavedIndex = dineInSaved.indexWhere((elementSaved) => elementSaved.tableNo == element.tableNo);
+            if (dineInSavedIndex == -1) {
+              dineInSaved.add(element);
+            } else {
+              dineInSaved[dineInSavedIndex].isOpen == element.isOpen;
+              dineInSaved[dineInSavedIndex].floorNo == element.floorNo;
+            }
+          }
+          mySharedPreferences.dineIn = jsonEncode(List<dynamic>.from(dineInSaved.map((e) => e.toJson())));
+        }
+      } else {
+        mySharedPreferences.dineIn = "";
+      }
+
       hideLoadingDialog();
     } on dio.DioError catch (e) {
       _traceError(e);
