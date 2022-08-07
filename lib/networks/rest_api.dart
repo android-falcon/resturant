@@ -133,6 +133,7 @@ class RestApi {
             (e) => DineInModel(
               isOpen: e.isOpened == 1,
               isReservation: false,
+              tableId: e.id,
               tableNo: e.tableNo,
               floorNo: e.floorNo,
               cart: CartModel.init(orderType: OrderType.dineIn),
@@ -140,23 +141,24 @@ class RestApi {
           ),
         );
         if (mySharedPreferences.dineIn.isEmpty) {
-          mySharedPreferences.dineIn = jsonEncode(List<dynamic>.from(dineIn.map((e) => e.toJson())));
+          mySharedPreferences.dineIn = dineIn;
         } else {
-          var dineInSaved = List<DineInModel>.from(jsonDecode(mySharedPreferences.dineIn).map((e) => DineInModel.fromJson(e)));
-          dineInSaved.removeWhere((elementSaved) => dineIn.every((element) => elementSaved.tableNo != element.tableNo));
+          var dineInSaved = mySharedPreferences.dineIn;
+          dineInSaved.removeWhere((elementSaved) => dineIn.every((element) => elementSaved.tableId != element.tableId));
           for (var element in dineIn) {
-            var dineInSavedIndex = dineInSaved.indexWhere((elementSaved) => elementSaved.tableNo == element.tableNo);
+            var dineInSavedIndex = dineInSaved.indexWhere((elementSaved) => elementSaved.tableId == element.tableId);
             if (dineInSavedIndex == -1) {
               dineInSaved.add(element);
             } else {
               dineInSaved[dineInSavedIndex].isOpen == element.isOpen;
               dineInSaved[dineInSavedIndex].floorNo == element.floorNo;
+              dineInSaved[dineInSavedIndex].tableNo == element.tableNo;
             }
           }
-          mySharedPreferences.dineIn = jsonEncode(List<dynamic>.from(dineInSaved.map((e) => e.toJson())));
+          mySharedPreferences.dineIn = dineInSaved;
         }
       } else {
-        mySharedPreferences.dineIn = "";
+        mySharedPreferences.dineIn = [];
       }
 
       hideLoadingDialog();
@@ -196,10 +198,11 @@ class RestApi {
         createdAt: DateTime.now().microsecondsSinceEpoch,
         uploadedAt: DateTime.now().microsecondsSinceEpoch,
       ));
+      var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.INVOICE, data: body);
+
       _networkLog(response);
       if (response.statusCode == 200) {
-        var networkModel = await NetworkTable.queryLastRow();
         if (networkModel != null) {
           networkModel.status = 2;
           networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
@@ -265,10 +268,10 @@ class RestApi {
         createdAt: DateTime.now().microsecondsSinceEpoch,
         uploadedAt: DateTime.now().microsecondsSinceEpoch,
       ));
+      var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.INVOICE_RETURNED_QTY, data: body, queryParameters: queryParameters);
       _networkLog(response);
       if (response.statusCode == 200) {
-        var networkModel = await NetworkTable.queryLastRow();
         if (networkModel != null) {
           networkModel.status = 2;
           networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
@@ -313,10 +316,10 @@ class RestApi {
         createdAt: DateTime.now().microsecondsSinceEpoch,
         uploadedAt: DateTime.now().microsecondsSinceEpoch,
       ));
+      var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.PAY_IN_OUT, data: body);
       _networkLog(response);
       if (response.statusCode == 200) {
-        var networkModel = await NetworkTable.queryLastRow();
         if (networkModel != null) {
           networkModel.status = 2;
           networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
@@ -354,10 +357,86 @@ class RestApi {
         createdAt: DateTime.now().microsecondsSinceEpoch,
         uploadedAt: DateTime.now().microsecondsSinceEpoch,
       ));
+      var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.POS_DAILY_CLOSE, data: body);
       _networkLog(response);
       if (response.statusCode == 200) {
-        var networkModel = await NetworkTable.queryLastRow();
+        if (networkModel != null) {
+          networkModel.status = 2;
+          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
+          await NetworkTable.update(networkModel);
+        }
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
+
+  static Future<void> openTable(int tableId) async {
+    try {
+      var queryParameters = {
+        'tblId': tableId,
+      };
+      mySharedPreferences.inVocNo++;
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'OPEN_TABLE',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.OPEN_TABLE,
+        method: 'POST',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        createdAt: DateTime.now().microsecondsSinceEpoch,
+        uploadedAt: DateTime.now().microsecondsSinceEpoch,
+      ));
+      var networkModel = await NetworkTable.queryLastRow();
+      final response = await restDio.post(ApiUrl.OPEN_TABLE, queryParameters: queryParameters);
+      _networkLog(response);
+      if (response.statusCode == 200) {
+        if (networkModel != null) {
+          networkModel.status = 2;
+          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
+          await NetworkTable.update(networkModel);
+        }
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
+
+  static Future<void> closeTable(int tableId) async {
+    try {
+      var queryParameters = {
+        'tblId': tableId,
+      };
+      mySharedPreferences.inVocNo++;
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'CLOSE_TABLE',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.CLOSE_TABLE,
+        method: 'POST',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        createdAt: DateTime.now().microsecondsSinceEpoch,
+        uploadedAt: DateTime.now().microsecondsSinceEpoch,
+      ));
+      var networkModel = await NetworkTable.queryLastRow();
+      final response = await restDio.post(ApiUrl.CLOSE_TABLE, queryParameters: queryParameters);
+      _networkLog(response);
+      if (response.statusCode == 200) {
         if (networkModel != null) {
           networkModel.status = 2;
           networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;

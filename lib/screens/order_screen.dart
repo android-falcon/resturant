@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -13,6 +14,8 @@ import 'package:restaurant_system/models/all_data/item_sub_items_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
+import 'package:restaurant_system/models/dine_in_model.dart';
+import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -31,8 +34,9 @@ import 'package:restaurant_system/utils/validation.dart';
 
 class OrderScreen extends StatefulWidget {
   final OrderType type;
+  final int? tableId;
 
-  const OrderScreen({Key? key, required this.type}) : super(key: key);
+  const OrderScreen({Key? key, required this.type, this.tableId}) : super(key: key);
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -44,11 +48,21 @@ class _OrderScreenState extends State<OrderScreen> {
   late CartModel _cartModel;
   int _indexItemSelect = -1;
   double maxHeightItem = 0;
+  List<DineInModel> dineInSaved = [];
+  int indexTable = -1;
 
   @override
   initState() {
     super.initState();
-    _cartModel = CartModel.init(orderType: widget.type);
+    if (widget.type == OrderType.dineIn) {
+      dineInSaved = mySharedPreferences.dineIn;
+      indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId!);
+      if (indexTable != -1) {
+        _cartModel = dineInSaved[indexTable].cart;
+      }
+    } else {
+      _cartModel = CartModel.init(orderType: widget.type);
+    }
   }
 
   Future<double> _showDeliveryDialog({TextEditingController? controller, required double delivery}) async {
@@ -766,6 +780,15 @@ class _OrderScreenState extends State<OrderScreen> {
     setState(() {});
   }
 
+  _saveDineIn() {
+    if (!dineInSaved[indexTable].isOpen) {
+      RestApi.openTable(dineInSaved[indexTable].tableId);
+      dineInSaved[indexTable].isOpen = true;
+    }
+    dineInSaved[indexTable].cart = _cartModel;
+    mySharedPreferences.dineIn = dineInSaved;
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -774,8 +797,9 @@ class _OrderScreenState extends State<OrderScreen> {
           _isShowItem = false;
           setState(() {});
           return false;
+        } else {
+          return true;
         }
-        return true;
       },
       child: Scaffold(
         body: CustomSingleChildScrollView(
@@ -886,27 +910,27 @@ class _OrderScreenState extends State<OrderScreen> {
                           ),
                         ],
                       ),
-                    if (widget.type == OrderType.dineIn)
-                      Row(
-                        children: [
-                          SizedBox(width: 4.w),
-                          const VerticalDivider(
-                            width: 1,
-                            thickness: 2,
-                          ),
-                          Image.asset(
-                            'assets/images/kitchen.png',
-                            height: 45.h,
-                          ),
-                          Text(
-                            '2',
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: kStyleTextDefault,
-                          ),
-                        ],
-                      ),
+                    // if (widget.type == OrderType.dineIn)
+                    //   Row(
+                    //     children: [
+                    //       SizedBox(width: 4.w),
+                    //       const VerticalDivider(
+                    //         width: 1,
+                    //         thickness: 2,
+                    //       ),
+                    //       Image.asset(
+                    //         'assets/images/kitchen.png',
+                    //         height: 45.h,
+                    //       ),
+                    //       Text(
+                    //         '2',
+                    //         textAlign: TextAlign.center,
+                    //         overflow: TextOverflow.ellipsis,
+                    //         maxLines: 1,
+                    //         style: kStyleTextDefault,
+                    //       ),
+                    //     ],
+                    //   ),
                     if (widget.type == OrderType.dineIn)
                       Row(
                         children: [
@@ -1467,26 +1491,27 @@ class _OrderScreenState extends State<OrderScreen> {
                           ),
                           Row(
                             children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                                  child: CustomButton(
-                                    child: Text(
-                                      'Pay'.tr,
-                                      style: kStyleTextButton,
+                              if (widget.type == OrderType.takeAway)
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                                    child: CustomButton(
+                                      child: Text(
+                                        'Pay'.tr,
+                                        style: kStyleTextButton,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.green,
+                                      onPressed: () {
+                                        if (_cartModel.items.isNotEmpty) {
+                                          Get.to(() => PayScreen(cart: _cartModel));
+                                        } else {
+                                          Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.green,
-                                    onPressed: () {
-                                      if (_cartModel.items.isNotEmpty) {
-                                        Get.to(() => PayScreen(cart: _cartModel));
-                                      } else {
-                                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
-                                      }
-                                    },
                                   ),
                                 ),
-                              ),
                               if (widget.type == OrderType.dineIn)
                                 Expanded(
                                   child: Padding(
@@ -1498,7 +1523,10 @@ class _OrderScreenState extends State<OrderScreen> {
                                       ),
                                       fixed: true,
                                       backgroundColor: ColorsApp.red,
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        _saveDineIn();
+                                        Get.back();
+                                      },
                                     ),
                                   ),
                                 ),

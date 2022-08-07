@@ -6,9 +6,11 @@ import 'package:restaurant_system/utils/color.dart';
 typedef CustomDialogBuilder = Widget Function(BuildContext context, StateSetter setState, BoxConstraints constraints);
 
 class CustomDialog extends StatelessWidget {
+  final bool enableScroll;
   final CustomDialogBuilder builder;
   final GestureTapCallback? gestureDetectorOnTap;
-  const CustomDialog({Key? key, required this.builder, this.gestureDetectorOnTap}) : super(key: key);
+
+  const CustomDialog({Key? key, required this.builder, this.gestureDetectorOnTap, this.enableScroll = true}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +28,11 @@ class CustomDialog extends StatelessWidget {
             width: 0.95.sw,
             height: 0.95.sh,
             child: LayoutBuilder(
-              builder: (context, constraints) => SingleChildScrollView(
-                child: builder(context, setState, constraints),
-              ),
+              builder: (context, constraints) => enableScroll
+                  ? SingleChildScrollView(
+                      child: builder(context, setState, constraints),
+                    )
+                  : builder(context, setState, constraints),
             ),
           ),
         ),

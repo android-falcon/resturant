@@ -121,4 +121,8 @@ const Map<String, String> en = {
   'Daily Close': 'Daily Close',
   'Are you sure?': 'Are you sure?',
   'Please select the item you want to change quantity': 'Please select the item you want to change quantity',
+  'The value must be greater than zero': 'The value must be greater than zero',
+  'Done':'Done',
+  'From':'From',
+  'To':'To',
 };

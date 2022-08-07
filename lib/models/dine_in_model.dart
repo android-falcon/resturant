@@ -5,6 +5,7 @@ class DineInModel {
   DineInModel({
     required this.isOpen,
     required this.isReservation,
+    required this.tableId,
     required this.tableNo,
     required this.floorNo,
     required this.cart,
@@ -12,6 +13,7 @@ class DineInModel {
 
   bool isOpen;
   bool isReservation;
+  int tableId;
   int tableNo;
   int floorNo;
   CartModel cart;
@@ -19,6 +21,7 @@ class DineInModel {
   factory DineInModel.init() => DineInModel(
     isOpen: false,
     isReservation: false,
+    tableId: 0,
     tableNo: 0,
     floorNo: 0,
     cart: CartModel.init(orderType: OrderType.dineIn),
@@ -27,6 +30,7 @@ class DineInModel {
   factory DineInModel.fromJson(Map<String, dynamic> json) => DineInModel(
     isOpen: json['isOpen'],
     isReservation: json['isReservation'],
+    tableId: json['tableId'],
     tableNo: json['tableNo'],
     floorNo: json['floorNo'],
     cart: json['cart'] == null ? CartModel.init(orderType: OrderType.dineIn) : CartModel.fromJson(json['cart']),
@@ -35,6 +39,7 @@ class DineInModel {
   Map<String, dynamic> toJson() => {
     'isOpen':isOpen,
     'isReservation':isReservation,
+    'tableId':tableId,
     'tableNo':tableNo,
     'floorNo':floorNo,
     'cart':cart.toJson(),

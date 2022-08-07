@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -5,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:restaurant_system/models/cart_model.dart';
+import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
@@ -13,14 +16,16 @@ import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_vie
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
 
 class PayScreen extends StatefulWidget {
   final CartModel cart;
+  final int? tableId;
 
-  const PayScreen({Key? key, required this.cart}) : super(key: key);
+  const PayScreen({Key? key, required this.cart, this.tableId}) : super(key: key);
 
   @override
   State<PayScreen> createState() => _PayScreenState();
@@ -28,7 +33,7 @@ class PayScreen extends StatefulWidget {
 
 class _PayScreenState extends State<PayScreen> {
   double remaining = 0;
-
+  List<DineInModel> dineInSaved = mySharedPreferences.dineIn;
   @override
   void initState() {
     // TODO: implement initState
@@ -876,6 +881,13 @@ class _PayScreenState extends State<PayScreen> {
                                               _showPrintDialog().then((value) {
                                                 Get.offAll(HomeScreen());
                                               });
+                                              if(widget.tableId != null){
+                                                RestApi.closeTable(widget.tableId!);
+                                                var indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId);
+                                                dineInSaved[indexTable].isOpen = false;
+                                                dineInSaved[indexTable].cart = CartModel.init(orderType: OrderType.dineIn);
+                                                mySharedPreferences.dineIn = dineInSaved;
+                                              }
                                             } else {
                                               Fluttertoast.showToast(msg: 'The remainder should be 0'.tr);
                                             }

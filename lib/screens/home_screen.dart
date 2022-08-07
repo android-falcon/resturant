@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/refund_model.dart';
@@ -451,27 +452,31 @@ class _HomeScreenState extends State<HomeScreen> {
                           _controllerSelectEdit,
                           setState,
                           onSubmit: () {
-                            switch (type) {
-                              case InOutType.payIn:
-                                RestApi.payInOut(
-                                  value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
-                                  remark: _controllerRemark.text,
-                                  type: 1,
-                                );
-                                Get.back();
-                                break;
-                              case InOutType.payOut:
-                                RestApi.payInOut(
-                                  value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
-                                  remark: _controllerRemark.text,
-                                  type: 2,
-                                );
-                                Get.back();
-                                break;
-                              case InOutType.cashIn:
-                                break;
-                              case InOutType.cashOut:
-                                break;
+                            if (_typeInputCash == 1 ? double.parse(_controllerManual.text) > 0 : moneyCount > 0) {
+                              switch (type) {
+                                case InOutType.payIn:
+                                  RestApi.payInOut(
+                                    value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
+                                    remark: _controllerRemark.text,
+                                    type: 1,
+                                  );
+                                  Get.back();
+                                  break;
+                                case InOutType.payOut:
+                                  RestApi.payInOut(
+                                    value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
+                                    remark: _controllerRemark.text,
+                                    type: 2,
+                                  );
+                                  Get.back();
+                                  break;
+                                case InOutType.cashIn:
+                                  break;
+                                case InOutType.cashOut:
+                                  break;
+                              }
+                            } else {
+                              Fluttertoast.showToast(msg: 'The value must be greater than zero'.tr);
                             }
                           },
                         ),
@@ -679,7 +684,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               setState(() {});
                             },
                           ),
-                          DataCell(Text('${e.returnedQty * (e.price + e.itemTaxVal)}')),
+                          DataCell(Text('${(e.netTotal / e.qty) * e.returnedQty}')),
                         ],
                       ),
                     )
@@ -702,14 +707,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
-                          '${'Total'.tr} : ',
-                          style: kStyleTextDefault,
-                        ),
-                        Text(
-                          '${'Discount'.tr} : ',
-                          style: kStyleTextDefault,
-                        ),
+                        // Text(
+                        //   '${'Total'.tr} : ',
+                        //   style: kStyleTextDefault,
+                        // ),
+                        // Text(
+                        //   '${'Discount'.tr} : ',
+                        //   style: kStyleTextDefault,
+                        // ),
                         Text(
                           '${'Net Total'.tr} : ',
                           textAlign: TextAlign.end,
@@ -721,16 +726,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
+                        // Text(
+                        //   (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + (element.returnedQty * (element.price + element.itemTaxVal)))).toStringAsFixed(3),
+                        //   style: kStyleTextDefault,
+                        // ),
+                        // Text(
+                        //   (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + (element.returnedQty * element.invDisc))).toStringAsFixed(3),
+                        //   style: kStyleTextDefault,
+                        // ),
                         Text(
-                          (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + (element.returnedQty * (element.price + element.itemTaxVal)))).toStringAsFixed(3),
-                          style: kStyleTextDefault,
-                        ),
-                        Text(
-                          (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + (element.returnedQty * element.invDisc))).toStringAsFixed(3),
-                          style: kStyleTextDefault,
-                        ),
-                        Text(
-                          (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + (element.returnedQty * (element.price + element.itemTaxVal - element.invDisc)))).toStringAsFixed(3),
+                          (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + ((element.netTotal / element.qty) * element.returnedQty))).toStringAsFixed(3),
                           style: kStyleTextDefault,
                         ),
                       ],

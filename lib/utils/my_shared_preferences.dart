@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MySharedPreferences {
@@ -75,10 +78,10 @@ class MySharedPreferences {
     _sharedPreferences.setString(keyAllData, value);
   }
 
-  String get dineIn => _sharedPreferences.getString(keyDineIn) ?? "";
+  List<DineInModel> get dineIn => List<DineInModel>.from(jsonDecode(_sharedPreferences.getString(keyDineIn) ?? "[]").map((e) => DineInModel.fromJson(e)));
 
-  set dineIn(String value) {
-    _sharedPreferences.setString(keyDineIn, value);
+  set dineIn(List<DineInModel> value) {
+    _sharedPreferences.setString(keyDineIn, jsonEncode(List<dynamic>.from(value.map((e) => e.toJson()))));
   }
 
   String get baseUrl => _sharedPreferences.getString(keyBaseUrl) ?? "";
