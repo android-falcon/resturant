@@ -9,7 +9,8 @@ class CartModel {
     required this.id,
     required this.total,
     required this.deliveryCharge,
-    required this.lineDiscount,
+    required this.totalLineDiscount,
+    required this.totalDiscount,
     required this.discount,
     this.discountType = DiscountType.percentage,
     required this.subTotal,
@@ -31,7 +32,8 @@ class CartModel {
   int id;
   double total;
   double deliveryCharge;
-  double lineDiscount;
+  double totalLineDiscount;
+  double totalDiscount;
   double discount;
   DiscountType discountType;
   double subTotal;
@@ -53,7 +55,8 @@ class CartModel {
         id: 0,
         total: 0,
         deliveryCharge: 0,
-        lineDiscount: 0,
+        totalLineDiscount: 0,
+        totalDiscount: 0,
         discount: 0,
         discountType: DiscountType.percentage,
         subTotal: 0,
@@ -70,7 +73,8 @@ class CartModel {
         id: json['id'],
         total: json['total'] == null ? 0 : json['total'].toDouble(),
         deliveryCharge: json['deliveryCharge'] == null ? 0 : json['deliveryCharge'].toDouble(),
-        lineDiscount: json['lineDiscount'] == null ? 0 : json['lineDiscount'].toDouble(),
+        totalLineDiscount: json['lineDiscount'] == null ? 0 : json['lineDiscount'].toDouble(),
+        totalDiscount: json['totalDiscount'] == null ? 0 : json['totalDiscount'].toDouble(),
         discount: json['discount'] == null ? 0 : json['discount'].toDouble(),
         discountType: DiscountType.values[json['discountType']],
         subTotal: json['subTotal'] == null ? 0 : json['subTotal'].toDouble(),
@@ -93,7 +97,8 @@ class CartModel {
         'id': id,
         'total': total,
         'deliveryCharge': deliveryCharge,
-        'lineDiscount': lineDiscount,
+        'lineDiscount': totalLineDiscount,
+        'totalDiscount': totalDiscount,
         'discount': discount,
         'discountType': discountType.index,
         'subTotal': subTotal,
@@ -123,7 +128,7 @@ class CartModel {
         "TotalServiceTax": serviceTax, // ضريبة السيرفس فقط
         "TotalTax": itemsTax, // ضريبة بدو ضريبة السيرفس
         "InvDisc": discount, // الخصم الكلي على الفتورة
-        "TotalItemDisc": lineDiscount, // مجموع discount line
+        "TotalItemDisc": totalLineDiscount, // مجموع discount line
         "DeliveryCharge": deliveryCharge, // مجموع توصيل
         "InvNetTotal": amountDue, // المجموع نهائي بعد كل اشي
         "PayType": 0, // 0
@@ -158,6 +163,7 @@ class CartItemModel {
     required this.rowSerial,
     this.lineDiscountType = DiscountType.percentage,
     this.lineDiscount = 0,
+    this.totalLineDiscount = 0,
     this.discount = 0,
     this.service = 0,
     this.serviceTax = 0,
@@ -183,6 +189,7 @@ class CartItemModel {
   double tax;
   DiscountType lineDiscountType;
   double lineDiscount;
+  double totalLineDiscount;
   double discount;
   double service;
   double serviceTax;
@@ -208,6 +215,7 @@ class CartItemModel {
         tax: json['tax'] == null ? 0 : json['tax'].toDouble(),
         lineDiscountType: DiscountType.values[json['lineDiscountType']],
         lineDiscount: json['lineDiscount'] == null ? 0 : json['lineDiscount'].toDouble(),
+        totalLineDiscount: json['totalLineDiscount'] == null ? 0 : json['totalLineDiscount'].toDouble(),
         discount: json['discount'] == null ? 0 : json['discount'].toDouble(),
         service: json['service'] == null ? 0 : json['service'].toDouble(),
         serviceTax: json['serviceTax'] == null ? 0 : json['serviceTax'].toDouble(),
@@ -234,6 +242,7 @@ class CartItemModel {
         "tax": tax,
         "lineDiscountType": lineDiscountType.index,
         "lineDiscount": lineDiscount,
+        "totalLineDiscount": totalLineDiscount,
         "discount": discount,
         "service": service,
         "serviceTax": serviceTax,

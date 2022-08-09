@@ -109,8 +109,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       HomeMenu(
         name: 'Exit'.tr,
-        onTab: () {
-          _showExitAppDialog();
+        onTab: () async {
+          var result = await _showAreYouSureDialog(title: 'Close App'.tr);
+          if (result) {
+            if (Platform.isAndroid) {
+              SystemNavigator.pop();
+            } else if (Platform.isIOS) {
+              exit(0);
+            }
+          }
         },
       ),
     ];
@@ -453,32 +460,41 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: numPadWidget(
                           _controllerSelectEdit,
                           setState,
-                          onSubmit: () {
-                            if (_typeInputCash == 1 ? double.parse(_controllerManual.text) > 0 : moneyCount > 0) {
-                              switch (type) {
-                                case InOutType.payIn:
-                                  RestApi.payInOut(
-                                    value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
-                                    remark: _controllerRemark.text,
-                                    type: 1,
-                                  );
-                                  Get.back();
-                                  break;
-                                case InOutType.payOut:
-                                  RestApi.payInOut(
-                                    value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
-                                    remark: _controllerRemark.text,
-                                    type: 2,
-                                  );
-                                  Get.back();
-                                  break;
-                                case InOutType.cashIn:
-                                  break;
-                                case InOutType.cashOut:
-                                  break;
+                          onExit: () async {
+                            var result = await _showAreYouSureDialog(title: 'Exit'.tr);
+                            if (result) {
+                              Get.back();
+                            }
+                          },
+                          onSubmit: () async {
+                            var result = await _showAreYouSureDialog(title: 'Save'.tr);
+                            if (result) {
+                              if (_typeInputCash == 1 ? double.parse(_controllerManual.text) > 0 : moneyCount > 0) {
+                                switch (type) {
+                                  case InOutType.payIn:
+                                    RestApi.payInOut(
+                                      value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
+                                      remark: _controllerRemark.text,
+                                      type: 1,
+                                    );
+                                    Get.back();
+                                    break;
+                                  case InOutType.payOut:
+                                    RestApi.payInOut(
+                                      value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
+                                      remark: _controllerRemark.text,
+                                      type: 2,
+                                    );
+                                    Get.back();
+                                    break;
+                                  case InOutType.cashIn:
+                                    break;
+                                  case InOutType.cashOut:
+                                    break;
+                                }
+                              } else {
+                                Fluttertoast.showToast(msg: 'The value must be greater than zero'.tr);
                               }
-                            } else {
-                              Fluttertoast.showToast(msg: 'The value must be greater than zero'.tr);
                             }
                           },
                         ),
@@ -854,23 +870,20 @@ class _HomeScreenState extends State<HomeScreen> {
     return int.parse(qty);
   }
 
-  _showExitAppDialog() async {
-    await Get.defaultDialog(
-      title: 'Close App'.tr,
+  Future<bool> _showAreYouSureDialog({required String title}) async {
+    var result = await Get.defaultDialog(
+      title: title,
       titleStyle: kStyleTextTitle,
       content: Text('Are you sure?'.tr),
       textCancel: 'Cancel'.tr,
       textConfirm: 'Confirm'.tr,
       confirmTextColor: Colors.white,
       onConfirm: () {
-        if (Platform.isAndroid) {
-          SystemNavigator.pop();
-        } else if (Platform.isIOS) {
-          exit(0);
-        }
+        Get.back(result: true);
       },
       barrierDismissible: true,
     );
+    return result ?? false;
   }
 
   @override

@@ -399,7 +399,7 @@ class _PayScreenState extends State<PayScreen> {
                         ),
                       ),
                       Text(
-                        widget.cart.lineDiscount.toStringAsFixed(3),
+                        widget.cart.totalLineDiscount.toStringAsFixed(3),
                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -743,7 +743,7 @@ class _PayScreenState extends State<PayScreen> {
                                       ),
                                     ),
                                     Text(
-                                      widget.cart.lineDiscount.toStringAsFixed(3),
+                                      widget.cart.totalLineDiscount.toStringAsFixed(3),
                                       style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                     ),
                                   ],

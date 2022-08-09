@@ -49,6 +49,7 @@ Widget numPadWidget(
   void Function(Function()) setState, {
   bool decimal = true,
   Function()? onSubmit,
+  Function()? onExit,
 }) {
   void addNumber(TextEditingController? controller, int number) {
     if (controller != null) {
@@ -67,7 +68,7 @@ Widget numPadWidget(
   return NumPad(
     controller: controller,
     onSubmit: onSubmit,
-    onExit: () {
+    onExit: onExit ?? () {
       Get.back();
     },
     onPressed1: () {

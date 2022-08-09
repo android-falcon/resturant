@@ -397,8 +397,10 @@ class _OrderScreenState extends State<OrderScreen> {
 
   Future<List<CartItemQuestionModel>> _showForceQuestionDialog({required List<ItemWithQuestionsModel> questionsItem}) async {
     List<CartItemQuestionModel> answersModifire = List<CartItemQuestionModel>.from(questionsItem.map((e) => CartItemQuestionModel(id: e.forceQuestionId, question: e.qtext, modifiers: [])));
+
     int i = 0;
     while (i < answersModifire.length) {
+      log('ananan $i');
       var modifireForceQuestions = allDataModel.modifireForceQuestions.indexWhere((element) => element.forceQuestion.id == answersModifire[i].id && element.modifires.isNotEmpty);
       if (modifireForceQuestions == -1) {
         i++;
@@ -577,11 +579,10 @@ class _OrderScreenState extends State<OrderScreen> {
                                 price: e.price,
                                 priceChange: e.price,
                                 total: e.price * parentQty,
-                                tax: e.taxPercent.percent,
+                                tax: 0,
                                 discountAvailable: e.discountAvailable == 1,
                                 openPrice: e.openPrice == 1,
                                 rowSerial: 0,
-
                               ));
                             }
                             setState(() {});
@@ -753,50 +754,57 @@ class _OrderScreenState extends State<OrderScreen> {
   _calculateOrder() {
     if (allDataModel.companyConfig.first.taxCalcMethod == 0) {
       // خاضع
-      _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (item.priceChange * item.qty));
-      _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? item.priceChange * (item.lineDiscount / 100) : item.lineDiscount) * item.qty));
-      _cartModel.discount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
-      _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.lineDiscount;
-      _cartModel.service = widget.type == OrderType.takeAway ? 0 : _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
-      _cartModel.serviceTax = widget.type == OrderType.takeAway ? 0 :  _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
-      _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + (item.taxType == 2 ? 0 : (item.priceChange * item.qty) * (item.tax / 100)));
-      _cartModel.tax = _cartModel.itemsTax + _cartModel.serviceTax;
-      _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
-      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? (item.priceChange * item.qty) : 0));
       for (var element in _cartModel.items) {
         element.total = element.priceChange * element.qty;
-        element.tax = element.taxType == 2 ? 0 : (element.priceChange * element.qty) * (element.tax / 100);
+        element.totalLineDiscount = (element.lineDiscountType == DiscountType.percentage ? element.priceChange * (element.lineDiscount / 100) : element.lineDiscount) * element.qty;
+      }
+      _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + item.total);
+      _cartModel.totalLineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + item.totalLineDiscount);
+      _cartModel.totalDiscount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
+      _cartModel.service = widget.type == OrderType.takeAway ? 0 : _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
+      _cartModel.serviceTax = widget.type == OrderType.takeAway ? 0 : _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? item.total : 0));
+      for (var element in _cartModel.items) {
         if (element.discountAvailable) {
-          element.discount = _cartModel.discount * (element.total / totalDiscountAvailableItem);
+          element.discount = _cartModel.totalDiscount * (element.total / totalDiscountAvailableItem);
         } else {
           element.discount = 0;
         }
+        element.tax = element.taxType == 2 ? 0 : (element.total - element.totalLineDiscount - element.discount) * (element.taxPercent / 100);
         element.service = _cartModel.service * (element.total / _cartModel.total);
         element.serviceTax = element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
       }
-    } else {
-      // شامل
-      _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty));
-      _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? (item.priceChange - (item.priceChange * (item.tax / 100))) * (item.lineDiscount / 100) : item.lineDiscount) * item.qty));
-      _cartModel.discount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
-      _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.lineDiscount;
-      _cartModel.service = widget.type == OrderType.takeAway ? 0 :  _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
-      _cartModel.serviceTax = widget.type == OrderType.takeAway ? 0 :  _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
-      _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + (item.taxType == 2 ? 0 : ((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty) * (item.tax / 100)));
+      _cartModel.subTotal = _cartModel.total - _cartModel.totalDiscount - _cartModel.totalLineDiscount;
+      _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + item.tax);
       _cartModel.tax = _cartModel.itemsTax + _cartModel.serviceTax;
       _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
-      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? ((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty) : 0));
+
+    } else {
+      // شامل
       for (var element in _cartModel.items) {
-        element.total = ((element.priceChange - (element.priceChange * (element.tax / 100))) * element.qty);
-        element.tax = element.taxType == 2 ? 0 : ((element.priceChange - (element.priceChange * (element.tax / 100))) * element.qty) * (element.tax / 100);
+        element.total = (element.priceChange - (element.priceChange * (element.taxPercent / 100))) * element.qty;
+        element.totalLineDiscount = (element.lineDiscountType == DiscountType.percentage ? element.total * (element.lineDiscount / 100) : element.lineDiscount) * element.qty;
+      }
+      _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + item.total);
+      _cartModel.totalLineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + item.totalLineDiscount);
+      _cartModel.totalDiscount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
+      _cartModel.service = widget.type == OrderType.takeAway ? 0 : _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
+      _cartModel.serviceTax = widget.type == OrderType.takeAway ? 0 : _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? item.total : 0));
+      for (var element in _cartModel.items) {
         if (element.discountAvailable) {
-          element.discount = _cartModel.discount * (element.total / totalDiscountAvailableItem);
+          element.discount = _cartModel.totalDiscount * (element.total / totalDiscountAvailableItem);
         } else {
           element.discount = 0;
         }
+        element.tax = element.taxType == 2 ? 0 : (element.total - element.totalLineDiscount - element.discount) * (element.taxPercent / 100);
         element.service = _cartModel.service * (element.total / _cartModel.total);
         element.serviceTax = element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
       }
+      _cartModel.subTotal = _cartModel.total - _cartModel.totalDiscount - _cartModel.totalLineDiscount;
+      _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + item.tax);
+      _cartModel.tax = _cartModel.itemsTax + _cartModel.serviceTax;
+      _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
     }
     setState(() {});
   }
@@ -1023,7 +1031,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                           //         price: e.price,
                                           //         priceChange: e.price,
                                           //         total: e.price,
-                                          //         tax: e.taxPercent.percent,
+                                          //         tax: 0,
                                           //         discountAvailable: e.discountAvailable == 1,
                                           //         openPrice: e.openPrice == 1,
                                           //         rowSerial: _cartModel.items.length + 1,
@@ -1048,7 +1056,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                             price: e.price,
                                             priceChange: e.price,
                                             total: e.price,
-                                            tax: e.taxPercent.percent,
+                                            tax: 0,
                                             discountAvailable: e.discountAvailable == 1,
                                             openPrice: e.openPrice == 1,
                                             rowSerial: _cartModel.items.length + 1,
@@ -1415,26 +1423,12 @@ class _OrderScreenState extends State<OrderScreen> {
                                         children: [
                                           Expanded(
                                             child: Text(
-                                              'Delivery Charge'.tr,
-                                              style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
-                                            ),
-                                          ),
-                                          Text(
-                                            _cartModel.deliveryCharge.toStringAsFixed(3),
-                                            style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
                                               'Line Discount'.tr,
                                               style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
                                             ),
                                           ),
                                           Text(
-                                            _cartModel.lineDiscount.toStringAsFixed(3),
+                                            _cartModel.totalLineDiscount.toStringAsFixed(3),
                                             style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                           ),
                                         ],
@@ -1464,6 +1458,20 @@ class _OrderScreenState extends State<OrderScreen> {
                                           ),
                                           Text(
                                             _cartModel.subTotal.toStringAsFixed(3),
+                                            style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              'Delivery Charge'.tr,
+                                              style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                          Text(
+                                            _cartModel.deliveryCharge.toStringAsFixed(3),
                                             style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                           ),
                                         ],
