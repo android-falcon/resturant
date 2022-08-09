@@ -31,6 +31,7 @@ import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
 import 'package:restaurant_system/utils/validation.dart';
+import 'package:uuid/uuid.dart';
 
 class OrderScreen extends StatefulWidget {
   final OrderType type;
@@ -535,7 +536,7 @@ class _OrderScreenState extends State<OrderScreen> {
     return answersModifire;
   }
 
-  Future<List<CartItemModel>> _showSubItemDialog({required List<ItemSubItemsModel> subItems, required int parentIndex, required int parentId, required int parentQty}) async {
+  Future<List<CartItemModel>> _showSubItemDialog({required List<ItemSubItemsModel> subItems, required String parentRandomId, required int parentQty}) async {
     List<CartItemModel> _cartSubItem = [];
     List<ItemModel> _subItems = allDataModel.items.where((item) => subItems.any((subItem) => item.id == subItem.subitemId)).toList();
     await Get.dialog(
@@ -564,6 +565,8 @@ class _OrderScreenState extends State<OrderScreen> {
                               _cartSubItem.removeAt(indexSubItem);
                             } else {
                               _cartSubItem.add(CartItemModel(
+                                uuid: const Uuid().v1(),
+                                parentUuid: parentRandomId,
                                 orderType: widget.type,
                                 id: e.id,
                                 categoryId: e.category.id,
@@ -578,8 +581,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 discountAvailable: e.discountAvailable == 1,
                                 openPrice: e.openPrice == 1,
                                 rowSerial: 0,
-                                parentItemId: parentId,
-                                parentItemIndex: parentIndex,
+
                               ));
                             }
                             setState(() {});
@@ -1034,6 +1036,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                           //   }
                                           // } else {
                                           _cartModel.items.add(CartItemModel(
+                                            uuid: const Uuid().v1(),
+                                            parentUuid: '',
                                             orderType: widget.type,
                                             id: e.id,
                                             categoryId: e.category.id,
@@ -1220,12 +1224,12 @@ class _OrderScreenState extends State<OrderScreen> {
                                         itemCount: _cartModel.items.length,
                                         shrinkWrap: true,
                                         physics: const NeverScrollableScrollPhysics(),
-                                        separatorBuilder: (context, index) => _cartModel.items[index].isDeleted ? Container() : const Divider(color: Colors.black, height: 1),
+                                        separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
                                         itemBuilder: (context, index) {
-                                          if (_cartModel.items[index].parentItemId != 0 || _cartModel.items[index].isDeleted) {
+                                          if (_cartModel.items[index].parentUuid.isNotEmpty) {
                                             return Container();
                                           } else {
-                                            var subItem = _cartModel.items.where((element) => element.parentItemId == _cartModel.items[index].id && element.parentItemIndex == index).toList();
+                                            var subItem = _cartModel.items.where((element) => element.parentUuid == _cartModel.items[index].uuid).toList();
                                             return InkWell(
                                               onTap: () {
                                                 _indexItemSelect = index;
@@ -1569,7 +1573,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (_indexItemSelect != -1) {
                             var subItems = allDataModel.itemSubItems.where((element) => element.itemsId == _cartModel.items[_indexItemSelect].id).toList();
                             if (subItems.isNotEmpty) {
-                              var cartSubItems = await _showSubItemDialog(subItems: subItems, parentIndex: _indexItemSelect, parentId: _cartModel.items[_indexItemSelect].id, parentQty: _cartModel.items[_indexItemSelect].qty);
+                              var cartSubItems = await _showSubItemDialog(subItems: subItems, parentRandomId: _cartModel.items[_indexItemSelect].uuid, parentQty: _cartModel.items[_indexItemSelect].qty);
                               _cartModel.items.addAll(cartSubItems);
                               setState(() {});
                             } else {
@@ -1604,7 +1608,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (_indexItemSelect != -1) {
                             _cartModel.items[_indexItemSelect].qty = await _showQtyDialog(rQty: _cartModel.items[_indexItemSelect].qty, minQty: 1);
                             for (var element in _cartModel.items) {
-                              if (element.parentItemId == _cartModel.items[_indexItemSelect].id && element.parentItemIndex == _indexItemSelect) {
+                              if (element.uuid == _cartModel.items[_indexItemSelect].parentUuid) {
                                 element.qty = _cartModel.items[_indexItemSelect].qty;
                               }
                             }
@@ -1687,32 +1691,8 @@ class _OrderScreenState extends State<OrderScreen> {
                               textConfirm: 'Confirm'.tr,
                               confirmTextColor: Colors.white,
                               onConfirm: () {
-                                for (var element in _cartModel.items) {
-                                  if (element.parentItemId == _cartModel.items[_indexItemSelect].id && element.parentItemIndex == _indexItemSelect) {
-                                    element.isDeleted = true;
-                                    element.price = 0;
-                                    element.priceChange = 0;
-                                    element.total = 0;
-                                    element.tax = 0;
-                                    element.taxPercent = 0;
-                                    element.serviceTax = 0;
-                                    element.service = 0;
-                                    element.qty = 0;
-                                    element.discount = 0;
-                                    element.lineDiscount = 0;
-                                  }
-                                }
-                                _cartModel.items[_indexItemSelect].isDeleted = true;
-                                _cartModel.items[_indexItemSelect].price = 0;
-                                _cartModel.items[_indexItemSelect].priceChange = 0;
-                                _cartModel.items[_indexItemSelect].total = 0;
-                                _cartModel.items[_indexItemSelect].tax = 0;
-                                _cartModel.items[_indexItemSelect].taxPercent = 0;
-                                _cartModel.items[_indexItemSelect].serviceTax = 0;
-                                _cartModel.items[_indexItemSelect].service = 0;
-                                _cartModel.items[_indexItemSelect].qty = 0;
-                                _cartModel.items[_indexItemSelect].discount = 0;
-                                _cartModel.items[_indexItemSelect].lineDiscount = 0;
+                                _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
+                                _cartModel.items.removeAt(_indexItemSelect);
                                 _indexItemSelect = -1;
                                 Get.back();
                               },

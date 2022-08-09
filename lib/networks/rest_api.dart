@@ -183,7 +183,7 @@ class RestApi {
     try {
       var body = jsonEncode({
         "InvoiceMaster": cart.toInvoice(),
-        "InvoiceDetails": List<dynamic>.from(cart.items.where((element) => !element.isDeleted).map((e) => e.toInvoice())).toList(),
+        "InvoiceDetails": List<dynamic>.from(cart.items.map((e) => e.toInvoice())).toList(),
       });
       await NetworkTable.insert(NetworkTableModel(
         id: 0,

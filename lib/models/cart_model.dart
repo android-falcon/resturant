@@ -143,6 +143,7 @@ class CartModel {
 
 class CartItemModel {
   CartItemModel({
+    required this.uuid,
     required this.orderType,
     required this.id,
     required this.categoryId,
@@ -164,15 +165,13 @@ class CartItemModel {
     this.openPrice = false,
     this.modifiers = const [],
     this.questions = const [],
-    this.parentItemId = 0,
-    this.parentItemIndex = 0,
-    this.isDeleted = false,
+    this.parentUuid = '',
   });
 
+  String uuid;
+  String parentUuid;
   OrderType orderType;
   int id;
-  int parentItemId;
-  int parentItemIndex;
   int categoryId;
   int taxType;
   double taxPercent;
@@ -192,13 +191,12 @@ class CartItemModel {
   int rowSerial;
   List<CartItemModifierModel> modifiers;
   List<CartItemQuestionModel> questions;
-  bool isDeleted = true;
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
         orderType: OrderType.values[json['orderType']],
         id: json['id'],
-        parentItemId: json['parentItemId'],
-        parentItemIndex: json['parentItemIndex'],
+        uuid: json['randomId'],
+        parentUuid: json['parentRandomId'],
         categoryId: json['categoryId'],
         taxType: json['taxType'],
         taxPercent: json['taxPercent'] == null ? 0 : json['taxPercent'].toDouble(),
@@ -218,14 +216,13 @@ class CartItemModel {
         rowSerial: json['rowSerial'],
         modifiers: List<CartItemModifierModel>.from(json['modifiers'].map((e) => CartItemModifierModel.fromJson(e))),
         questions: List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
-        isDeleted: json['isDeleted'],
       );
 
   Map<String, dynamic> toJson() => {
         "orderType": orderType.index,
         "id": id,
-        "parentItemId": parentItemId,
-        "parentItemIndex": parentItemIndex,
+        "randomId": uuid,
+        "parentRandomId": parentUuid,
         "categoryId": categoryId,
         "taxType": taxType,
         "taxPercent": taxPercent,
@@ -245,7 +242,6 @@ class CartItemModel {
         "rowSerial": rowSerial,
         "modifiers": List<dynamic>.from(modifiers.map((e) => e.toJson())),
         "questions": List<dynamic>.from(questions.map((e) => e.toJson())),
-        "isDeleted": isDeleted,
       };
 
   Map<String, dynamic> toInvoice() => {

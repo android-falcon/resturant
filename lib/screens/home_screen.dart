@@ -88,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
         HomeMenu(
           name: 'Daily Close'.tr,
           onTab: () {
-            var date = DateTime.now();
             Get.defaultDialog(
               title: 'Daily Close'.tr,
               titleStyle: kStyleTextTitle,
@@ -96,14 +95,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text('Are you sure?'.tr),
                   Text('${'Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}'),
-                  Text('${'Date Now'.tr} : ${DateFormat('yyyy-MM-dd').format(date)}'),
+                  Text('${'New Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose.add(const Duration(days: 1)))}'),
                 ],
               ),
               textCancel: 'Cancel'.tr,
               textConfirm: 'Confirm'.tr,
               confirmTextColor: Colors.white,
               onConfirm: () {
-                RestApi.posDailyClose(closeDate: date);
+                RestApi.posDailyClose(closeDate: mySharedPreferences.dailyClose.add(const Duration(days: 1)));
               },
             );
           },
@@ -111,11 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
       HomeMenu(
         name: 'Exit'.tr,
         onTab: () {
-          if (Platform.isAndroid) {
-            SystemNavigator.pop();
-          } else if (Platform.isIOS) {
-            exit(0);
-          }
+          _showExitAppDialog();
         },
       ),
     ];
@@ -857,6 +852,25 @@ class _HomeScreenState extends State<HomeScreen> {
       return rQty;
     }
     return int.parse(qty);
+  }
+
+  _showExitAppDialog() async {
+    await Get.defaultDialog(
+      title: 'Close App'.tr,
+      titleStyle: kStyleTextTitle,
+      content: Text('Are you sure?'.tr),
+      textCancel: 'Cancel'.tr,
+      textConfirm: 'Confirm'.tr,
+      confirmTextColor: Colors.white,
+      onConfirm: () {
+        if (Platform.isAndroid) {
+          SystemNavigator.pop();
+        } else if (Platform.isIOS) {
+          exit(0);
+        }
+      },
+      barrierDismissible: true,
+    );
   }
 
   @override
