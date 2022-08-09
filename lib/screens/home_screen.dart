@@ -84,23 +84,30 @@ class _HomeScreenState extends State<HomeScreen> {
       //   name: 'Cash Drawer'.tr,
       //   onTab: () {},
       // ),
-      HomeMenu(
-        name: 'Daily Close'.tr,
-        onTab: () {
-          Get.defaultDialog(
-            title: 'Daily Close'.tr,
-            titleStyle: kStyleTextTitle,
-            content: Text('Are you sure?'.tr),
-            textCancel: 'Cancel'.tr,
-            textConfirm: 'Confirm'.tr,
-            confirmTextColor: Colors.white,
-            onConfirm: () {
-              Get.back();
-              RestApi.posDailyClose();
-            },
-          );
-        },
-      ),
+      if (!mySharedPreferences.employee.isMaster)
+        HomeMenu(
+          name: 'Daily Close'.tr,
+          onTab: () {
+            var date = DateTime.now();
+            Get.defaultDialog(
+              title: 'Daily Close'.tr,
+              titleStyle: kStyleTextTitle,
+              content: Column(
+                children: [
+                  Text('Are you sure?'.tr),
+                  Text('${'Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}'),
+                  Text('${'Date Now'.tr} : ${DateFormat('yyyy-MM-dd').format(date)}'),
+                ],
+              ),
+              textCancel: 'Cancel'.tr,
+              textConfirm: 'Confirm'.tr,
+              confirmTextColor: Colors.white,
+              onConfirm: () {
+                RestApi.posDailyClose(closeDate: date);
+              },
+            );
+          },
+        ),
       HomeMenu(
         name: 'Exit'.tr,
         onTab: () {

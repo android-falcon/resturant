@@ -17,6 +17,7 @@ import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart'
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
 import 'package:restaurant_system/models/all_data/modifier_model.dart';
 import 'package:restaurant_system/models/all_data/modifire_force_questions_model.dart';
+import 'package:restaurant_system/models/all_data/pos_close_model.dart';
 import 'package:restaurant_system/models/all_data/tables_model.dart';
 import 'package:restaurant_system/models/all_data/void_reason_model.dart';
 
@@ -29,6 +30,7 @@ class AllDataModel {
     required this.serverTime,
     required this.companyConfig,
     required this.imagePaths,
+    required this.posClose,
     required this.items,
     required this.categories,
     required this.families,
@@ -48,6 +50,7 @@ class AllDataModel {
   DateTime serverTime;
   List<CompanyConfigModel> companyConfig;
   List<ImagePathModel> imagePaths;
+  List<PosCloseModel> posClose;
   List<ItemModel> items;
   List<CategoryModel> categories;
   List<FamiliesModel> families;
@@ -67,6 +70,7 @@ class AllDataModel {
         serverTime: DateTime.now(),
         companyConfig: [],
         imagePaths: [],
+        posClose: [],
         items: [],
         categories: [],
         families: [],
@@ -87,6 +91,7 @@ class AllDataModel {
         serverTime: json["serverDate"] == null ? DateTime.now() : DateFormat('M/dd/yyyy h:mm:ss a').parse(json["serverDate"]),
         companyConfig: json["CompanyConfig"] == null ? [] : List<CompanyConfigModel>.from(json["CompanyConfig"].map((x) => CompanyConfigModel.fromJson(x))),
         imagePaths: json["ImagePaths"] == null ? [] : List<ImagePathModel>.from(json["ImagePaths"].map((x) => ImagePathModel.fromJson(x))),
+        posClose: json["PosClose"] == null ? [] : List<PosCloseModel>.from(json["PosClose"].map((x) => PosCloseModel.fromJson(x))),
         items: json["Items"] == null ? [] : List<ItemModel>.from(json["Items"].map((x) => ItemModel.fromJson(x))),
         categories: json["Categories"] == null ? [] : List<CategoryModel>.from(json["Categories"].map((x) => CategoryModel.fromJson(x))),
         families: json["Families"] == null ? [] : List<FamiliesModel>.from(json["Families"].map((x) => FamiliesModel.fromJson(x))),
@@ -107,6 +112,7 @@ class AllDataModel {
         "serverDate": DateFormat('M/dd/yyyy h:mm:ss a').format(serverTime),
         "CompanyConfig": List<dynamic>.from(companyConfig.map((x) => x.toJson())),
         "ImagePaths": List<dynamic>.from(imagePaths.map((x) => x.toJson())),
+        "PosClose": List<dynamic>.from(posClose.map((x) => x.toJson())),
         "Items": List<dynamic>.from(items.map((x) => x.toJson())),
         "Categories": List<dynamic>.from(categories.map((x) => x.toJson())),
         "Families": List<dynamic>.from(families.map((x) => x.toJson())),

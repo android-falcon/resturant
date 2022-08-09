@@ -125,4 +125,5 @@ const Map<String, String> en = {
   'Done':'Done',
   'From':'From',
   'To':'To',
+  'Are you sure you will exit the order screen?':'Are you sure you will exit the order screen?',
 };

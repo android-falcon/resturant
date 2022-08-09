@@ -133,9 +133,9 @@ class CartModel {
         "CouponVal": coupon, // كم دفع كوبونات
         "GiftVal": gift, //
         "PointsVal": point, //
-        "UserId": orderType == OrderType.takeAway ? mySharedPreferences.userId : 0, // Take away - EmplyeId, Dine In -
+        "UserId": orderType == OrderType.takeAway ? mySharedPreferences.employee.id : 0, // Take away - EmplyeId, Dine In -
         "ShiftId": 0, //
-        "WaiterId": orderType == OrderType.takeAway ? mySharedPreferences.userId : 0, //Take away - EmplyeId, Dine In -
+        "WaiterId": orderType == OrderType.takeAway ? mySharedPreferences.employee.id : 0, //Take away - EmplyeId, Dine In -
         "TableId": 0, //
         "NoOfSeats": 0 //
       };

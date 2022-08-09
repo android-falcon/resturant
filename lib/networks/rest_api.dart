@@ -299,7 +299,7 @@ class RestApi {
         "VoucherTime": DateFormat('HH:mm:ss').format(DateTime.now()),
         "VoucherValue": value,
         "Remark": remark,
-        "UserId": mySharedPreferences.userId,
+        "UserId": mySharedPreferences.employee.id,
         "ShiftId": 0,
       });
       mySharedPreferences.inVocNo++;
@@ -335,43 +335,52 @@ class RestApi {
     }
   }
 
-  static Future<void> posDailyClose() async {
+  static Future<void> posDailyClose({required DateTime closeDate}) async {
     try {
+      showLoadingDialog();
       var body = jsonEncode({
         "CoYear": DateTime.now().year,
         "PosNo": mySharedPreferences.posNo,
-        "UserId": mySharedPreferences.userId,
-        "CloseDate": DateTime.now().toIso8601String(),
+        "UserId": mySharedPreferences.employee.id,
+        "CloseDate": closeDate.toIso8601String(),
       });
-      mySharedPreferences.inVocNo++;
-      await NetworkTable.insert(NetworkTableModel(
-        id: 0,
-        type: 'POS_DAILY_CLOSE',
-        status: 1,
-        baseUrl: restDio.options.baseUrl,
-        path: ApiUrl.POS_DAILY_CLOSE,
-        method: 'POST',
-        params: '',
-        body: body,
-        headers: '',
-        createdAt: DateTime.now().microsecondsSinceEpoch,
-        uploadedAt: DateTime.now().microsecondsSinceEpoch,
-      ));
-      var networkModel = await NetworkTable.queryLastRow();
+      // await NetworkTable.insert(NetworkTableModel(
+      //   id: 0,
+      //   type: 'POS_DAILY_CLOSE',
+      //   status: 1,
+      //   baseUrl: restDio.options.baseUrl,
+      //   path: ApiUrl.POS_DAILY_CLOSE,
+      //   method: 'POST',
+      //   params: '',
+      //   body: body,
+      //   headers: '',
+      //   createdAt: DateTime.now().microsecondsSinceEpoch,
+      //   uploadedAt: DateTime.now().microsecondsSinceEpoch,
+      // ));
+      // var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.POS_DAILY_CLOSE, data: body);
       _networkLog(response);
-      if (response.statusCode == 200) {
-        if (networkModel != null) {
-          networkModel.status = 2;
-          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
-          await NetworkTable.update(networkModel);
-        }
+      mySharedPreferences.dailyClose = closeDate;
+      var indexPosClose = allDataModel.posClose.indexWhere((element) => element.posNo == mySharedPreferences.posNo);
+      if (indexPosClose != -1) {
+        allDataModel.posClose[indexPosClose].closeDate = closeDate;
+        mySharedPreferences.allData = jsonEncode(allDataModel.toJson());
       }
+      hideLoadingDialog();
+      Get.back();
+      // if (networkModel != null) {
+      //   networkModel.status = 2;
+      //   networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
+      //   await NetworkTable.update(networkModel);
+      // }
+
     } on dio.DioError catch (e) {
       _traceError(e);
+      hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
+      hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
   }

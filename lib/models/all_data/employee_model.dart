@@ -18,6 +18,7 @@ class EmployeeModel {
     required this.username,
     required this.password,
     required this.mobileNo,
+    required this.isCasher,
     required this.isMaster,
     required this.justTimeCard,
     required this.isActive,
@@ -30,6 +31,7 @@ class EmployeeModel {
   String username;
   String password;
   String mobileNo;
+  bool isCasher;
   bool isMaster;
   bool justTimeCard;
   bool isActive;
@@ -42,6 +44,7 @@ class EmployeeModel {
         username: "",
         password: "",
         mobileNo: "",
+        isCasher: false,
         isMaster: false,
         justTimeCard: false,
         isActive: false,
@@ -55,6 +58,7 @@ class EmployeeModel {
         username: json["username"] ?? "",
         password: json["password"] ?? "",
         mobileNo: json["MobileNo"] ?? "",
+    isCasher: json["IsCasher"] ?? false,
         isMaster: json["IsMaster"] ?? false,
         justTimeCard: json["JustTimeCard"] ?? false,
         isActive: json["IsActive"] ?? false,
@@ -68,6 +72,7 @@ class EmployeeModel {
         "username": username,
         "password": password,
         "MobileNo": mobileNo,
+        "IsCasher": isCasher,
         "IsMaster": isMaster,
         "JustTimeCard": justTimeCard,
         "IsActive": isActive,

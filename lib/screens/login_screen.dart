@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -76,16 +78,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           FocusScope.of(context).requestFocus(FocusNode());
                           if (_controllerUsername.text.isEmpty && _controllerPassword.text == "Falcons@admin") {
                             _controllerPassword.text = '';
-                            Get.to(()=> const ConfigScreen())!.then((value) {
+                            Get.to(() => const ConfigScreen())!.then((value) {
                               RestApi.restDio.options.baseUrl = mySharedPreferences.baseUrl;
                               RestApi.getData();
                             });
                           } else if (_keyForm.currentState!.validate()) {
                             var indexEmployee = allDataModel.employees.indexWhere((element) => element.username == _controllerUsername.text && element.password == _controllerPassword.text);
                             if (indexEmployee != -1) {
-                              mySharedPreferences.userId = allDataModel.employees[indexEmployee].id;
-                              mySharedPreferences.fullName = allDataModel.employees[indexEmployee].empName;
-                              mySharedPreferences.phoneNumber = allDataModel.employees[indexEmployee].mobileNo;
+                              mySharedPreferences.employee = allDataModel.employees[indexEmployee];
+                              var indexPosClose = allDataModel.posClose.indexWhere((element) => element.posNo == mySharedPreferences.posNo);
+                              if (indexPosClose != -1) {
+                                mySharedPreferences.dailyClose = allDataModel.posClose[indexPosClose].closeDate;
+                              }
                               Get.offAll(() => const HomeScreen());
                             } else {
                               Fluttertoast.showToast(msg: 'Incorrect username or password'.tr, timeInSecForIosWeb: 3);

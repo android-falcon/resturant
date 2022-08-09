@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,9 +13,7 @@ class MySharedPreferences {
 
   clearData() {
     isLogin = false;
-    userId = 0;
-    fullName = '';
-    phoneNumber = '';
+    employee = null;
     allData = '';
     baseUrl = '';
     inVocNo = 1;
@@ -54,22 +53,10 @@ class MySharedPreferences {
     _sharedPreferences.setBool(keyIsGMS, value);
   }
 
-  int get userId => _sharedPreferences.getInt(keyUserId) ?? 0;
+  EmployeeModel get employee => EmployeeModel.fromJson(jsonDecode(_sharedPreferences.getString(keyEmployee) ?? "{}"));
 
-  set userId(int value) {
-    _sharedPreferences.setInt(keyUserId, value);
-  }
-
-  String get fullName => _sharedPreferences.getString(keyFullName) ?? "";
-
-  set fullName(String value) {
-    _sharedPreferences.setString(keyFullName, value);
-  }
-
-  String get phoneNumber => _sharedPreferences.getString(keyPhoneNumber) ?? "";
-
-  set phoneNumber(String value) {
-    _sharedPreferences.setString(keyPhoneNumber, value);
+  set employee(EmployeeModel? value) {
+    _sharedPreferences.setString(keyEmployee, value == null ? "{}" : jsonEncode(value.toJson()));
   }
 
   String get allData => _sharedPreferences.getString(keyAllData) ?? "";
@@ -83,6 +70,14 @@ class MySharedPreferences {
   set dineIn(List<DineInModel> value) {
     _sharedPreferences.setString(keyDineIn, jsonEncode(List<dynamic>.from(value.map((e) => e.toJson()))));
   }
+
+
+  DateTime get dailyClose => DateTime.parse(_sharedPreferences.getString(keyDailyClose) ?? "0000-00-00T00:00:00.000");
+
+  set dailyClose(DateTime value) {
+    _sharedPreferences.setString(keyDailyClose, value.toIso8601String());
+  }
+
 
   String get baseUrl => _sharedPreferences.getString(keyBaseUrl) ?? "";
 
@@ -113,12 +108,12 @@ class MySharedPreferences {
   set cashNo(int value) {
     _sharedPreferences.setInt(keyCashNo, value);
   }
+
   int get storeNo => _sharedPreferences.getInt(keyStoreNo) ?? 0;
 
   set storeNo(int value) {
     _sharedPreferences.setInt(keyStoreNo, value);
   }
-
 }
 
 final mySharedPreferences = MySharedPreferences();
@@ -128,11 +123,10 @@ const String keyAccessToken = "key_access_token";
 const String keyLanguage = "key_language";
 const String keyIsLogin = "key_is_login";
 const String keyIsGMS = "key_is_gms";
-const String keyUserId = "key_user_id";
-const String keyFullName = "key_full_name";
-const String keyPhoneNumber = "key_phone_number";
+const String keyEmployee = "key_employee";
 const String keyAllData = "key_all_data";
 const String keyDineIn = "key_dine_in";
+const String keyDailyClose = "key_daily_close";
 const String keyBaseUrl = "key_base_url";
 const String keyInVocNo = "key_in_voc_no";
 const String keyOutVocNo = "key_out_voc_no";

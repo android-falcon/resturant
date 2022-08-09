@@ -199,12 +199,12 @@ class TaxPercent {
 
   factory TaxPercent.fromJson(Map<String, dynamic> json) => TaxPercent(
         id: json["Id"],
-        percent: json["Percent"] == null ? 0 : json["Percent"].toDouble(),
+        percent: json["TaxPercent"] == null ? 0 : json["TaxPercent"].toDouble(),
       );
 
   Map<String, dynamic> toJson() => {
         "Id": id,
-        "Percent": percent,
+        "TaxPercent": percent,
       };
 }
 

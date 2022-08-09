@@ -39,9 +39,7 @@ class Validation {
   }
 
   static String? priceChange(priceChange) {
-    if (isEmpty(priceChange)) {
-      return 'This field is required'.tr;
-    } else if (priceChange <  0) {
+    if (priceChange <  0) {
       return 'The item price cannot be less than zero'.tr;
     }
     return null;

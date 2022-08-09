@@ -147,7 +147,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       children: [
                         CustomTextField(
                           controller: controller,
-                          label: Text('${'Discount'.tr} ${DiscountType.value == type ? '($price)' : '(%)'}'),
+                          label: Text('${'Discount'.tr} ${DiscountType.value == type ? '(${price.toStringAsFixed(3)})' : '(%)'}'),
                           fillColor: Colors.white,
                           maxLines: 1,
                           inputFormatters: [
@@ -222,7 +222,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       children: [
                         CustomTextField(
                           controller: controller,
-                          label: Text('${'Price Change'.tr} ($itemPrice)'),
+                          label: Text('${'Price Change'.tr} (${itemPrice.toStringAsFixed(3)})'),
                           fillColor: Colors.white,
                           maxLines: 1,
                           inputFormatters: [
@@ -234,7 +234,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             FocusScope.of(context).requestFocus(FocusNode());
                           },
                           validator: (value) {
-                            return Validation.priceChange(value);
+                            return Validation.priceChange(double.parse(value!));
                           },
                         ),
                       ],
@@ -262,7 +262,7 @@ class _OrderScreenState extends State<OrderScreen> {
       ),
       barrierDismissible: false,
     );
-    return _priceChange == null ? _priceChange : double.parse(_priceChange);
+    return _priceChange == null ? priceChange : double.parse(_priceChange);
   }
 
   Future<List<CartItemModifierModel>> _showModifierDialog({required List<ItemWithModifireModel> modifiersItem, required List<CategoryWithModifireModel> modifiersCategory, required List<CartItemModifierModel> addedModifiers}) async {
@@ -729,15 +729,34 @@ class _OrderScreenState extends State<OrderScreen> {
     return int.parse(qty);
   }
 
+  Future<bool> _showExitOrderScreenDialog() async {
+    bool? exit = await Get.defaultDialog(
+      title: 'Are you sure you will exit the order screen?'.tr,
+      titleStyle: kStyleTextTitle,
+      content: const Text(''),
+      textCancel: 'Cancel'.tr,
+      textConfirm: 'Confirm'.tr,
+      confirmTextColor: Colors.white,
+      onConfirm: () {
+        Get.back(result: true);
+      },
+      barrierDismissible: true,
+    );
+    if (exit == null) {
+      return false;
+    }
+    return exit;
+  }
+
   _calculateOrder() {
     if (allDataModel.companyConfig.first.taxCalcMethod == 0) {
       // خاضع
       _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + (item.priceChange * item.qty));
       _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? item.priceChange * (item.lineDiscount / 100) : item.lineDiscount) * item.qty));
       _cartModel.discount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
-      _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.discount;
-      _cartModel.service = _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
-      _cartModel.serviceTax = _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+      _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.lineDiscount;
+      _cartModel.service = widget.type == OrderType.takeAway ? 0 : _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
+      _cartModel.serviceTax = widget.type == OrderType.takeAway ? 0 :  _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
       _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + (item.taxType == 2 ? 0 : (item.priceChange * item.qty) * (item.tax / 100)));
       _cartModel.tax = _cartModel.itemsTax + _cartModel.serviceTax;
       _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
@@ -758,9 +777,9 @@ class _OrderScreenState extends State<OrderScreen> {
       _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty));
       _cartModel.lineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + ((item.lineDiscountType == DiscountType.percentage ? (item.priceChange - (item.priceChange * (item.tax / 100))) * (item.lineDiscount / 100) : item.lineDiscount) * item.qty));
       _cartModel.discount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
-      _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.discount;
-      _cartModel.service = _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
-      _cartModel.serviceTax = _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+      _cartModel.subTotal = _cartModel.total - _cartModel.discount - _cartModel.lineDiscount;
+      _cartModel.service = widget.type == OrderType.takeAway ? 0 :  _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
+      _cartModel.serviceTax = widget.type == OrderType.takeAway ? 0 :  _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
       _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + (item.taxType == 2 ? 0 : ((item.priceChange - (item.priceChange * (item.tax / 100))) * item.qty) * (item.tax / 100)));
       _cartModel.tax = _cartModel.itemsTax + _cartModel.serviceTax;
       _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
@@ -798,7 +817,7 @@ class _OrderScreenState extends State<OrderScreen> {
           setState(() {});
           return false;
         } else {
-          return true;
+          return await _showExitOrderScreenDialog();
         }
       },
       child: Scaffold(
@@ -818,7 +837,11 @@ class _OrderScreenState extends State<OrderScreen> {
                           _isShowItem = false;
                           setState(() {});
                         } else {
-                          Get.back();
+                          _showExitOrderScreenDialog().then((value) {
+                            if (value) {
+                              Get.back();
+                            }
+                          });
                         }
                       },
                       icon: const Icon(Icons.arrow_back),
@@ -1027,7 +1050,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                             rowSerial: _cartModel.items.length + 1,
                                           ));
 
-                                          var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == _cartModel.items.last.id).toList();
+                                          var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == e.id).toList();
                                           if (questionsItem.isNotEmpty) {
                                             var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
                                             _cartModel.items.last.questions = questions;
@@ -1143,7 +1166,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     Container(
                       width: 110.w,
-                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
                       child: Column(
                         children: [
                           Expanded(
@@ -1493,41 +1516,37 @@ class _OrderScreenState extends State<OrderScreen> {
                             children: [
                               if (widget.type == OrderType.takeAway)
                                 Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                                    child: CustomButton(
-                                      child: Text(
-                                        'Pay'.tr,
-                                        style: kStyleTextButton,
-                                      ),
-                                      fixed: true,
-                                      backgroundColor: ColorsApp.green,
-                                      onPressed: () {
-                                        if (_cartModel.items.isNotEmpty) {
-                                          Get.to(() => PayScreen(cart: _cartModel));
-                                        } else {
-                                          Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
-                                        }
-                                      },
+                                  child: CustomButton(
+                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                    child: Text(
+                                      'Pay'.tr,
+                                      style: kStyleTextButton,
                                     ),
+                                    fixed: true,
+                                    backgroundColor: ColorsApp.green,
+                                    onPressed: () {
+                                      if (_cartModel.items.isNotEmpty) {
+                                        Get.to(() => PayScreen(cart: _cartModel));
+                                      } else {
+                                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                      }
+                                    },
                                   ),
                                 ),
                               if (widget.type == OrderType.dineIn)
                                 Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                                    child: CustomButton(
-                                      child: Text(
-                                        'Order'.tr,
-                                        style: kStyleTextButton,
-                                      ),
-                                      fixed: true,
-                                      backgroundColor: ColorsApp.red,
-                                      onPressed: () {
-                                        _saveDineIn();
-                                        Get.back();
-                                      },
+                                  child: CustomButton(
+                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                    child: Text(
+                                      'Order'.tr,
+                                      style: kStyleTextButton,
                                     ),
+                                    fixed: true,
+                                    backgroundColor: ColorsApp.red,
+                                    onPressed: () {
+                                      _saveDineIn();
+                                      Get.back();
+                                    },
                                   ),
                                 ),
                             ],
@@ -1548,7 +1567,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: InkWell(
                         onTap: () async {
                           if (_indexItemSelect != -1) {
-                            var subItems = allDataModel.itemSubItems.where((element) => element.subitemId == _cartModel.items[_indexItemSelect].id).toList();
+                            var subItems = allDataModel.itemSubItems.where((element) => element.itemsId == _cartModel.items[_indexItemSelect].id).toList();
                             if (subItems.isNotEmpty) {
                               var cartSubItems = await _showSubItemDialog(subItems: subItems, parentIndex: _indexItemSelect, parentId: _cartModel.items[_indexItemSelect].id, parentQty: _cartModel.items[_indexItemSelect].qty);
                               _cartModel.items.addAll(cartSubItems);
