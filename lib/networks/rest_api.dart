@@ -290,13 +290,13 @@ class RestApi {
   static Future<void> payInOut({required double value, required int type, String remark = ''}) async {
     try {
       var body = jsonEncode({
-        "CoYear": DateTime.now().year,
+        "CoYear": mySharedPreferences.dailyClose.year,
         "VoucherType": type,
         "VoucherNo": mySharedPreferences.inVocNo,
         "PosNo": mySharedPreferences.posNo,
         "CashNo": mySharedPreferences.cashNo,
-        "VoucherDate": DateTime.now().toIso8601String(),
-        "VoucherTime": DateFormat('HH:mm:ss').format(DateTime.now()),
+        "VoucherDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "VoucherTime": DateFormat('HH:mm:ss').format(mySharedPreferences.dailyClose),
         "VoucherValue": value,
         "Remark": remark,
         "UserId": mySharedPreferences.employee.id,
@@ -339,7 +339,7 @@ class RestApi {
     try {
       showLoadingDialog();
       var body = jsonEncode({
-        "CoYear": DateTime.now().year,
+        "CoYear": mySharedPreferences.dailyClose.year,
         "PosNo": mySharedPreferences.posNo,
         "UserId": mySharedPreferences.employee.id,
         "CloseDate": closeDate.toIso8601String(),

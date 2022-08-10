@@ -39,9 +39,41 @@ class Validation {
   }
 
   static String? priceChange(priceChange) {
-    if (priceChange <  0) {
+    if (priceChange < 0) {
       return 'The item price cannot be less than zero'.tr;
     }
     return null;
+  }
+
+  static String? validateCardNumWithLuhnAlgorithm(String input) {
+    if (input.isEmpty) {
+      return 'This field is required'.tr;
+    }
+
+    input = input.replaceAll(' ', '');
+
+    if (input.length < 8) {
+      // No need to even proceed with the validation if it's less than 8 characters
+      return 'Card number is invalid'.tr;
+    }
+
+    int sum = 0;
+    int length = input.length;
+    for (var i = 0; i < length; i++) {
+      // get digits in reverse order
+      int digit = int.parse(input[length - i - 1]);
+
+      // every 2nd number multiply with 2
+      if (i % 2 == 1) {
+        digit *= 2;
+      }
+      sum += digit > 9 ? (digit - 9) : digit;
+    }
+
+    if (sum % 10 == 0) {
+      return null;
+    }
+
+    return 'Card number is invalid'.tr;
   }
 }

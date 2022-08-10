@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 
 class CustomTextField extends StatefulWidget {
@@ -18,11 +19,12 @@ class CustomTextField extends StatefulWidget {
   bool enabled;
   bool obscureText;
   bool isPass;
+  Color? borderColor;
   TextDirection? textDirection;
   String? Function(String? value)? validator;
-  String? Function(String? value)? onChanged;
-  String? Function(String? value)? onSaved;
-  String? Function(String? value)? onFieldSubmitted;
+  void Function(String)? onChanged;
+  void Function(String?)? onSaved;
+  void Function(String)? onFieldSubmitted;
   void Function()? onTap;
   EdgeInsetsGeometry? margin;
   EdgeInsetsGeometry? padding;
@@ -49,6 +51,7 @@ class CustomTextField extends StatefulWidget {
     this.obscureText = false,
     this.isPass = false,
     this.textDirection,
+    this.borderColor,
     this.validator,
     this.onChanged,
     this.onSaved,
@@ -139,6 +142,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           // ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
+            borderSide: widget.borderColor == null ? const BorderSide()  : BorderSide(color: widget.borderColor!),
           ),
         ),
         enabled: widget.enabled,

@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,10 +18,12 @@ import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_vie
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/credit_card_type_detector.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
+import 'package:restaurant_system/utils/validation.dart';
 
 class PayScreen extends StatefulWidget {
   final CartModel cart;
@@ -34,6 +38,7 @@ class PayScreen extends StatefulWidget {
 class _PayScreenState extends State<PayScreen> {
   double remaining = 0;
   List<DineInModel> dineInSaved = mySharedPreferences.dineIn;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -46,12 +51,14 @@ class _PayScreenState extends State<PayScreen> {
     setState(() {});
   }
 
-  Future<double> _showDeliveryDialog({TextEditingController? controller, required double balance, required double received, bool enableReturnValue = false}) async {
+  Future<Map<String, dynamic>> _showPayDialog({TextEditingController? controllerReceived, required double balance, required double received, bool enableReturnValue = false, TextEditingController? controllerCreditCard}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
-    controller ??= TextEditingController(text: '$received');
-    if (controller.text.endsWith('.0')) {
-      controller.text = controller.text.replaceFirst('.0', '');
+    controllerReceived ??= TextEditingController(text: '$received');
+    if (controllerReceived.text.endsWith('.0')) {
+      controllerReceived.text = controllerReceived.text.replaceFirst('.0', '');
     }
+    CreditCardType? creditCardType = CreditCardType.unknown;
+    TextEditingController _controllerSelected = controllerReceived;
     var _received = await Get.dialog(
       CustomDialog(
         builder: (context, setState, constraints) => Column(
@@ -72,7 +79,7 @@ class _PayScreenState extends State<PayScreen> {
                         ),
                         SizedBox(height: 8.h),
                         CustomTextField(
-                          controller: controller,
+                          controller: controllerReceived,
                           label: Text('Received'.tr),
                           fillColor: Colors.white,
                           maxLines: 1,
@@ -81,8 +88,11 @@ class _PayScreenState extends State<PayScreen> {
                           ],
                           enableInteractiveSelection: false,
                           keyboardType: const TextInputType.numberWithOptions(),
+                          borderColor: _controllerSelected == controllerReceived ? ColorsApp.primaryColor : null,
                           onTap: () {
                             FocusScope.of(context).requestFocus(FocusNode());
+                            _controllerSelected = controllerReceived!;
+                            setState(() {});
                           },
                           validator: (value) {
                             if (!enableReturnValue) {
@@ -93,6 +103,35 @@ class _PayScreenState extends State<PayScreen> {
                             return null;
                           },
                         ),
+                        SizedBox(height: 8.h),
+                        if (controllerCreditCard != null)
+                          CustomTextField(
+                            controller: controllerCreditCard,
+                            label: Text('Card Number'.tr),
+                            hintText: 'XXXX XXXX XXXX XXXX',
+                            fillColor: Colors.white,
+                            maxLines: 1,
+                            maxLength: 19,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              CardNumberFormatter(),
+                            ],
+                            keyboardType: TextInputType.number,
+                            borderColor: _controllerSelected == controllerCreditCard ? ColorsApp.primaryColor : null,
+                            suffixIcon: iconCreditCard(type: creditCardType!),
+                            onChanged: (value) {
+                              creditCardType = detectCCType(value);
+                              setState(() {});
+                            },
+                            onTap: () {
+                              FocusScope.of(context).requestFocus(FocusNode());
+                              _controllerSelected = controllerCreditCard;
+                              setState(() {});
+                            },
+                            validator: (value) {
+                              return Validation.validateCardNumWithLuhnAlgorithm(value!);
+                            },
+                          ),
                       ],
                     ),
                   ),
@@ -100,11 +139,17 @@ class _PayScreenState extends State<PayScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(4),
                       child: numPadWidget(
-                        controller,
-                        setState,
+                        _controllerSelected,
+                        (p0) {
+                          if(_controllerSelected == controllerCreditCard){
+                            creditCardType = detectCCType(controllerCreditCard!.text);
+                          }
+                          setState((){});
+                          setState;
+                        },
                         onSubmit: () {
                           if (_keyForm.currentState!.validate()) {
-                            Get.back(result: controller!.text);
+                            Get.back(result: controllerReceived!.text);
                           }
                         },
                       ),
@@ -154,7 +199,10 @@ class _PayScreenState extends State<PayScreen> {
       );
       _received = balance;
     }
-    return _received;
+    return {
+      "received": _received,
+      "credit_card": controllerCreditCard?.text ?? "",
+    };
   }
 
   Future<void> _showPrintDialog() async {
@@ -198,7 +246,7 @@ class _PayScreenState extends State<PayScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(DateFormat('yyyy-MM-dd hh:mm:ss a').format(DateTime.now())),
+                      Text(DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)), // hh:mm:ss a
                       SizedBox(height: 15.h),
                       Text('${mySharedPreferences.inVocNo - 1}'),
                     ],
@@ -251,8 +299,9 @@ class _PayScreenState extends State<PayScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
-                  itemBuilder: (context, index) => Container(
-                    child: Column(
+                  itemBuilder: (context, index) {
+                    var subItem = widget.cart.items.where((element) => element.parentUuid == widget.cart.items[index].uuid).toList();
+                    return Column(
                       children: [
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
@@ -347,12 +396,55 @@ class _PayScreenState extends State<PayScreen> {
                                   ],
                                 ),
                               ),
+                              if (subItem.isNotEmpty)
+                                ListView.builder(
+                                  itemCount: subItem.length,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, indexSubItem) {
+                                    return Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            '• ',
+                                            style: kStyleDataTableModifiers,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            subItem[indexSubItem].name,
+                                            style: kStyleDataTableModifiers,
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            subItem[indexSubItem].priceChange.toStringAsFixed(2),
+                                            style: kStyleDataTableModifiers,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            subItem[indexSubItem].total.toStringAsFixed(2),
+                                            style: kStyleDataTableModifiers,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
                             ],
                           ),
                         )
                       ],
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -413,7 +505,7 @@ class _PayScreenState extends State<PayScreen> {
                         ),
                       ),
                       Text(
-                        widget.cart.discount.toStringAsFixed(3),
+                        widget.cart.totalDiscount.toStringAsFixed(3),
                         style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -540,7 +632,7 @@ class _PayScreenState extends State<PayScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      DateFormat('yyyy-MM-dd hh:mm a').format(DateTime.now()),
+                      DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose), //  hh:mm a
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -595,7 +687,8 @@ class _PayScreenState extends State<PayScreen> {
                                             textAlign: TextAlign.center,
                                           ),
                                           onPressed: () async {
-                                            widget.cart.cash = await _showDeliveryDialog(balance: remaining + widget.cart.cash, received: widget.cart.cash, enableReturnValue: true);
+                                            var result = await _showPayDialog(balance: remaining + widget.cart.cash, received: widget.cart.cash, enableReturnValue: true);
+                                            widget.cart.cash = result['received'];
                                             calculateRemaining();
                                           },
                                         ),
@@ -610,80 +703,82 @@ class _PayScreenState extends State<PayScreen> {
                                             textAlign: TextAlign.center,
                                           ),
                                           onPressed: () async {
-                                            widget.cart.credit = await _showDeliveryDialog(balance: remaining + widget.cart.credit, received: widget.cart.credit, enableReturnValue: false);
+                                            var result = await _showPayDialog(balance: remaining + widget.cart.credit, received: widget.cart.credit, enableReturnValue: false, controllerCreditCard: TextEditingController(text: widget.cart.creditCardNumber));
+                                            widget.cart.credit = result['received'];
+                                            widget.cart.creditCardNumber = result['credit_card'];
                                             calculateRemaining();
                                           },
                                         ),
                                       ),
-                                      Expanded(
-                                        child: CustomButton(
-                                          margin: EdgeInsets.all(8.h),
-                                          height: double.infinity,
-                                          child: Text(
-                                            widget.cart.cheque == 0 ? 'Cheque'.tr : '${'Cheque'.tr} : ${widget.cart.cheque.toStringAsFixed(3)}',
-                                            style: kStyleButtonPayment,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          onPressed: () async {
-                                            widget.cart.cheque = await _showDeliveryDialog(balance: remaining + widget.cart.cheque, received: widget.cart.cheque, enableReturnValue: false);
-                                            calculateRemaining();
-                                          },
-                                        ),
-                                      ),
+                                      // Expanded(
+                                      //   child: CustomButton(
+                                      //     margin: EdgeInsets.all(8.h),
+                                      //     height: double.infinity,
+                                      //     child: Text(
+                                      //       widget.cart.cheque == 0 ? 'Cheque'.tr : '${'Cheque'.tr} : ${widget.cart.cheque.toStringAsFixed(3)}',
+                                      //       style: kStyleButtonPayment,
+                                      //       textAlign: TextAlign.center,
+                                      //     ),
+                                      //     onPressed: () async {
+                                      //       widget.cart.cheque = await _showDeliveryDialog(balance: remaining + widget.cart.cheque, received: widget.cart.cheque, enableReturnValue: false);
+                                      //       calculateRemaining();
+                                      //     },
+                                      //   ),
+                                      // ),
                                     ],
                                   ),
                                 ),
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: CustomButton(
-                                          margin: EdgeInsets.all(8.h),
-                                          height: double.infinity,
-                                          child: Text(
-                                            widget.cart.gift == 0 ? 'Gift Card'.tr : '${'Gift Card'.tr} : ${widget.cart.gift.toStringAsFixed(3)}',
-                                            style: kStyleButtonPayment,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          onPressed: () async {
-                                            widget.cart.gift = await _showDeliveryDialog(balance: remaining + widget.cart.gift, received: widget.cart.gift, enableReturnValue: false);
-                                            calculateRemaining();
-                                          },
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: CustomButton(
-                                          margin: EdgeInsets.all(8.h),
-                                          height: double.infinity,
-                                          child: Text(
-                                            widget.cart.coupon == 0 ? 'Coupon'.tr : '${'Coupon'.tr} : ${widget.cart.coupon.toStringAsFixed(3)}',
-                                            style: kStyleButtonPayment,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          onPressed: () async {
-                                            widget.cart.coupon = await _showDeliveryDialog(balance: remaining + widget.cart.coupon, received: widget.cart.coupon, enableReturnValue: false);
-                                            calculateRemaining();
-                                          },
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: CustomButton(
-                                          margin: EdgeInsets.all(8.h),
-                                          height: double.infinity,
-                                          child: Text(
-                                            widget.cart.point == 0 ? 'Point'.tr : '${'Point'.tr} : ${widget.cart.point.toStringAsFixed(3)}',
-                                            style: kStyleButtonPayment,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          onPressed: () async {
-                                            widget.cart.point = await _showDeliveryDialog(balance: remaining + widget.cart.point, received: widget.cart.point, enableReturnValue: false);
-                                            calculateRemaining();
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                // Expanded(
+                                //   child: Row(
+                                //     children: [
+                                //       Expanded(
+                                //         child: CustomButton(
+                                //           margin: EdgeInsets.all(8.h),
+                                //           height: double.infinity,
+                                //           child: Text(
+                                //             widget.cart.gift == 0 ? 'Gift Card'.tr : '${'Gift Card'.tr} : ${widget.cart.gift.toStringAsFixed(3)}',
+                                //             style: kStyleButtonPayment,
+                                //             textAlign: TextAlign.center,
+                                //           ),
+                                //           onPressed: () async {
+                                //             widget.cart.gift = await _showDeliveryDialog(balance: remaining + widget.cart.gift, received: widget.cart.gift, enableReturnValue: false);
+                                //             calculateRemaining();
+                                //           },
+                                //         ),
+                                //       ),
+                                //       Expanded(
+                                //         child: CustomButton(
+                                //           margin: EdgeInsets.all(8.h),
+                                //           height: double.infinity,
+                                //           child: Text(
+                                //             widget.cart.coupon == 0 ? 'Coupon'.tr : '${'Coupon'.tr} : ${widget.cart.coupon.toStringAsFixed(3)}',
+                                //             style: kStyleButtonPayment,
+                                //             textAlign: TextAlign.center,
+                                //           ),
+                                //           onPressed: () async {
+                                //             widget.cart.coupon = await _showDeliveryDialog(balance: remaining + widget.cart.coupon, received: widget.cart.coupon, enableReturnValue: false);
+                                //             calculateRemaining();
+                                //           },
+                                //         ),
+                                //       ),
+                                //       Expanded(
+                                //         child: CustomButton(
+                                //           margin: EdgeInsets.all(8.h),
+                                //           height: double.infinity,
+                                //           child: Text(
+                                //             widget.cart.point == 0 ? 'Point'.tr : '${'Point'.tr} : ${widget.cart.point.toStringAsFixed(3)}',
+                                //             style: kStyleButtonPayment,
+                                //             textAlign: TextAlign.center,
+                                //           ),
+                                //           onPressed: () async {
+                                //             widget.cart.point = await _showDeliveryDialog(balance: remaining + widget.cart.point, received: widget.cart.point, enableReturnValue: false);
+                                //             calculateRemaining();
+                                //           },
+                                //         ),
+                                //       ),
+                                //     ],
+                                //   ),
+                                // ),
                               ],
                             ),
                           ),
@@ -757,7 +852,7 @@ class _PayScreenState extends State<PayScreen> {
                                       ),
                                     ),
                                     Text(
-                                      widget.cart.discount.toStringAsFixed(3),
+                                      widget.cart.totalDiscount.toStringAsFixed(3),
                                       style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -876,12 +971,15 @@ class _PayScreenState extends State<PayScreen> {
                                           backgroundColor: ColorsApp.primaryColor,
                                           onPressed: () {
                                             if (remaining == 0) {
+                                              for (int i = 0; i < widget.cart.items.length; i++) {
+                                                widget.cart.items[i].rowSerial = i + 1;
+                                              }
                                               RestApi.invoice(widget.cart);
                                               mySharedPreferences.inVocNo++;
                                               _showPrintDialog().then((value) {
                                                 Get.offAll(HomeScreen());
                                               });
-                                              if(widget.tableId != null){
+                                              if (widget.tableId != null) {
                                                 RestApi.closeTable(widget.tableId!);
                                                 var indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId);
                                                 dineInSaved[indexTable].isOpen = false;

@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
       //   name: 'Cash Drawer'.tr,
       //   onTab: () {},
       // ),
-      if (!mySharedPreferences.employee.isMaster)
+      if (mySharedPreferences.employee.isMaster)
         HomeMenu(
           name: 'Daily Close'.tr,
           onTab: () {
@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    '${'Date'.tr} : ${DateFormat('yyyy-MM-dd hh:mm a').format(DateTime.now())}',
+                    '${'Date'.tr} : ${DateFormat('yyyy-MM-dd hh:mm a').format(mySharedPreferences.dailyClose)}',
                     style: kStyleTextDefault,
                   ),
                 ),
@@ -231,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
+                      '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
                       style: kStyleTextDefault,
                     ),
                   ),
@@ -932,7 +932,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const VerticalDivider(),
                               Expanded(
                                 child: Text(
-                                  DateFormat('yyyy-MM-dd').format(DateTime.now()),
+                                  DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose),
                                   textAlign: TextAlign.center,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,

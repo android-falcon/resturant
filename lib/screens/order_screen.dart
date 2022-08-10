@@ -916,7 +916,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     Expanded(
                       child: Text(
-                        DateFormat('yyyy-MM-dd').format(DateTime.now()),
+                        DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose),
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
@@ -1442,7 +1442,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                             ),
                                           ),
                                           Text(
-                                            _cartModel.discount.toStringAsFixed(3),
+                                            _cartModel.totalDiscount.toStringAsFixed(3),
                                             style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
                                           ),
                                         ],
@@ -1616,7 +1616,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (_indexItemSelect != -1) {
                             _cartModel.items[_indexItemSelect].qty = await _showQtyDialog(rQty: _cartModel.items[_indexItemSelect].qty, minQty: 1);
                             for (var element in _cartModel.items) {
-                              if (element.uuid == _cartModel.items[_indexItemSelect].parentUuid) {
+                              if (_cartModel.items[_indexItemSelect].uuid == element.parentUuid) {
                                 element.qty = _cartModel.items[_indexItemSelect].qty;
                               }
                             }

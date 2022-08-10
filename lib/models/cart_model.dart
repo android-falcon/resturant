@@ -22,6 +22,7 @@ class CartModel {
     required this.items,
     this.cash = 0,
     this.credit = 0,
+    this.creditCardNumber = '',
     this.cheque = 0,
     this.coupon = 0,
     this.gift = 0,
@@ -45,6 +46,7 @@ class CartModel {
   List<CartItemModel> items;
   double cash;
   double credit;
+  String creditCardNumber;
   double cheque;
   double coupon;
   double gift;
@@ -86,6 +88,7 @@ class CartModel {
         items: List<CartItemModel>.from(json['items'].map((e) => CartItemModel.fromJson(e))),
         cash: json['cash'] == null ? 0 : json['cash'].toDouble(),
         credit: json['credit'] == null ? 0 : json['credit'].toDouble(),
+        creditCardNumber: json['creditCardNumber'] ?? "",
         cheque: json['cheque'] == null ? 0 : json['cheque'].toDouble(),
         coupon: json['coupon'] == null ? 0 : json['coupon'].toDouble(),
         gift: json['gift'] == null ? 0 : json['gift'].toDouble(),
@@ -110,6 +113,7 @@ class CartModel {
         'items': List<dynamic>.from(items.map((e) => e.toJson())),
         'cash': cash,
         'credit': credit,
+        'creditCardNumber': creditCardNumber,
         'cheque': cheque,
         'coupon': coupon,
         'gift': gift,
@@ -117,17 +121,17 @@ class CartModel {
       };
 
   Map<String, dynamic> toInvoice() => {
-        "CoYear": DateTime.now().year,
+        "CoYear": mySharedPreferences.dailyClose.year,
         "InvType": orderType.index, // 0 - Take away , 1 - Dine In
         "InvKind": 0, // 0 - Pay , 1 - Return
         "InvNo": mySharedPreferences.inVocNo, // الرقم الي بعد منو VocNo
         "PosNo": mySharedPreferences.posNo, // PosNo
         "CashNo": mySharedPreferences.cashNo, // CashNo
-        "InvDate": DateTime.now().toIso8601String(),
+        "InvDate": mySharedPreferences.dailyClose.toIso8601String(),
         "TotalService": service, // مجموع سيرفس قبل الضريبة
         "TotalServiceTax": serviceTax, // ضريبة السيرفس فقط
         "TotalTax": itemsTax, // ضريبة بدو ضريبة السيرفس
-        "InvDisc": discount, // الخصم الكلي على الفتورة
+        "InvDisc": totalDiscount, // الخصم الكلي على الفتورة
         "TotalItemDisc": totalLineDiscount, // مجموع discount line
         "DeliveryCharge": deliveryCharge, // مجموع توصيل
         "InvNetTotal": amountDue, // المجموع نهائي بعد كل اشي
@@ -254,21 +258,21 @@ class CartItemModel {
       };
 
   Map<String, dynamic> toInvoice() => {
-        "CoYear": DateTime.now().year,
+        "CoYear": mySharedPreferences.dailyClose.year,
         "InvType": orderType.index, // 0 - Take away , 1 - Dine In
         "InvKind": 0, // 0 - Pay , 1 - Return
         "InvNo": mySharedPreferences.inVocNo, // الرقم الي بعد منو VocNo
         "PosNo": mySharedPreferences.posNo, // PosNo
         "CashNo": mySharedPreferences.cashNo, // CashNo
         "StoreNo": mySharedPreferences.storeNo, // StoreNo
-        "InvDate": DateTime.now().toIso8601String(),
+        "InvDate": mySharedPreferences.dailyClose.toIso8601String(),
         "RowSerial": rowSerial, // رقم الايتم بناء على ليست في شاشة index + 1
         "ItemId": id,
         "Qty": qty,
         "Price": priceChange, // السعر بعد تعديل الي بنحسب في الفتورة
         "OrgPrice": price, // السعر الايتم الفعلي
         "InvDisc": discount, // قيمة الخصم من الخصم الكلي ل هذا اليتم فقط
-        "ItemDisc": lineDiscount, // قيمة الخصم في linedicount
+        "ItemDisc": totalLineDiscount, // قيمة الخصم في linedicount
         "ServiceVal": service, //  قيمة سيرفس للايتم بناء على سعر الايتم ل مجموع الفتورة -- بنوزعها على الفتورة
         "ServiceTax": serviceTax, // قيمة ضريبة سيرفس للايتم بناء على سعر الايتم ل مجموع الفتورة  -- بنوزعها على الفتورة
         "ItemTaxKind": taxType, // TaxType/Id
