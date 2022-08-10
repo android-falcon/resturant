@@ -131,4 +131,5 @@ const Map<String, String> en = {
   'Card Number':'Card Number',
   'Card number is invalid':'Card number is invalid',
   'Are you sure you will exit the order screen?':'Are you sure you will exit the order screen?',
+  'Please select a table':'Please select a table',
 };

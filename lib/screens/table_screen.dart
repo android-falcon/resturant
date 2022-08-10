@@ -20,6 +20,7 @@ import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
+import 'package:restaurant_system/utils/utils.dart';
 
 class TableScreen extends StatefulWidget {
   const TableScreen({Key? key}) : super(key: key);
@@ -48,7 +49,10 @@ class _TableScreenState extends State<TableScreen> {
       ),
       HomeMenu(
         name: 'Merge'.tr,
-        onTab: () {},
+        onTab: () async {
+          await _showMargeDialog();
+          setState(() {});
+        },
       ),
       HomeMenu(
         name: 'Reservation'.tr,
@@ -271,20 +275,250 @@ class _TableScreenState extends State<TableScreen> {
             CustomButton(
               fixed: true,
               child: Text('Move'.tr),
-              onPressed: () {
+              onPressed: () async {
                 if (_selectFromTableId == null || _selectToTableId == null) {
-                  Fluttertoast.showToast(msg: ''.tr);
+                  Fluttertoast.showToast(msg: 'Please select a table'.tr);
                 } else {
-                  var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
-                  var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
-                  dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
-                  dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
-                  dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
-                  dineInSaved[indexFrom].isOpen = false;
-                  dineInSaved[indexFrom].isReservation = false;
-                  dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
-                  mySharedPreferences.dineIn = dineInSaved;
-                  Get.back();
+                  var result = await showAreYouSureDialog(title: 'Move'.tr);
+                  if (result) {
+                    var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
+                    var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
+                    dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
+                    dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
+                    dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
+                    dineInSaved[indexFrom].isOpen = false;
+                    dineInSaved[indexFrom].isReservation = false;
+                    dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
+                    mySharedPreferences.dineIn = dineInSaved;
+                    Get.back();
+                  }
+                }
+              },
+            )
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  Future<void> _showMargeDialog() async {
+    int? _selectFromTableId;
+    int? _selectFromFloor = floors.first;
+    int? _selectToTableId;
+    int? _selectToFloor = floors.first;
+    await Get.dialog(
+      CustomDialog(
+        enableScroll: false,
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text('From'.tr),
+                        const Divider(),
+                        Container(
+                          width: double.infinity,
+                          height: 35.h,
+                          color: Colors.grey,
+                          child: Row(
+                              children: floors
+                                  .map(
+                                    (e) => Expanded(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Container(
+                                              height: 35.h,
+                                              color: _selectFromFloor == e ? ColorsApp.accentColor : null,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  _selectFromFloor = e;
+                                                  setState(() {});
+                                                },
+                                                child: Center(
+                                                  child: Text(
+                                                    '$e ${'Floor'.tr}',
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: kStyleTextDefault,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (floors.last != e) const VerticalDivider(color: Colors.white, width: 1, thickness: 2),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                  .toList()),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: StaggeredGrid.count(
+                              crossAxisCount: 4,
+                              children: dineInSaved
+                                  .where((element) => element.isOpen && element.floorNo == _selectFromFloor)
+                                  .map((e) => Container(
+                                        margin: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          border: _selectFromTableId == e.tableId ? Border.all(color: Colors.black) : null,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        child: InkWell(
+                                          radius: 10,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                          onTap: () {
+                                            if(e.tableId == _selectFromTableId){
+                                              _selectFromTableId = null;
+                                            } else if(e.tableId != _selectToTableId){
+                                              _selectFromTableId = e.tableId;
+                                            }
+                                            setState(() {});
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Center(
+                                                child: Text(
+                                                  '${e.tableNo}',
+                                                  style: kStyleTextTable,
+                                                ),
+                                              ),
+                                              Image.asset(
+                                                'assets/images/round_table_4.png',
+                                                height: 80.h,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  const VerticalDivider(thickness: 2),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text('To'.tr),
+                        const Divider(),
+                        Container(
+                          width: double.infinity,
+                          height: 35.h,
+                          color: Colors.grey,
+                          child: Row(
+                              children: floors
+                                  .map(
+                                    (e) => Expanded(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Container(
+                                              height: 35.h,
+                                              color: _selectToFloor == e ? ColorsApp.accentColor : null,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  _selectToFloor = e;
+                                                  setState(() {});
+                                                },
+                                                child: Center(
+                                                  child: Text(
+                                                    '$e ${'Floor'.tr}',
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: kStyleTextDefault,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (floors.last != e) const VerticalDivider(color: Colors.white, width: 1, thickness: 2),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                  .toList()),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: StaggeredGrid.count(
+                              crossAxisCount: 4,
+                              children: dineInSaved
+                                  .where((element) => element.isOpen && element.floorNo == _selectToFloor)
+                                  .map((e) => Container(
+                                        margin: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          border: _selectToTableId == e.tableId ? Border.all(color: Colors.black) : null,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        child: InkWell(
+                                          radius: 10,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                          onTap: () {
+                                            if(e.tableId == _selectToTableId){
+                                              _selectToTableId = null;
+                                            } else if(e.tableId != _selectFromTableId){
+                                              _selectToTableId = e.tableId;
+                                            }
+                                            setState(() {});
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Center(
+                                                child: Text(
+                                                  '${e.tableNo}',
+                                                  style: kStyleTextTable,
+                                                ),
+                                              ),
+                                              Image.asset(
+                                                'assets/images/round_table_4.png',
+                                                height: 80.h,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            CustomButton(
+              fixed: true,
+              child: Text('Marge'.tr),
+              onPressed: () async {
+                if (_selectFromTableId == null || _selectToTableId == null) {
+                  Fluttertoast.showToast(msg: 'Please select a table'.tr);
+                } else {
+                  var result = await showAreYouSureDialog(title: 'Marge'.tr);
+                  if (result) {
+                    var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
+                    var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
+                    dineInSaved[indexTo].cart.items.addAll(dineInSaved[indexFrom].cart.items);
+                    dineInSaved[indexFrom].isOpen = false;
+                    dineInSaved[indexFrom].isReservation = false;
+                    dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
+                    mySharedPreferences.dineIn = dineInSaved;
+                    Get.back();
+                  }
                 }
               },
             )

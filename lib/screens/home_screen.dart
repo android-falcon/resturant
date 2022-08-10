@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
       HomeMenu(
         name: 'Exit'.tr,
         onTab: () async {
-          var result = await _showAreYouSureDialog(title: 'Close App'.tr);
+          var result = await showAreYouSureDialog(title: 'Close App'.tr);
           if (result) {
             if (Platform.isAndroid) {
               SystemNavigator.pop();
@@ -461,13 +461,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           _controllerSelectEdit,
                           setState,
                           onExit: () async {
-                            var result = await _showAreYouSureDialog(title: 'Exit'.tr);
+                            var result = await showAreYouSureDialog(title: 'Exit'.tr);
                             if (result) {
                               Get.back();
                             }
                           },
                           onSubmit: () async {
-                            var result = await _showAreYouSureDialog(title: 'Save'.tr);
+                            var result = await showAreYouSureDialog(title: 'Save'.tr);
                             if (result) {
                               if (_typeInputCash == 1 ? double.parse(_controllerManual.text) > 0 : moneyCount > 0) {
                                 switch (type) {
@@ -868,22 +868,6 @@ class _HomeScreenState extends State<HomeScreen> {
       return rQty;
     }
     return int.parse(qty);
-  }
-
-  Future<bool> _showAreYouSureDialog({required String title}) async {
-    var result = await Get.defaultDialog(
-      title: title,
-      titleStyle: kStyleTextTitle,
-      content: Text('Are you sure?'.tr),
-      textCancel: 'Cancel'.tr,
-      textConfirm: 'Confirm'.tr,
-      confirmTextColor: Colors.white,
-      onConfirm: () {
-        Get.back(result: true);
-      },
-      barrierDismissible: true,
-    );
-    return result ?? false;
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:restaurant_system/screens/widgets/loading_dialog.dart';
 import 'package:restaurant_system/screens/widgets/num_pad.dart';
+import 'package:restaurant_system/utils/constant.dart';
 
 bool isNotEmpty(String? s) => s != null && s.isNotEmpty;
 
@@ -42,6 +43,22 @@ void hideLoadingDialog() {
   if (Get.isDialogOpen!) {
     Get.back();
   }
+}
+
+Future<bool> showAreYouSureDialog({required String title}) async {
+  var result = await Get.defaultDialog(
+    title: title,
+    titleStyle: kStyleTextTitle,
+    content: Text('Are you sure?'.tr),
+    textCancel: 'Cancel'.tr,
+    textConfirm: 'Confirm'.tr,
+    confirmTextColor: Colors.white,
+    onConfirm: () {
+      Get.back(result: true);
+    },
+    barrierDismissible: true,
+  );
+  return result ?? false;
 }
 
 Widget numPadWidget(
