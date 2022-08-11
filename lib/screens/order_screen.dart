@@ -760,13 +760,13 @@ class _OrderScreenState extends State<OrderScreen> {
       }
       _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + item.total);
       _cartModel.totalLineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + item.totalLineDiscount);
-      _cartModel.totalDiscount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
+      _cartModel.totalDiscount = _cartModel.discountType == DiscountType.percentage ? (_cartModel.total - _cartModel.totalLineDiscount) * (_cartModel.discount / 100) : _cartModel.discount;
       _cartModel.service = widget.type == OrderType.takeAway ? 0 : _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
       _cartModel.serviceTax = widget.type == OrderType.takeAway ? 0 : _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
-      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? item.total : 0));
+      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? (item.total - item.totalLineDiscount) : 0));
       for (var element in _cartModel.items) {
         if (element.discountAvailable) {
-          element.discount = _cartModel.totalDiscount * (element.total / totalDiscountAvailableItem);
+          element.discount = _cartModel.totalDiscount * ((element.total - element.totalLineDiscount) / totalDiscountAvailableItem);
         } else {
           element.discount = 0;
         }
@@ -778,7 +778,6 @@ class _OrderScreenState extends State<OrderScreen> {
       _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + item.tax);
       _cartModel.tax = _cartModel.itemsTax + _cartModel.serviceTax;
       _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
-
     } else {
       // شامل
       for (var element in _cartModel.items) {
@@ -787,13 +786,13 @@ class _OrderScreenState extends State<OrderScreen> {
       }
       _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + item.total);
       _cartModel.totalLineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + item.totalLineDiscount);
-      _cartModel.totalDiscount = _cartModel.discountType == DiscountType.percentage ? _cartModel.total * (_cartModel.discount / 100) : _cartModel.discount;
+      _cartModel.totalDiscount = _cartModel.discountType == DiscountType.percentage ? (_cartModel.total - _cartModel.totalLineDiscount) * (_cartModel.discount / 100) : _cartModel.discount;
       _cartModel.service = widget.type == OrderType.takeAway ? 0 : _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
       _cartModel.serviceTax = widget.type == OrderType.takeAway ? 0 : _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
-      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? item.total : 0));
+      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? (item.total - item.totalLineDiscount) : 0));
       for (var element in _cartModel.items) {
         if (element.discountAvailable) {
-          element.discount = _cartModel.totalDiscount * (element.total / totalDiscountAvailableItem);
+          element.discount = _cartModel.totalDiscount * ((element.total - element.totalLineDiscount) / totalDiscountAvailableItem);
         } else {
           element.discount = 0;
         }
