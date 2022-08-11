@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -53,13 +52,13 @@ class _PayScreenState extends State<PayScreen> {
 
   Future<Map<String, dynamic>> _showPayDialog({TextEditingController? controllerReceived, required double balance, required double received, bool enableReturnValue = false, TextEditingController? controllerCreditCard}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
-    controllerReceived ??= TextEditingController(text: '$received');
-    if (controllerReceived.text.endsWith('.0')) {
-      controllerReceived.text = controllerReceived.text.replaceFirst('.0', '');
+    controllerReceived ??= TextEditingController(text: received.toStringAsFixed(3));
+    if (controllerReceived.text.endsWith('.000')) {
+      controllerReceived.text = controllerReceived.text.replaceFirst('.000', '');
     }
     CreditCardType? creditCardType = CreditCardType.unknown;
     TextEditingController _controllerSelected = controllerReceived;
-    var _received = await Get.dialog(
+    var result = await Get.dialog(
       CustomDialog(
         builder: (context, setState, constraints) => Column(
           children: [
@@ -163,8 +162,10 @@ class _PayScreenState extends State<PayScreen> {
       ),
       barrierDismissible: false,
     );
-    _received = _received == null ? received : double.parse(_received);
-    if (enableReturnValue && _received > balance) {
+    double _received = result == null ? received : double.parse(result);
+    if((_received - double.parse(balance.toStringAsFixed(3)) == 0)){
+      _received = balance;
+    } else if (enableReturnValue && _received > balance) {
       await Get.dialog(
         CustomDialog(
           builder: (context, setState, constraints) => Center(
