@@ -10,8 +10,6 @@ import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/api_url.dart';
-import 'package:restaurant_system/utils/constant.dart';
-import 'package:restaurant_system/utils/enum_in_out_type.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
@@ -101,24 +99,54 @@ class RestApi {
           break;
       }
       _networkLog(response);
-      if (response.statusCode == 200) {
-        var networkModel = await NetworkTable.queryById(id: model.id);
-        if (networkModel != null) {
-          networkModel.status = 2;
-          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
-          await NetworkTable.update(networkModel);
-        }
+      var networkModel = await NetworkTable.queryById(id: model.id);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.countRequest = networkModel.countRequest + 1;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
       }
     } on dio.DioError catch (e) {
       _traceError(e);
+      var networkModel = await NetworkTable.queryById(id: model.id);
+      if (networkModel != null) {
+        networkModel.countRequest = networkModel.countRequest + 1;
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
     } catch (e) {
       _traceCatch(e);
+      var networkModel = await NetworkTable.queryById(id: model.id);
+      if (networkModel != null) {
+        networkModel.countRequest = networkModel.countRequest + 1;
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
     }
   }
 
   static Future<void> getData() async {
     try {
       showLoadingDialog();
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'GET_DATA',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.GET_DATA,
+        method: 'GET',
+        params: '',
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.get(ApiUrl.GET_DATA);
       _networkLog(response);
       if (response.statusCode == 200) {
@@ -136,6 +164,7 @@ class RestApi {
               tableId: e.id,
               tableNo: e.tableNo,
               floorNo: e.floorNo,
+              numberSeats: 0,
               cart: CartModel.init(orderType: OrderType.dineIn),
             ),
           ),
@@ -160,8 +189,13 @@ class RestApi {
       } else {
         mySharedPreferences.dineIn = [];
       }
-
       hideLoadingDialog();
+      if (networkModel != null) {
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
     } on dio.DioError catch (e) {
       _traceError(e);
       hideLoadingDialog();
@@ -195,19 +229,21 @@ class RestApi {
         params: '',
         body: body,
         headers: '',
-        createdAt: DateTime.now().microsecondsSinceEpoch,
-        uploadedAt: DateTime.now().microsecondsSinceEpoch,
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
       ));
       var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.INVOICE, data: body);
-
       _networkLog(response);
-      if (response.statusCode == 200) {
-        if (networkModel != null) {
-          networkModel.status = 2;
-          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
-          await NetworkTable.update(networkModel);
-        }
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
       }
     } on dio.DioError catch (e) {
       _traceError(e);
@@ -226,8 +262,31 @@ class RestApi {
         "CashNo": mySharedPreferences.cashNo,
         "InvNo": invNo,
       };
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'REFUND_INVOICE',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.REFUND_INVOICE,
+        method: 'GET',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.get(ApiUrl.REFUND_INVOICE, queryParameters: queryParameters);
       _networkLog(response);
+      if (networkModel != null) {
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
       if (response.statusCode == 200) {
         List<RefundModel> refundModel = List<RefundModel>.from(response.data.map((e) => RefundModel.fromJson(e)));
         hideLoadingDialog();
@@ -265,18 +324,21 @@ class RestApi {
         params: jsonEncode(queryParameters),
         body: body,
         headers: '',
-        createdAt: DateTime.now().microsecondsSinceEpoch,
-        uploadedAt: DateTime.now().microsecondsSinceEpoch,
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
       ));
       var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.INVOICE_RETURNED_QTY, data: body, queryParameters: queryParameters);
       _networkLog(response);
-      if (response.statusCode == 200) {
-        if (networkModel != null) {
-          networkModel.status = 2;
-          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
-          await NetworkTable.update(networkModel);
-        }
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
       }
     } on dio.DioError catch (e) {
       _traceError(e);
@@ -313,18 +375,21 @@ class RestApi {
         params: '',
         body: body,
         headers: '',
-        createdAt: DateTime.now().microsecondsSinceEpoch,
-        uploadedAt: DateTime.now().microsecondsSinceEpoch,
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
       ));
       var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.PAY_IN_OUT, data: body);
       _networkLog(response);
-      if (response.statusCode == 200) {
-        if (networkModel != null) {
-          networkModel.status = 2;
-          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
-          await NetworkTable.update(networkModel);
-        }
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
       }
     } on dio.DioError catch (e) {
       _traceError(e);
@@ -344,20 +409,23 @@ class RestApi {
         "UserId": mySharedPreferences.employee.id,
         "CloseDate": closeDate.toIso8601String(),
       });
-      // await NetworkTable.insert(NetworkTableModel(
-      //   id: 0,
-      //   type: 'POS_DAILY_CLOSE',
-      //   status: 1,
-      //   baseUrl: restDio.options.baseUrl,
-      //   path: ApiUrl.POS_DAILY_CLOSE,
-      //   method: 'POST',
-      //   params: '',
-      //   body: body,
-      //   headers: '',
-      //   createdAt: DateTime.now().microsecondsSinceEpoch,
-      //   uploadedAt: DateTime.now().microsecondsSinceEpoch,
-      // ));
-      // var networkModel = await NetworkTable.queryLastRow();
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'POS_DAILY_CLOSE',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.POS_DAILY_CLOSE,
+        method: 'POST',
+        params: '',
+        body: body,
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.POS_DAILY_CLOSE, data: body);
       _networkLog(response);
       mySharedPreferences.dailyClose = closeDate;
@@ -368,12 +436,12 @@ class RestApi {
       }
       hideLoadingDialog();
       Get.back();
-      // if (networkModel != null) {
-      //   networkModel.status = 2;
-      //   networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
-      //   await NetworkTable.update(networkModel);
-      // }
-
+      if (networkModel != null) {
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
     } on dio.DioError catch (e) {
       _traceError(e);
       hideLoadingDialog();
@@ -401,18 +469,21 @@ class RestApi {
         params: jsonEncode(queryParameters),
         body: '',
         headers: '',
-        createdAt: DateTime.now().microsecondsSinceEpoch,
-        uploadedAt: DateTime.now().microsecondsSinceEpoch,
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
       ));
       var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.OPEN_TABLE, queryParameters: queryParameters);
       _networkLog(response);
-      if (response.statusCode == 200) {
-        if (networkModel != null) {
-          networkModel.status = 2;
-          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
-          await NetworkTable.update(networkModel);
-        }
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
       }
     } on dio.DioError catch (e) {
       _traceError(e);
@@ -439,18 +510,21 @@ class RestApi {
         params: jsonEncode(queryParameters),
         body: '',
         headers: '',
-        createdAt: DateTime.now().microsecondsSinceEpoch,
-        uploadedAt: DateTime.now().microsecondsSinceEpoch,
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
       ));
       var networkModel = await NetworkTable.queryLastRow();
       final response = await restDio.post(ApiUrl.CLOSE_TABLE, queryParameters: queryParameters);
       _networkLog(response);
-      if (response.statusCode == 200) {
-        if (networkModel != null) {
-          networkModel.status = 2;
-          networkModel.uploadedAt = DateTime.now().microsecondsSinceEpoch;
-          await NetworkTable.update(networkModel);
-        }
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
       }
     } on dio.DioError catch (e) {
       _traceError(e);

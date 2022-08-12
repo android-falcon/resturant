@@ -40,8 +40,11 @@ class DatabaseHelper {
             ${NetworkTable.columnParams} TEXT NOT NULL,
             ${NetworkTable.columnBody} TEXT NOT NULL,
             ${NetworkTable.columnHeaders} TEXT NOT NULL,
-            ${NetworkTable.columnCreatedAt} INTEGER NOT NULL,
-            ${NetworkTable.columnUploadedAt} INTEGER NOT NULL
+            ${NetworkTable.columnCountRequest} INTEGER NOT NULL,
+            ${NetworkTable.columnStatusCode} INTEGER NOT NULL,
+            ${NetworkTable.columnResponse} TEXT,
+            ${NetworkTable.columnCreatedAt} TEXT NOT NULL,
+            ${NetworkTable.columnUploadedAt} TEXT NOT NULL
           )
           ''');
   }

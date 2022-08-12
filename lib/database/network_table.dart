@@ -6,13 +6,16 @@ class NetworkTable {
 
   static const columnId = 'id';
   static const columnType = 'type';
-  static const columnStatus = 'status';
+    static const columnStatus = 'status'; // 1: continues request , 2: continues request finished , 3: normal request , 4: continues request deleted
   static const columnBaseUrl = 'base_url';
   static const columnPath = 'path';
   static const columnMethod = 'method';
   static const columnParams = 'params';
   static const columnBody = 'body';
   static const columnHeaders = 'headers';
+  static const columnCountRequest = 'count_request';
+  static const columnStatusCode = 'status_code';
+  static const columnResponse = 'response';
   static const columnCreatedAt = 'created_at';
   static const columnUploadedAt = 'uploaded_at';
 
@@ -29,6 +32,9 @@ class NetworkTable {
         columnParams: model.params,
         columnBody: model.body,
         columnHeaders: model.headers,
+        columnCountRequest: model.countRequest,
+        columnStatusCode: model.statusCode,
+        columnResponse: model.response,
         columnCreatedAt: model.createdAt,
         columnUploadedAt: model.uploadedAt,
       },
@@ -46,9 +52,10 @@ class NetworkTable {
     return await db.delete(tableName, where: '$columnId = ?', whereArgs: [id]);
   }
 
-  static Future<List<Map<String, dynamic>>> queryAllRows() async {
+  static Future<List<NetworkTableModel>> queryAllRows({bool desc = false}) async {
     Database db = await DatabaseHelper.instance.database;
-    return await db.query(tableName);
+    var query = await db.query(tableName, orderBy: '$columnId ${desc ? 'DESC' : 'ASC'}');
+    return List<NetworkTableModel>.from(query.map((e) => NetworkTableModel.fromMap(e)));
   }
 
   static Future<List<NetworkTableModel>> queryRows({required int status}) async {
@@ -91,8 +98,11 @@ class NetworkTableModel {
   String params;
   String body;
   String headers;
-  int createdAt;
-  int uploadedAt;
+  int countRequest;
+  int statusCode;
+  String response;
+  String createdAt;
+  String uploadedAt;
 
   NetworkTableModel({
     required this.id,
@@ -104,6 +114,9 @@ class NetworkTableModel {
     required this.params,
     required this.body,
     required this.headers,
+    required this.countRequest,
+    required this.statusCode,
+    required this.response,
     required this.createdAt,
     required this.uploadedAt,
   });
@@ -119,6 +132,9 @@ class NetworkTableModel {
         params: map[NetworkTable.columnParams],
         body: map[NetworkTable.columnBody],
         headers: map[NetworkTable.columnHeaders],
+        countRequest: map[NetworkTable.columnCountRequest],
+        statusCode: map[NetworkTable.columnStatusCode],
+        response: map[NetworkTable.columnResponse],
         createdAt: map[NetworkTable.columnUploadedAt],
         uploadedAt: map[NetworkTable.columnCreatedAt],
       );
@@ -134,6 +150,9 @@ class NetworkTableModel {
       NetworkTable.columnParams: params,
       NetworkTable.columnBody: body,
       NetworkTable.columnHeaders: headers,
+      NetworkTable.columnCountRequest: countRequest,
+      NetworkTable.columnStatusCode: statusCode,
+      NetworkTable.columnResponse: response,
       NetworkTable.columnCreatedAt: createdAt,
       NetworkTable.columnUploadedAt: uploadedAt,
     };

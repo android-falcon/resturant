@@ -6,16 +6,26 @@ class CustomDataTable extends StatelessWidget {
   final double minWidth;
   final double? dataRowHeight;
   final double? headingRowHeight;
+  final double? columnSpacing;
+  final bool sortAscending;
+  final int? sortColumnIndex;
   final List<DataRow> rows;
   final List<DataColumn> columns;
   final bool showCheckboxColumn;
+  final TextStyle? headingTextStyle;
+  final TextStyle? dataTextStyle;
 
   const CustomDataTable({
     Key? key,
     this.minWidth = 0.0,
-    this.dataRowHeight,
-    this.headingRowHeight,
+    this.dataRowHeight = 30,
+    this.headingRowHeight = 30,
     this.showCheckboxColumn = false,
+    this.columnSpacing = 25,
+    this.sortAscending = true,
+    this.sortColumnIndex,
+    this.headingTextStyle,
+    this.dataTextStyle,
     required this.rows,
     required this.columns,
   }) : super(key: key);
@@ -32,11 +42,13 @@ class CustomDataTable extends StatelessWidget {
             borderRadius: BorderRadius.circular(3.r),
           ),
           showCheckboxColumn: showCheckboxColumn,
-          dataRowHeight: dataRowHeight ?? 30.h,
-          headingRowHeight: headingRowHeight ?? 30.h,
-          // columnSpacing: 0,
-          headingTextStyle: kStyleHeaderTable,
-          dataTextStyle: kStyleDataTable,
+          dataRowHeight: dataRowHeight,
+          headingRowHeight: headingRowHeight,
+          columnSpacing: columnSpacing,
+          sortAscending: sortAscending,
+          sortColumnIndex: sortColumnIndex,
+          headingTextStyle: headingTextStyle?? kStyleHeaderTable,
+          dataTextStyle: dataTextStyle?? kStyleDataTable,
           rows: rows,
           columns: columns,
         ),

@@ -36,8 +36,9 @@ import 'package:uuid/uuid.dart';
 class OrderScreen extends StatefulWidget {
   final OrderType type;
   final int? tableId;
+  final int? numberSeats;
 
-  const OrderScreen({Key? key, required this.type, this.tableId}) : super(key: key);
+  const OrderScreen({Key? key, required this.type, this.tableId, this.numberSeats}) : super(key: key);
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -814,6 +815,7 @@ class _OrderScreenState extends State<OrderScreen> {
       dineInSaved[indexTable].isOpen = true;
     }
     dineInSaved[indexTable].cart = _cartModel;
+    dineInSaved[indexTable].numberSeats = widget.numberSeats!;
     mySharedPreferences.dineIn = dineInSaved;
   }
 
@@ -888,7 +890,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     if (widget.type == OrderType.dineIn)
                       Expanded(
                         child: Text(
-                          '${'Table'.tr} : ',
+                          '${'Table'.tr} : ${dineInSaved[indexTable].tableNo}',
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -922,26 +924,26 @@ class _OrderScreenState extends State<OrderScreen> {
                         style: kStyleTextDefault,
                       ),
                     ),
-                    if (widget.type == OrderType.dineIn)
-                      Row(
-                        children: [
-                          const VerticalDivider(
-                            width: 1,
-                            thickness: 2,
-                          ),
-                          Image.asset(
-                            'assets/images/waiter.png',
-                            height: 45.h,
-                          ),
-                          Text(
-                            'Ali Ahmad',
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: kStyleTextDefault,
-                          ),
-                        ],
-                      ),
+                    // if (widget.type == OrderType.dineIn)
+                    //   Row(
+                    //     children: [
+                    //       const VerticalDivider(
+                    //         width: 1,
+                    //         thickness: 2,
+                    //       ),
+                    //       Image.asset(
+                    //         'assets/images/waiter.png',
+                    //         height: 45.h,
+                    //       ),
+                    //       Text(
+                    //         'Ali Ahmad',
+                    //         textAlign: TextAlign.center,
+                    //         overflow: TextOverflow.ellipsis,
+                    //         maxLines: 1,
+                    //         style: kStyleTextDefault,
+                    //       ),
+                    //     ],
+                    //   ),
                     // if (widget.type == OrderType.dineIn)
                     //   Row(
                     //     children: [
@@ -955,7 +957,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     //         height: 45.h,
                     //       ),
                     //       Text(
-                    //         '2',
+                    //         '${widget.numberSeats}',
                     //         textAlign: TextAlign.center,
                     //         overflow: TextOverflow.ellipsis,
                     //         maxLines: 1,
@@ -976,7 +978,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             height: 45.h,
                           ),
                           Text(
-                            '2',
+                            '${widget.numberSeats}',
                             textAlign: TextAlign.center,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,

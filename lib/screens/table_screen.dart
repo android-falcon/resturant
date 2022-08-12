@@ -14,12 +14,14 @@ import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
+import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/utils/app_config/home_menu.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
+import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
 
 class TableScreen extends StatefulWidget {
@@ -286,8 +288,10 @@ class _TableScreenState extends State<TableScreen> {
                     dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
                     dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
                     dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
+                    dineInSaved[indexTo].numberSeats = dineInSaved[indexFrom].numberSeats;
                     dineInSaved[indexFrom].isOpen = false;
                     dineInSaved[indexFrom].isReservation = false;
+                    dineInSaved[indexFrom].numberSeats = 0;
                     dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
                     mySharedPreferences.dineIn = dineInSaved;
                     Get.back();
@@ -376,9 +380,9 @@ class _TableScreenState extends State<TableScreen> {
                                           radius: 10,
                                           borderRadius: const BorderRadius.all(Radius.circular(10)),
                                           onTap: () {
-                                            if(e.tableId == _selectFromTableId){
+                                            if (e.tableId == _selectFromTableId) {
                                               _selectFromTableId = null;
-                                            } else if(e.tableId != _selectToTableId){
+                                            } else if (e.tableId != _selectToTableId) {
                                               _selectFromTableId = e.tableId;
                                             }
                                             setState(() {});
@@ -468,9 +472,9 @@ class _TableScreenState extends State<TableScreen> {
                                           radius: 10,
                                           borderRadius: const BorderRadius.all(Radius.circular(10)),
                                           onTap: () {
-                                            if(e.tableId == _selectToTableId){
+                                            if (e.tableId == _selectToTableId) {
                                               _selectToTableId = null;
-                                            } else if(e.tableId != _selectFromTableId){
+                                            } else if (e.tableId != _selectFromTableId) {
                                               _selectToTableId = e.tableId;
                                             }
                                             setState(() {});
@@ -513,8 +517,10 @@ class _TableScreenState extends State<TableScreen> {
                     var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
                     var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
                     dineInSaved[indexTo].cart.items.addAll(dineInSaved[indexFrom].cart.items);
+                    dineInSaved[indexTo].numberSeats += dineInSaved[indexFrom].numberSeats;
                     dineInSaved[indexFrom].isOpen = false;
                     dineInSaved[indexFrom].isReservation = false;
+                    dineInSaved[indexFrom].numberSeats = 0;
                     dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
                     mySharedPreferences.dineIn = dineInSaved;
                     Get.back();
@@ -577,6 +583,138 @@ class _TableScreenState extends State<TableScreen> {
       barrierDismissible: false,
     );
     return _tableId;
+  }
+
+  Future<int> _showNumberSeatsDialog() async {
+    TextEditingController _controllerMale = TextEditingController(text: '1');
+    TextEditingController _controllerFemale = TextEditingController();
+    TextEditingController _controllerChildren = TextEditingController();
+    int _numberSeats = 1;
+    bool? result = await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Padding(
+          padding: EdgeInsets.symmetric(horizontal: 50.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 10.h),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('${'The number of seats'.tr} :   '),
+                  Text(
+                    '$_numberSeats',
+                    style: kStyleTextTable,
+                  ),
+                ],
+              ),
+              SizedBox(height: 50.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _controllerMale,
+                      margin: EdgeInsets.symmetric(horizontal: 8.w),
+                      keyboardType: const TextInputType.numberWithOptions(),
+                      maxLines: 1,
+                      inputFormatters: [
+                        EnglishDigitsTextInputFormatter(decimal: false),
+                      ],
+                      label: Text('Male'.tr),
+                      onChanged: (value) {
+                        int male = 0;
+                        int female = 0;
+                        int children = 0;
+                        if (_controllerMale.text.isNotEmpty) {
+                          male = int.parse(_controllerMale.text);
+                        }
+                        if (_controllerFemale.text.isNotEmpty) {
+                          female = int.parse(_controllerFemale.text);
+                        }
+                        if (_controllerChildren.text.isNotEmpty) {
+                          children = int.parse(_controllerChildren.text);
+                        }
+                        _numberSeats = male + female + children;
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _controllerFemale,
+                      margin: EdgeInsets.symmetric(horizontal: 8.w),
+                      keyboardType: const TextInputType.numberWithOptions(),
+                      maxLines: 1,
+                      inputFormatters: [
+                        EnglishDigitsTextInputFormatter(decimal: false),
+                      ],
+                      label: Text('Female'.tr),
+                      onChanged: (value) {
+                        int male = 0;
+                        int female = 0;
+                        int children = 0;
+                        if (_controllerMale.text.isNotEmpty) {
+                          male = int.parse(_controllerMale.text);
+                        }
+                        if (_controllerFemale.text.isNotEmpty) {
+                          female = int.parse(_controllerFemale.text);
+                        }
+                        if (_controllerChildren.text.isNotEmpty) {
+                          children = int.parse(_controllerChildren.text);
+                        }
+                        _numberSeats = male + female + children;
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomTextField(
+                      controller: _controllerChildren,
+                      margin: EdgeInsets.symmetric(horizontal: 8.w),
+                      keyboardType: const TextInputType.numberWithOptions(),
+                      maxLines: 1,
+                      inputFormatters: [
+                        EnglishDigitsTextInputFormatter(decimal: false),
+                      ],
+                      label: Text('Children'.tr),
+                      onChanged: (value) {
+                        int male = 0;
+                        int female = 0;
+                        int children = 0;
+                        if (_controllerMale.text.isNotEmpty) {
+                          male = int.parse(_controllerMale.text);
+                        }
+                        if (_controllerFemale.text.isNotEmpty) {
+                          female = int.parse(_controllerFemale.text);
+                        }
+                        if (_controllerChildren.text.isNotEmpty) {
+                          children = int.parse(_controllerChildren.text);
+                        }
+                        _numberSeats = male + female + children;
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 50.h),
+              CustomButton(
+                child: Text('Done'.tr),
+                onPressed: () {
+                  Get.back(result: true);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    if(result == null || !result){
+      return 0;
+    }
+    return _numberSeats;
   }
 
   @override
@@ -661,11 +799,14 @@ class _TableScreenState extends State<TableScreen> {
                               children: dineInSaved
                                   .where((element) => element.floorNo == _selectFloor)
                                   .map((e) => InkWell(
-                                        onTap: () {
-                                          Get.to(() => OrderScreen(type: OrderType.dineIn, tableId: e.tableId))!.then((value) {
-                                            dineInSaved = mySharedPreferences.dineIn;
-                                            setState(() {});
-                                          });
+                                        onTap: () async {
+                                          var numberSeats = e.isOpen ? e.numberSeats : await _showNumberSeatsDialog();
+                                          if (numberSeats != 0) {
+                                            Get.to(() => OrderScreen(type: OrderType.dineIn, tableId: e.tableId, numberSeats: numberSeats))!.then((value) {
+                                              dineInSaved = mySharedPreferences.dineIn;
+                                              setState(() {});
+                                            });
+                                          }
                                         },
                                         child: Column(
                                           children: [

@@ -57,7 +57,7 @@ class _RestaurantSystemState extends State<RestaurantSystem> {
       var networkModel = await NetworkTable.queryRows(status: 1);
       log('NetworkModel : ${networkModel.length}');
       for (var element in networkModel) {
-        var difference = DateTime.now().difference(DateTime.fromMicrosecondsSinceEpoch(element.createdAt));
+        var difference = DateTime.now().difference(DateTime.parse(element.createdAt));
         if (difference.inSeconds > 70) {
           RestApi.uploadNetworkTable(element);
         }

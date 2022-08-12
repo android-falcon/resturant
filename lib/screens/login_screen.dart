@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/config_screen.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
+import 'package:restaurant_system/screens/network_log_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
@@ -82,6 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               RestApi.restDio.options.baseUrl = mySharedPreferences.baseUrl;
                               RestApi.getData();
                             });
+                          } else if (_controllerUsername.text.isEmpty && _controllerPassword.text == "NetworkLog@admin") {
+                            _controllerPassword.text = '';
+                            Get.to(() => const NetworkLogScreen());
                           } else if (_keyForm.currentState!.validate()) {
                             var indexEmployee = allDataModel.employees.indexWhere((element) => element.username == _controllerUsername.text && element.password == _controllerPassword.text);
                             if (indexEmployee != -1) {
@@ -89,6 +93,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               var indexPosClose = allDataModel.posClose.indexWhere((element) => element.posNo == mySharedPreferences.posNo);
                               if (indexPosClose != -1) {
                                 mySharedPreferences.dailyClose = allDataModel.posClose[indexPosClose].closeDate;
+                              } else{
+                                mySharedPreferences.dailyClose = DateTime.parse('0000-00-00T00:00:00.000');
                               }
                               Get.offAll(() => const HomeScreen());
                             } else {
