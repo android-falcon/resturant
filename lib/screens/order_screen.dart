@@ -782,7 +782,7 @@ class _OrderScreenState extends State<OrderScreen> {
     } else {
       // شامل
       for (var element in _cartModel.items) {
-        element.total = (element.priceChange - (element.priceChange * (element.taxPercent / 100))) * element.qty;
+        element.total = (element.priceChange / (1 + (element.taxPercent / 100))) * element.qty;
         element.totalLineDiscount = (element.lineDiscountType == DiscountType.percentage ? element.total * (element.lineDiscount / 100) : element.lineDiscount) * element.qty;
       }
       _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + item.total);

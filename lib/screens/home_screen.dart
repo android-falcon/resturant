@@ -80,10 +80,11 @@ class _HomeScreenState extends State<HomeScreen> {
           _showRefundDialog();
         },
       ),
-      // HomeMenu(
-      //   name: 'Cash Drawer'.tr,
-      //   onTab: () {},
-      // ),
+      HomeMenu(
+        name: 'Cash Drawer'.tr,
+        onTab: () async {
+        },
+      ),
       if (mySharedPreferences.employee.isMaster)
         HomeMenu(
           name: 'Daily Close'.tr,
