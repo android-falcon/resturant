@@ -1010,66 +1010,43 @@ class _OrderScreenState extends State<OrderScreen> {
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(5.r),
                                         onTap: () async {
-                                          // var indexItem = _cartModel.items.indexWhere((element) => element.id == e.id && !element.isDeleted);
-                                          // if (indexItem != -1) {
-                                          //   var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == _cartModel.items[indexItem].id).toList();
-                                          //   if (questionsItem.isNotEmpty) {
-                                          //     var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
-                                          //     var items = _cartModel.items.where((element) => element.id == e.id).toList();
-                                          //     var equalItem = items.indexWhere((element) => listsAreEqual(element.questions, questions));
-                                          //     if (equalItem != -1) {
-                                          //       items[equalItem].qty += 1;
-                                          //       items[equalItem].total = items[equalItem].qty * items[equalItem].priceChange;
-                                          //     } else {
-                                          //       _cartModel.items.add(CartItemModel(
-                                          //         orderType: widget.type,
-                                          //         id: e.id,
-                                          //         categoryId: e.category.id,
-                                          //         taxType: e.taxType.id,
-                                          //         taxPercent: e.taxPercent.percent,
-                                          //         name: e.menuName,
-                                          //         qty: 1,
-                                          //         price: e.price,
-                                          //         priceChange: e.price,
-                                          //         total: e.price,
-                                          //         tax: 0,
-                                          //         discountAvailable: e.discountAvailable == 1,
-                                          //         openPrice: e.openPrice == 1,
-                                          //         rowSerial: _cartModel.items.length + 1,
-                                          //       ));
-                                          //       _cartModel.items.last.questions = questions;
-                                          //     }
-                                          //   } else {
-                                          //     _cartModel.items[indexItem].qty += 1;
-                                          //     _cartModel.items[indexItem].total = _cartModel.items[indexItem].qty * _cartModel.items[indexItem].priceChange;
-                                          //   }
-                                          // } else {
-                                          _cartModel.items.add(CartItemModel(
-                                            uuid: const Uuid().v1(),
-                                            parentUuid: '',
-                                            orderType: widget.type,
-                                            id: e.id,
-                                            categoryId: e.category.id,
-                                            taxType: e.taxType.id,
-                                            taxPercent: e.taxPercent.percent,
-                                            name: e.menuName,
-                                            qty: 1,
-                                            price: e.price,
-                                            priceChange: e.price,
-                                            total: e.price,
-                                            tax: 0,
-                                            discountAvailable: e.discountAvailable == 1,
-                                            openPrice: e.openPrice == 1,
-                                            rowSerial: _cartModel.items.length + 1,
-                                          ));
-
+                                          bool itemIsAdded = false;
+                                          var indexItem = _cartModel.items.indexWhere((element) => element.id == e.id && element.parentUuid == '' && element.modifiers.isEmpty);
                                           var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == e.id).toList();
-                                          if (questionsItem.isNotEmpty) {
-                                            var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
-                                            _cartModel.items.last.questions = questions;
+                                          var subItems = allDataModel.itemSubItems.where((element) => element.itemsId == e.id).toList();
+                                          if (indexItem != -1 && questionsItem.isEmpty && subItems.isEmpty) {
+                                            itemIsAdded = true;
                                           }
-                                          // }
-
+                                          if (itemIsAdded) {
+                                            _cartModel.items[indexItem].qty += 1;
+                                          } else {
+                                            _cartModel.items.add(CartItemModel(
+                                              uuid: const Uuid().v1(),
+                                              parentUuid: '',
+                                              orderType: widget.type,
+                                              id: e.id,
+                                              categoryId: e.category.id,
+                                              taxType: e.taxType.id,
+                                              taxPercent: e.taxPercent.percent,
+                                              name: e.menuName,
+                                              qty: 1,
+                                              price: e.price,
+                                              priceChange: e.price,
+                                              total: e.price,
+                                              tax: 0,
+                                              discountAvailable: e.discountAvailable == 1,
+                                              openPrice: e.openPrice == 1,
+                                              rowSerial: _cartModel.items.length + 1,
+                                            ));
+                                            if (questionsItem.isNotEmpty) {
+                                              var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
+                                              _cartModel.items.last.questions = questions;
+                                            }
+                                            if (subItems.isNotEmpty) {
+                                              var cartSubItems = await _showSubItemDialog(subItems: subItems, parentRandomId: _cartModel.items.last.uuid, parentQty: _cartModel.items.last.qty);
+                                              _cartModel.items.addAll(cartSubItems);
+                                            }
+                                          }
                                           _calculateOrder();
                                           setState(() {});
                                         },
