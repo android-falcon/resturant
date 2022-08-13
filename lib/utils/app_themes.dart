@@ -14,6 +14,13 @@ class AppThemes {
         // fontFamily: fontFamily,
         cardColor: Colors.white,
         scaffoldBackgroundColor: const Color(0xFFF9F9F9),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFFF9F9F9),
+          elevation: 0,
+          iconTheme: IconThemeData(
+            color: Colors.black,
+          )
+        ),
         colorScheme: ColorScheme.fromSwatch(primarySwatch: ColorsApp.primaryColor).copyWith(
           secondary: ColorsApp.primaryColor.shade700,
           brightness: Brightness.light,

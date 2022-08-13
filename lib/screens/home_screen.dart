@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
+import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/screens/table_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
@@ -83,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
       HomeMenu(
         name: 'Cash Drawer'.tr,
         onTab: () async {
+
         },
       ),
       if (mySharedPreferences.employee.isMaster)

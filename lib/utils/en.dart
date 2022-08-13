@@ -136,4 +136,9 @@ const Map<String, String> en = {
   'Male': 'Male',
   'Female': 'Female',
   'Children': 'Children',
+  'Finish Order': 'Finish Order',
+  'Item Name': 'Item Name',
+  'Note': 'Note',
+  'Order No': 'Order No',
+  'Section No': 'Section No',
 };

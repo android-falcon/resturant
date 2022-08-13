@@ -43,7 +43,8 @@ dependencies:
   sqflite: ^2.0.2+1
   cached_network_image: ^3.2.0
   esc_pos_printer: ^4.1.0
-  socket_io_client: ^2.0.0
+  socket_io_client:
+  socket_io: ^1.0.1
   uuid: ^3.0.6
   font_awesome_flutter: ^10.1.0
   # The following adds the Cupertino Icons font to your application.

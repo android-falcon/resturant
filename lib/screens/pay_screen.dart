@@ -15,6 +15,7 @@ import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
+import 'package:restaurant_system/socket/kitchen_socket_client.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/credit_card_type_detector.dart';
@@ -975,19 +976,20 @@ class _PayScreenState extends State<PayScreen> {
                                               for (int i = 0; i < widget.cart.items.length; i++) {
                                                 widget.cart.items[i].rowSerial = i + 1;
                                               }
-                                              RestApi.invoice(widget.cart);
-                                              mySharedPreferences.inVocNo++;
-                                              _showPrintDialog().then((value) {
-                                                Get.offAll(HomeScreen());
-                                              });
-                                              if (widget.tableId != null) {
-                                                RestApi.closeTable(widget.tableId!);
-                                                var indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId);
-                                                dineInSaved[indexTable].isOpen = false;
-                                                dineInSaved[indexTable].numberSeats = 0;
-                                                dineInSaved[indexTable].cart = CartModel.init(orderType: OrderType.dineIn);
-                                                mySharedPreferences.dineIn = dineInSaved;
-                                              }
+                                              KitchenSocketClient.test();
+                                              // RestApi.invoice(widget.cart);
+                                              // mySharedPreferences.inVocNo++;
+                                              // _showPrintDialog().then((value) {
+                                              //   Get.offAll(HomeScreen());
+                                              // });
+                                              // if (widget.tableId != null) {
+                                              //   RestApi.closeTable(widget.tableId!);
+                                              //   var indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId);
+                                              //   dineInSaved[indexTable].isOpen = false;
+                                              //   dineInSaved[indexTable].numberSeats = 0;
+                                              //   dineInSaved[indexTable].cart = CartModel.init(orderType: OrderType.dineIn);
+                                              //   mySharedPreferences.dineIn = dineInSaved;
+                                              // }
                                             } else {
                                               Fluttertoast.showToast(msg: 'The remainder should be 0'.tr);
                                             }

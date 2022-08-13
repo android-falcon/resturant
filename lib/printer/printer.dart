@@ -5,12 +5,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 class Printer {
   static init() async {
-    const PaperSize paper = PaperSize.mm80;
+        const PaperSize paper = PaperSize.mm80;
     final profile = await CapabilityProfile.load();
     final printer = NetworkPrinter(paper, profile);
 
-    final PosPrintResult res = await printer.connect('192.168.0.123', port: 9100);
-
+    final PosPrintResult res = await printer.connect('10.0.0.113', port: 9100);
     if (res == PosPrintResult.success) {
       testReceipt(printer);
       printer.disconnect();
