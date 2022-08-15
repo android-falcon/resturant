@@ -94,7 +94,7 @@ class _PayScreenState extends State<PayScreen> {
                           },
                           validator: (value) {
                             if (!enableReturnValue) {
-                              if (double.parse(value!) > balance) {
+                              if (double.parse(value!) > double.parse(balance.toStringAsFixed(3))) {
                                 return '${'The entered value cannot be greater than the balance'.tr} (${balance.toStringAsFixed(3)})';
                               }
                             }
