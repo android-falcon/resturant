@@ -56,18 +56,10 @@ class _TableScreenState extends State<TableScreen> {
           setState(() {});
         },
       ),
-      HomeMenu(
-        name: 'Reservation'.tr,
-        onTab: () {},
-      ),
-      HomeMenu(
-        name: 'Close'.tr,
-        onTab: () {},
-      ),
-      HomeMenu(
-        name: 'Cash Drawer'.tr,
-        onTab: () {},
-      ),
+      // HomeMenu(
+      //   name: 'Reservation'.tr,
+      //   onTab: () {},
+      // ),
       HomeMenu(
         name: 'Check Out'.tr,
         onTab: () async {
@@ -76,6 +68,16 @@ class _TableScreenState extends State<TableScreen> {
             var indexTable = dineInSaved.indexWhere((element) => element.tableId == tableId);
             Get.to(() => PayScreen(cart: dineInSaved[indexTable].cart, tableId: tableId));
           }
+        },
+      ),
+      HomeMenu(
+        name: 'Cash Drawer'.tr,
+        onTab: () {},
+      ),
+      HomeMenu(
+        name: 'Close'.tr,
+        onTab: () {
+          Get.back();
         },
       ),
     ];
@@ -711,7 +713,7 @@ class _TableScreenState extends State<TableScreen> {
       ),
       barrierDismissible: false,
     );
-    if(result == null || !result){
+    if (result == null || !result) {
       return 0;
     }
     return _numberSeats;

@@ -141,4 +141,5 @@ const Map<String, String> en = {
   'Note': 'Note',
   'Order No': 'Order No',
   'Section No': 'Section No',
+  'Print Failed': 'Print Failed',
 };

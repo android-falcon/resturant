@@ -7,7 +7,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="restaurant_system"
+        android:label="Restaurant System"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"

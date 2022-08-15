@@ -733,6 +733,54 @@ class _OrderScreenState extends State<OrderScreen> {
     return int.parse(qty);
   }
 
+  Future<String> _showNoteItemDialog({required String note}) async {
+    TextEditingController _controllerNote = TextEditingController(text: note);
+    await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            SizedBox(height: 20.h),
+            CustomTextField(
+              controller: _controllerNote,
+              label: Text('Note'.tr),
+              fillColor: Colors.white,
+            ),
+            SizedBox(height: 20.h),
+            Row(
+              children: [
+                Expanded(child: Container()),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Save'.tr),
+                    backgroundColor: ColorsApp.green,
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Exit'.tr),
+                    backgroundColor: ColorsApp.red,
+                    onPressed: () {
+                      _controllerNote.text = note;
+                      Get.back();
+                    },
+                  ),
+                ),
+                Expanded(child: Container()),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return _controllerNote.text;
+  }
+
   Future<bool> _showExitOrderScreenDialog() async {
     bool? exit = await Get.defaultDialog(
       title: 'Are you sure you will exit the order screen?'.tr,
@@ -1038,13 +1086,21 @@ class _OrderScreenState extends State<OrderScreen> {
                                               openPrice: e.openPrice == 1,
                                               rowSerial: _cartModel.items.length + 1,
                                             ));
+                                            int indexAddedItem = _cartModel.items.length - 1;
                                             if (questionsItem.isNotEmpty) {
                                               var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
                                               _cartModel.items.last.questions = questions;
                                             }
                                             if (subItems.isNotEmpty) {
-                                              var cartSubItems = await _showSubItemDialog(subItems: subItems, parentRandomId: _cartModel.items.last.uuid, parentQty: _cartModel.items.last.qty);
-                                              _cartModel.items.addAll(cartSubItems);
+                                              var cartSubItems = await _showSubItemDialog(subItems: subItems, parentRandomId: _cartModel.items[indexAddedItem].uuid, parentQty: 1);
+                                              if (cartSubItems.isEmpty) {
+                                                _cartModel.items.removeAt(indexAddedItem);
+                                              } else {
+                                                _cartModel.items[indexAddedItem].price = cartSubItems.fold(0.0, (sum, element) => sum + element.price);
+                                                _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(0.0, (sum, element) => sum + element.priceChange);
+                                                _cartModel.items[indexAddedItem].openPrice = false;
+                                                _cartModel.items.addAll(cartSubItems);
+                                              }
                                             }
                                           }
                                           _calculateOrder();
@@ -1220,6 +1276,10 @@ class _OrderScreenState extends State<OrderScreen> {
                                               onTap: () {
                                                 _indexItemSelect = index;
                                                 setState(() {});
+                                              },
+                                              onLongPress: () async {
+                                                var note = await _showNoteItemDialog(note: _cartModel.items[index].note);
+                                                _cartModel.items[index].note = note;
                                               },
                                               child: Container(
                                                 color: index == _indexItemSelect ? ColorsApp.primaryColor : null,

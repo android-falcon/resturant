@@ -22,6 +22,7 @@ class EmployeeModel {
     required this.isMaster,
     required this.justTimeCard,
     required this.isActive,
+    required this.isKitchenUser,
   });
 
   int id;
@@ -35,6 +36,7 @@ class EmployeeModel {
   bool isMaster;
   bool justTimeCard;
   bool isActive;
+  bool isKitchenUser;
 
   factory EmployeeModel.init() => EmployeeModel(
         id: 0,
@@ -48,6 +50,7 @@ class EmployeeModel {
         isMaster: false,
         justTimeCard: false,
         isActive: false,
+        isKitchenUser: false,
       );
 
   factory EmployeeModel.fromJson(Map<String, dynamic> json) => EmployeeModel(
@@ -58,10 +61,11 @@ class EmployeeModel {
         username: json["username"] ?? "",
         password: json["password"] ?? "",
         mobileNo: json["MobileNo"] ?? "",
-    isCasher: json["IsCasher"] ?? false,
+        isCasher: json["IsCasher"] ?? false,
         isMaster: json["IsMaster"] ?? false,
         justTimeCard: json["JustTimeCard"] ?? false,
         isActive: json["IsActive"] ?? false,
+        isKitchenUser: json["IsKitchenUser"] ?? false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -76,5 +80,6 @@ class EmployeeModel {
         "IsMaster": isMaster,
         "JustTimeCard": justTimeCard,
         "IsActive": isActive,
+        "IsKitchenUser": isKitchenUser,
       };
 }

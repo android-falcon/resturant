@@ -83,9 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       HomeMenu(
         name: 'Cash Drawer'.tr,
-        onTab: () async {
-
-        },
+        onTab: () async {},
       ),
       if (mySharedPreferences.employee.isMaster)
         HomeMenu(
@@ -929,49 +927,49 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ),
+                        SizedBox(height: 40.h),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: 16.w),
-                              child: Column(
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      Get.to(() => OrderScreen(type: OrderType.takeAway));
-                                    },
-                                    child: Column(
-                                      children: [
-                                        Image.asset(
-                                          'assets/images/take_away.png',
-                                          width: 150.h,
-                                        ),
-                                        Text(
-                                          'Take Away'.tr,
-                                          style: kStyleTextTitle,
-                                        ),
-                                      ],
+                              child: InkWell(
+                                onTap: () {
+                                  Get.to(() => OrderScreen(type: OrderType.takeAway));
+                                },
+                                child: Column(
+                                  children: [
+                                    Image.asset(
+                                      'assets/images/take_away.png',
+                                      height: 150.h,
                                     ),
-                                  ),
-                                  SizedBox(height: 20.h),
-                                  InkWell(
-                                    onTap: () {
-                                      Get.to(() => TableScreen());
-                                    },
-                                    child: Column(
-                                      children: [
-                                        Image.asset(
-                                          'assets/images/dine_in.png',
-                                          width: 150.h,
-                                        ),
-                                        Text(
-                                          'Dine In'.tr,
-                                          style: kStyleTextTitle,
-                                        ),
-                                      ],
+                                    Text(
+                                      'Take Away'.tr,
+                                      style: kStyleTextTitle,
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              child: InkWell(
+                                onTap: () {
+                                  Get.to(() => TableScreen());
+                                },
+                                child: Column(
+                                  children: [
+                                    Image.asset(
+                                      'assets/images/dine_in.png',
+                                      height: 150.h,
+                                    ),
+                                    Text(
+                                      'Dine In'.tr,
+                                      style: kStyleTextTitle,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],

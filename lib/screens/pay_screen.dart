@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -10,12 +8,12 @@ import 'package:get/get.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
+import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
-import 'package:restaurant_system/socket/kitchen_socket_client.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/credit_card_type_detector.dart';
@@ -302,150 +300,154 @@ class _PayScreenState extends State<PayScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
                   itemBuilder: (context, index) {
-                    var subItem = widget.cart.items.where((element) => element.parentUuid == widget.cart.items[index].uuid).toList();
-                    return Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  '${widget.cart.items[index].qty}',
-                                  style: kStyleDataTable,
-                                  textAlign: TextAlign.center,
+                    if (widget.cart.items[index].parentUuid.isNotEmpty) {
+                      return Container();
+                    } else {
+                      var subItem = widget.cart.items.where((element) => element.parentUuid == widget.cart.items[index].uuid).toList();
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '${widget.cart.items[index].qty}',
+                                    style: kStyleDataTable,
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                flex: 3,
-                                child: Text(
-                                  widget.cart.items[index].name,
-                                  style: kStyleDataTable,
-                                  textAlign: TextAlign.center,
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    widget.cart.items[index].name,
+                                    style: kStyleDataTable,
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  widget.cart.items[index].priceChange.toStringAsFixed(2),
-                                  style: kStyleDataTable,
-                                  textAlign: TextAlign.center,
+                                Expanded(
+                                  child: Text(
+                                    widget.cart.items[index].priceChange.toStringAsFixed(2),
+                                    style: kStyleDataTable,
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  widget.cart.items[index].total.toStringAsFixed(2),
-                                  style: kStyleDataTable,
-                                  textAlign: TextAlign.center,
+                                Expanded(
+                                  child: Text(
+                                    widget.cart.items[index].total.toStringAsFixed(2),
+                                    style: kStyleDataTable,
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                          child: Column(
-                            children: [
-                              ListView.builder(
-                                itemCount: widget.cart.items[index].questions.length,
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, indexQuestions) => Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            '• ${widget.cart.items[index].questions[indexQuestions].question.trim()}?',
-                                            style: kStyleDataTableModifiers,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    ListView.builder(
-                                      itemCount: widget.cart.items[index].questions[indexQuestions].modifiers.length,
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemBuilder: (context, indexModifiers) => Column(
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                            child: Column(
+                              children: [
+                                ListView.builder(
+                                  itemCount: widget.cart.items[index].questions.length,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, indexQuestions) => Column(
+                                    children: [
+                                      Row(
                                         children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  '   * ${widget.cart.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
-                                                  style: kStyleDataTableModifiers,
-                                                ),
-                                              ),
-                                            ],
+                                          Expanded(
+                                            child: Text(
+                                              '• ${widget.cart.items[index].questions[indexQuestions].question.trim()}?',
+                                              style: kStyleDataTableModifiers,
+                                            ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              ListView.builder(
-                                itemCount: widget.cart.items[index].modifiers.length,
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, indexModifiers) => Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        '• ${widget.cart.items[index].modifiers[indexModifiers].name} * ${widget.cart.items[index].modifiers[indexModifiers].modifier}',
-                                        style: kStyleDataTableModifiers,
+                                      ListView.builder(
+                                        itemCount: widget.cart.items[index].questions[indexQuestions].modifiers.length,
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        itemBuilder: (context, indexModifiers) => Column(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    '   * ${widget.cart.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
+                                                    style: kStyleDataTableModifiers,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              if (subItem.isNotEmpty)
                                 ListView.builder(
-                                  itemCount: subItem.length,
+                                  itemCount: widget.cart.items[index].modifiers.length,
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, indexSubItem) {
-                                    return Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            '• ',
-                                            style: kStyleDataTableModifiers,
-                                            textAlign: TextAlign.center,
-                                          ),
+                                  itemBuilder: (context, indexModifiers) => Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '• ${widget.cart.items[index].modifiers[indexModifiers].name} * ${widget.cart.items[index].modifiers[indexModifiers].modifier}',
+                                          style: kStyleDataTableModifiers,
                                         ),
-                                        Expanded(
-                                          flex: 3,
-                                          child: Text(
-                                            subItem[indexSubItem].name,
-                                            style: kStyleDataTableModifiers,
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            subItem[indexSubItem].priceChange.toStringAsFixed(2),
-                                            style: kStyleDataTableModifiers,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            subItem[indexSubItem].total.toStringAsFixed(2),
-                                            style: kStyleDataTableModifiers,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                            ],
-                          ),
-                        )
-                      ],
-                    );
+                                if (subItem.isNotEmpty)
+                                  ListView.builder(
+                                    itemCount: subItem.length,
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemBuilder: (context, indexSubItem) {
+                                      return Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              '• ',
+                                              style: kStyleDataTableModifiers,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 3,
+                                            child: Text(
+                                              subItem[indexSubItem].name,
+                                              style: kStyleDataTableModifiers,
+                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Text(
+                                              subItem[indexSubItem].priceChange.toStringAsFixed(2),
+                                              style: kStyleDataTableModifiers,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Text(
+                                              subItem[indexSubItem].total.toStringAsFixed(2),
+                                              style: kStyleDataTableModifiers,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                              ],
+                            ),
+                          )
+                        ],
+                      );
+                    }
                   },
                 ),
               ],
@@ -976,20 +978,21 @@ class _PayScreenState extends State<PayScreen> {
                                               for (int i = 0; i < widget.cart.items.length; i++) {
                                                 widget.cart.items[i].rowSerial = i + 1;
                                               }
-                                              KitchenSocketClient.test();
-                                              // RestApi.invoice(widget.cart);
-                                              // mySharedPreferences.inVocNo++;
-                                              // _showPrintDialog().then((value) {
-                                              //   Get.offAll(HomeScreen());
-                                              // });
-                                              // if (widget.tableId != null) {
-                                              //   RestApi.closeTable(widget.tableId!);
-                                              //   var indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId);
-                                              //   dineInSaved[indexTable].isOpen = false;
-                                              //   dineInSaved[indexTable].numberSeats = 0;
-                                              //   dineInSaved[indexTable].cart = CartModel.init(orderType: OrderType.dineIn);
-                                              //   mySharedPreferences.dineIn = dineInSaved;
-                                              // }
+                                              RestApi.invoice(widget.cart);
+                                              mySharedPreferences.inVocNo++;
+                                              // Printer.init();
+                                              // KitchenSocketClient.test();
+                                              _showPrintDialog().then((value) {
+                                                Get.offAll(HomeScreen());
+                                              });
+                                              if (widget.tableId != null) {
+                                                RestApi.closeTable(widget.tableId!);
+                                                var indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId);
+                                                dineInSaved[indexTable].isOpen = false;
+                                                dineInSaved[indexTable].numberSeats = 0;
+                                                dineInSaved[indexTable].cart = CartModel.init(orderType: OrderType.dineIn);
+                                                mySharedPreferences.dineIn = dineInSaved;
+                                              }
                                             } else {
                                               Fluttertoast.showToast(msg: 'The remainder should be 0'.tr);
                                             }

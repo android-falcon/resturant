@@ -1,53 +1,58 @@
+import 'dart:convert';
 import 'dart:developer' as developer;
+import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class KitchenSocketClient {
-  static IO.Socket socket = IO.io(
-    'http://192.168.2.65:9002',
-    IO.OptionBuilder()
-        .setTransports(['polling', 'websocket'])
-        .enableForceNewConnection()
-        .enableForceNew()
-        .disableAutoConnect()
-        .enableReconnection()
-        .build(),
-  );
+  late IO.Socket _socket;
 
-  static test() {
-    _socketLog();
-
-      socket.close();
-      socket.connect();
-
-    socket.onConnect((_) {
-      _socketLog();
-      socket.emit('msg', 'test');
-    });
-    socket.onConnectError((_) {
-      _socketLogConnectError(_.toString());
-    });
-    socket.on('event', (data) => print(data));
-    socket.onDisconnect((_) => print('disconnect'));
-    socket.on('fromServer', (_) => print(_));
+  initConnection({String ipAddress = 'localhost'}) {
+    _socket = IO.io(
+      'http://$ipAddress:3000',
+      IO.OptionBuilder().setTransports(['websocket']).enableForceNewConnection().enableForceNew().disableAutoConnect().enableReconnection().build(),
+    );
+    _socketLog('IO');
+    _socket.connect();
+    _socket.onConnect((_) => _socketLog('Connect', _.toString()));
+    _socket.onConnectError((_) => _socketLog('ConnectError', _.toString()));
+    _socket.onDisconnect((_) => _socketLog('Disconnect', _.toString()));
+    _socket.on('new_order', (_) => _socketLog('FromServer(new_order)', _.toString())); // from_server
   }
 
-  static void _socketLog() {
-    String trace = '════════════════════════════════════════ \n'
-        '╔╣ Socket [IO] info ==> \n'
-        '╟ URI: ${socket.io.uri}\n'
-        '╟ CONNECTED: ${socket.connected}\n'
-        // '╟ ACTIVE: ${socket.active}\n'
-        '╚ [END] ════════════════════════════════════════╝';
-    developer.log(trace);
+  sendOrder() {
+    if (_socket.connected) {
+      _socket.emit(
+          'new_order',
+          jsonEncode({
+            'orderNo': 1,
+            'tableNo': 2,
+            'sectionNo': 3,
+            'orderType': 1,
+            'items': [
+              {
+                'itemName': 'Shawrma',
+                'qty': 1,
+                'note': 'ana',
+              },
+              {
+                'itemName': 'Shawrma',
+                'qty': 1,
+                'note': 'ana',
+              },
+            ],
+          }));
+    } else {
+      _socket.dispose();
+      initConnection();
+    }
   }
 
-  static void _socketLogConnectError(String handler) {
+  _socketLog(String type, [String message = '']) {
     String trace = '════════════════════════════════════════ \n'
-        '╔╣ Socket [ConnectError] info ==> \n'
-        '╟ URI: ${socket.io.uri}\n'
-        '╟ CONNECTED: ${socket.connected}\n'
-        // '╟ ACTIVE: ${socket.active}\n'
-        '╟ HANDLER: $handler\n'
+        '╔╣ Socket [$type] info ==> \n'
+        '╟ URI: ${_socket.io.uri}\n'
+        '╟ CONNECTED: ${_socket.connected}\n'
+        '╟ MESSAGE: $message\n'
         '╚ [END] ════════════════════════════════════════╝';
     developer.log(trace);
   }

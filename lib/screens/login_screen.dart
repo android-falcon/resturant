@@ -6,11 +6,11 @@ import 'package:get/get.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/config_screen.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
-import 'package:restaurant_system/screens/kitchen_screen.dart';
 import 'package:restaurant_system/screens/network_log_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
+import 'package:restaurant_system/socket/kitchen_socket_client.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/validation.dart';
@@ -82,14 +82,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               RestApi.restDio.options.baseUrl = mySharedPreferences.baseUrl;
                               RestApi.getData();
                             });
-                          } else if (_controllerUsername.text.isEmpty && _controllerPassword.text == "Kitchen@admin") {
-                            _controllerPassword.text = '';
-                            Get.offAll(() => const KitchenScreen());
                           } else if (_controllerUsername.text.isEmpty && _controllerPassword.text == "NetworkLog@admin") {
                             _controllerPassword.text = '';
                             Get.to(() => const NetworkLogScreen());
                           } else if (_keyForm.currentState!.validate()) {
-                            var indexEmployee = allDataModel.employees.indexWhere((element) => element.username == _controllerUsername.text && element.password == _controllerPassword.text);
+                            var indexEmployee = allDataModel.employees.indexWhere((element) => element.username == _controllerUsername.text && element.password == _controllerPassword.text && !element.isKitchenUser);
                             if (indexEmployee != -1) {
                               mySharedPreferences.employee = allDataModel.employees[indexEmployee];
                               var indexPosClose = allDataModel.posClose.indexWhere((element) => element.posNo == mySharedPreferences.posNo);

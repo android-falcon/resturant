@@ -146,7 +146,10 @@ class CartModel {
         "ShiftId": 0, //
         "WaiterId": orderType == OrderType.takeAway ? mySharedPreferences.employee.id : 0, //Take away - EmplyeId, Dine In -
         "TableId": 0, //
-        "NoOfSeats": 0 //
+        "NoOfSeats": 0, //
+        "SaleInvNo": 0,
+        "Card1Name": "",
+        "Card1Code": "",
       };
 }
 
@@ -176,6 +179,7 @@ class CartItemModel {
     this.modifiers = const [],
     this.questions = const [],
     this.parentUuid = '',
+    this.note = '',
   });
 
   String uuid;
@@ -200,6 +204,7 @@ class CartItemModel {
   bool discountAvailable;
   bool openPrice;
   int rowSerial;
+  String note;
   List<CartItemModifierModel> modifiers;
   List<CartItemQuestionModel> questions;
 
@@ -226,6 +231,7 @@ class CartItemModel {
         discountAvailable: json['discountAvailable'],
         openPrice: json['openPrice'],
         rowSerial: json['rowSerial'],
+        note: json['note'],
         modifiers: List<CartItemModifierModel>.from(json['modifiers'].map((e) => CartItemModifierModel.fromJson(e))),
         questions: List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
       );
@@ -253,6 +259,7 @@ class CartItemModel {
         "discountAvailable": discountAvailable,
         "openPrice": openPrice,
         "rowSerial": rowSerial,
+        "note": note,
         "modifiers": List<dynamic>.from(modifiers.map((e) => e.toJson())),
         "questions": List<dynamic>.from(questions.map((e) => e.toJson())),
       };
@@ -279,7 +286,8 @@ class CartItemModel {
         "ItemTaxPerc": taxPercent, // TaxPerc/TaxPercent
         "ItemTaxVal": tax, // قيمة ضريبة الايتم بدون ضريبة السيرفس
         "NetTotal": total, // المجموع النهائي للايتم مع الضريبة وسيرفس وضريبة السيرفس
-        "ReturnedQty": 0 //
+        "ReturnedQty": 0, //
+        "ItemRemark": note,
       };
 }
 

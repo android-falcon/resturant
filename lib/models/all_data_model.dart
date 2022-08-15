@@ -18,6 +18,7 @@ import 'package:restaurant_system/models/all_data/item_with_questions_model.dart
 import 'package:restaurant_system/models/all_data/modifier_model.dart';
 import 'package:restaurant_system/models/all_data/modifire_force_questions_model.dart';
 import 'package:restaurant_system/models/all_data/pos_close_model.dart';
+import 'package:restaurant_system/models/all_data/printer_model.dart';
 import 'package:restaurant_system/models/all_data/tables_model.dart';
 import 'package:restaurant_system/models/all_data/void_reason_model.dart';
 
@@ -42,6 +43,7 @@ class AllDataModel {
     required this.itemWithModifires,
     required this.categoryWithModifires,
     required this.currencies,
+    required this.printers,
     required this.voidReason,
     required this.tables,
     required this.itemSubItems,
@@ -62,6 +64,7 @@ class AllDataModel {
   List<ItemWithModifireModel> itemWithModifires;
   List<CategoryWithModifireModel> categoryWithModifires;
   List<CurrencyModel> currencies;
+  List<PrinterModel> printers;
   List<VoidReasonModel> voidReason;
   List<TablesModel> tables;
   List<ItemSubItemsModel> itemSubItems;
@@ -82,6 +85,7 @@ class AllDataModel {
         itemWithModifires: [],
         categoryWithModifires: [],
         currencies: [],
+        printers: [],
         voidReason: [],
         tables: [],
         itemSubItems: [],
@@ -103,6 +107,7 @@ class AllDataModel {
         itemWithModifires: json["ItemWithModifires"] == null ? [] : List<ItemWithModifireModel>.from(json["ItemWithModifires"].map((x) => ItemWithModifireModel.fromJson(x))),
         categoryWithModifires: json["CategoryWithModifires"] == null ? [] : List<CategoryWithModifireModel>.from(json["CategoryWithModifires"].map((x) => CategoryWithModifireModel.fromJson(x))),
         currencies: json["Currencies"] == null ? [] : List<CurrencyModel>.from(json["Currencies"].map((x) => CurrencyModel.fromJson(x))),
+        printers: json["Printers"] == null ? [] : List<PrinterModel>.from(json["Printers"].map((x) => PrinterModel.fromJson(x))),
         voidReason: json["VoidReason"] == null ? [] : List<VoidReasonModel>.from(json["VoidReason"].map((x) => VoidReasonModel.fromJson(x))),
         tables: json["Tables"] == null ? [] : List<TablesModel>.from(json["Tables"].map((x) => TablesModel.fromJson(x))),
         itemSubItems: json["ItemSubItems"] == null ? [] : List<ItemSubItemsModel>.from(json["ItemSubItems"].map((x) => ItemSubItemsModel.fromJson(x))),
@@ -124,6 +129,7 @@ class AllDataModel {
         "ItemWithModifires": List<dynamic>.from(itemWithModifires.map((x) => x.toJson())),
         "CategoryWithModifires": List<dynamic>.from(categoryWithModifires.map((x) => x.toJson())),
         "Currencies": List<dynamic>.from(currencies.map((x) => x.toJson())),
+        "Printers": List<dynamic>.from(printers.map((x) => x.toJson())),
         "VoidReason": List<dynamic>.from(voidReason.map((x) => x.toJson())),
         "Tables": List<dynamic>.from(tables.map((x) => x.toJson())),
         "ItemSubItems": List<dynamic>.from(itemSubItems.map((x) => x.toJson())),
