@@ -143,4 +143,6 @@ const Map<String, String> en = {
   'Section No': 'Section No',
   'Print Failed': 'Print Failed',
   'Sub Items Question': 'Sub Items Question',
+  'Void Reason': 'Void Reason',
+  'Please select void reason': 'Please select void reason',
 };

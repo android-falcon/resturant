@@ -10,10 +10,9 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/all_data/category_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/combo_items_force_question_model.dart';
-import 'package:restaurant_system/models/all_data/item_model.dart';
-import 'package:restaurant_system/models/all_data/sub_items_force_questions_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
+import 'package:restaurant_system/models/all_data/void_reason_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
@@ -66,6 +65,12 @@ class _OrderScreenState extends State<OrderScreen> {
     } else {
       _cartModel = CartModel.init(orderType: widget.type);
     }
+  }
+
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   Future<double> _showDeliveryDialog({TextEditingController? controller, required double delivery}) async {
@@ -539,7 +544,6 @@ class _OrderScreenState extends State<OrderScreen> {
     return answersModifire;
   }
 
-
   Future<List<CartItemModel>> _showQuestionSubItemDialog({required List<ComboItemsForceQuestionModel> questionsSubItems, required String parentRandomId, required int parentQty}) async {
     List<CartItemModel> answersSubItem = [];
     int i = 0;
@@ -845,6 +849,75 @@ class _OrderScreenState extends State<OrderScreen> {
     return exit;
   }
 
+  Future<VoidReasonModel?> _showVoidReasonDialog() async {
+    int? _selectedVoidReasonId;
+    await Get.dialog(
+      WillPopScope(
+        onWillPop: () async => false,
+        child: CustomDialog(
+          builder: (context, setState, constraints) => Column(
+            children: [
+              Text(
+                'Void Reason'.tr,
+                style: kStyleTextTitle,
+              ),
+              const Divider(thickness: 2),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: allDataModel.voidReason.length,
+                itemBuilder: (context, index) => RadioListTile(
+                  title: Text(
+                    allDataModel.voidReason[index].reasonName,
+                    style: kStyleForceQuestion,
+                  ),
+                  value: allDataModel.voidReason[index].id,
+                  groupValue: _selectedVoidReasonId,
+                  onChanged: (value) {
+                    _selectedVoidReasonId = value as int;
+                    setState(() {});
+                  },
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(child: Container()),
+                  Expanded(
+                    child: CustomButton(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('Cancel'.tr),
+                      backgroundColor: ColorsApp.primaryColor,
+                      onPressed: () {
+                        Get.back();
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomButton(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('Save'.tr),
+                      backgroundColor: ColorsApp.primaryColor,
+                      onPressed: () {
+                        if (_selectedVoidReasonId == null) {
+                          Fluttertoast.showToast(msg: 'Please select void reason'.tr);
+                        } else {
+                          Get.back();
+                        }
+                      },
+                    ),
+                  ),
+                  Expanded(child: Container()),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return _selectedVoidReasonId == null ? null : allDataModel.voidReason.firstWhere((element) => element.id == _selectedVoidReasonId);
+  }
+
   _calculateOrder() {
     if (allDataModel.companyConfig.first.taxCalcMethod == 0) {
       // خاضع
@@ -941,11 +1014,19 @@ class _OrderScreenState extends State<OrderScreen> {
                           _isShowItem = false;
                           setState(() {});
                         } else {
-                          _showExitOrderScreenDialog().then((value) {
-                            if (value) {
-                              Get.back();
-                            }
-                          });
+                          if (_cartModel.items.isEmpty) {
+                            _showExitOrderScreenDialog().then((value) {
+                              if (value) {
+                                Get.back();
+                              }
+                            });
+                          } else {
+                            _showVoidReasonDialog().then((value) {
+                              if (value != null) {
+                                Get.back();
+                              }
+                            });
+                          }
                         }
                       },
                       icon: const Icon(Icons.arrow_back),
@@ -1753,24 +1834,31 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     Expanded(
                       child: InkWell(
-                        onTap: () {
+                        onTap: () async {
                           if (_indexItemSelect != -1) {
-                            Get.defaultDialog(
-                              title: '${'Are you sure to remove the'.tr} ${_cartModel.items[_indexItemSelect].name} ${'item'.tr}?',
-                              titleStyle: kStyleTextTitle,
-                              content: Container(),
-                              textCancel: 'Cancel'.tr,
-                              textConfirm: 'Confirm'.tr,
-                              confirmTextColor: Colors.white,
-                              onConfirm: () {
-                                _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
-                                _cartModel.items.removeAt(_indexItemSelect);
-                                _indexItemSelect = -1;
-                                Get.back();
-                              },
-                            ).then((value) {
-                              _calculateOrder();
-                            });
+                            VoidReasonModel? result = await _showVoidReasonDialog();
+                            if (result != null) {
+                              _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
+                              _cartModel.items.removeAt(_indexItemSelect);
+                              _indexItemSelect = -1;
+                              setState(() {});
+                            }
+                            // Get.defaultDialog(
+                            //   title: '${'Are you sure to remove the'.tr} ${_cartModel.items[_indexItemSelect].name} ${'item'.tr}?',
+                            //   titleStyle: kStyleTextTitle,
+                            //   content: Container(),
+                            //   textCancel: 'Cancel'.tr,
+                            //   textConfirm: 'Confirm'.tr,
+                            //   confirmTextColor: Colors.white,
+                            //   onConfirm: () {
+                            //     _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
+                            //     _cartModel.items.removeAt(_indexItemSelect);
+                            //     _indexItemSelect = -1;
+                            //     Get.back();
+                            //   },
+                            // ).then((value) {
+                            //   _calculateOrder();
+                            // });
                           } else {
                             Fluttertoast.showToast(msg: 'Please select the item you want to remove'.tr);
                           }
