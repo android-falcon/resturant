@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'package:charset_converter/charset_converter.dart';
 
-// import 'package:flutter_esc_pos_utils/flutter_esc_pos_utils.dart';
 import 'package:get/get.dart';
 import 'package:image/image.dart' as img;
 import 'package:esc_pos_printer/esc_pos_printer.dart';
@@ -20,7 +19,7 @@ import 'package:restaurant_system/utils/my_shared_preferences.dart';
 class Printer {
   // String imageUrl = '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'COMPANY_LOGO')?.imgPath ?? ''}${allDataModel.companyConfig.first.companyLogo}';
 
-  static init({required CartModel cart}) async {
+  static init({required CartModel cart, Uint8List? image}) async {
     final profile = await CapabilityProfile.load(); //name: 'TP806L'
     List<PrintInvoiceModel> kitchenPrinters = [];
     NetworkPrinter? cashNetworkPrinter;
@@ -50,6 +49,7 @@ class Printer {
         cashNetworkPrinter.disconnect();
       } catch (e) {
         cashNetworkPrinter.disconnect();
+        log('printer catch ${e.toString()}');
       }
     }
     for (var kitchenPrinter in kitchenPrinters) {
@@ -59,6 +59,7 @@ class Printer {
           kitchenPrinter.networkPrinter.disconnect();
         } catch (e) {
           kitchenPrinter.networkPrinter.disconnect();
+          log('printer catch ${e.toString()}');
         }
       }
     }
@@ -90,27 +91,59 @@ class Printer {
     printer.networkPrinter.cut();
   }
 
+  static Future<void> printInvoiceImage(NetworkPrinter printer, Uint8List imageBytes) async {
+    final img.Image? image = img.decodeImage(imageBytes);
+    printer.image(image!, align: PosAlign.center);
+    printer.cut();
+  }
+
   static Future<void> printInvoice(NetworkPrinter printer, CartModel cart) async {
     printer.hr(linesAfter: 1);
     printer.text(
-      'Invoice No  : ${cart.id}',
+      'Invoice No  : ${mySharedPreferences.inVocNo - 1}',
       styles: const PosStyles(
         align: PosAlign.center,
         height: PosTextSize.size2,
         width: PosTextSize.size2,
       ),
     );
+    printer.emptyLines(2);
     printer.text(
       cart.orderType.name,
       styles: const PosStyles(
-        height: PosTextSize.size2,
-        width: PosTextSize.size2,
+        height: PosTextSize.size1,
+        width: PosTextSize.size1,
+      ),
+    );
+    printer.text(
+      mySharedPreferences.dailyClose.toString(),
+      styles: const PosStyles(
+        height: PosTextSize.size1,
+        width: PosTextSize.size1,
       ),
     );
     printer.hr(linesAfter: 1);
-    printer.row([PosColumn(text: 'Item Name'), PosColumn(text: 'QTY'), PosColumn(text: 'Price'), PosColumn(text: 'Total')]);
+    printer.row([
+      PosColumn(text: 'Item Name', width: 6),
+      PosColumn(text: 'QTY', width: 2),
+      PosColumn(text: 'Price', width: 2),
+      PosColumn(text: 'Total', width: 2),
+    ]);
+    final encodedStr = utf8.encode("فاتورة ضريبة");
+    printer.textEncoded(Uint8List.fromList([
+      ...[0x1B, 0x74, 0x49,],
+      ...encodedStr
+    ]));
+    // Uint8List encoded = await CharsetConverter.encode('Windows-1251', "فاتورة ضريبة");
+    // printer.textEncoded(encoded, styles: PosStyles(codeTable: 'PC850', bold: true, align: PosAlign.center));
+    // printer.text('ا ب ت ث ج ح خ د ذ ر ز س ش ص ض ف ق ك ل م ن ه و ي', styles: const PosStyles(codeTable: 'ISO-8859-6'));
     for (var item in cart.items) {
-      printer.row([PosColumn(text: item.name), PosColumn(text: '${item.qty}'), PosColumn(text: item.priceChange.toStringAsFixed(2)), PosColumn(text: item.total.toStringAsFixed(2))]);
+      printer.row([
+        PosColumn(text: 'ana', width: 6),
+        PosColumn(text: '${item.qty}', width: 2),
+        PosColumn(text: item.priceChange.toStringAsFixed(2), width: 2),
+        PosColumn(text: item.total.toStringAsFixed(2), width: 2),
+      ]);
     }
     printer.hr(linesAfter: 2);
     printer.cut();

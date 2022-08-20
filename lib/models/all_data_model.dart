@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/all_data/category_model.dart';
 import 'package:restaurant_system/models/all_data/category_with_modifire_model.dart';
+import 'package:restaurant_system/models/all_data/combo_items_force_question_model.dart';
 import 'package:restaurant_system/models/all_data/company_config_model.dart';
 import 'package:restaurant_system/models/all_data/currency_model.dart';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
@@ -12,7 +13,7 @@ import 'package:restaurant_system/models/all_data/families_model.dart';
 import 'package:restaurant_system/models/all_data/force_question_model.dart';
 import 'package:restaurant_system/models/all_data/image_path_model.dart';
 import 'package:restaurant_system/models/all_data/item_model.dart';
-import 'package:restaurant_system/models/all_data/item_sub_items_model.dart';
+import 'package:restaurant_system/models/all_data/sub_items_force_questions_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
 import 'package:restaurant_system/models/all_data/modifier_model.dart';
@@ -46,7 +47,8 @@ class AllDataModel {
     required this.printers,
     required this.voidReason,
     required this.tables,
-    required this.itemSubItems,
+    required this.subItemsForceQuestions,
+    required this.comboItemsForceQuestion,
   });
 
   DateTime serverTime;
@@ -67,7 +69,8 @@ class AllDataModel {
   List<PrinterModel> printers;
   List<VoidReasonModel> voidReason;
   List<TablesModel> tables;
-  List<ItemSubItemsModel> itemSubItems;
+  List<SubItemsForceQuestionsModel> subItemsForceQuestions;
+  List<ComboItemsForceQuestionModel> comboItemsForceQuestion;
 
   factory AllDataModel.init() => AllDataModel(
         serverTime: DateTime.now(),
@@ -88,7 +91,8 @@ class AllDataModel {
         printers: [],
         voidReason: [],
         tables: [],
-        itemSubItems: [],
+        subItemsForceQuestions: [],
+        comboItemsForceQuestion: [],
       );
 
   factory AllDataModel.fromJson(Map<String, dynamic> json) => AllDataModel(
@@ -110,7 +114,8 @@ class AllDataModel {
         printers: json["Printers"] == null ? [] : List<PrinterModel>.from(json["Printers"].map((x) => PrinterModel.fromJson(x))),
         voidReason: json["VoidReason"] == null ? [] : List<VoidReasonModel>.from(json["VoidReason"].map((x) => VoidReasonModel.fromJson(x))),
         tables: json["Tables"] == null ? [] : List<TablesModel>.from(json["Tables"].map((x) => TablesModel.fromJson(x))),
-        itemSubItems: json["ItemSubItems"] == null ? [] : List<ItemSubItemsModel>.from(json["ItemSubItems"].map((x) => ItemSubItemsModel.fromJson(x))),
+        subItemsForceQuestions: json["SubItemsForceQuestions"] == null ? [] : List<SubItemsForceQuestionsModel>.from(json["SubItemsForceQuestions"].map((x) => SubItemsForceQuestionsModel.fromJson(x))),
+        comboItemsForceQuestion: json["ComboItemsForceQuestion"] == null ? [] : List<ComboItemsForceQuestionModel>.from(json["ComboItemsForceQuestion"].map((x) => ComboItemsForceQuestionModel.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -132,6 +137,7 @@ class AllDataModel {
         "Printers": List<dynamic>.from(printers.map((x) => x.toJson())),
         "VoidReason": List<dynamic>.from(voidReason.map((x) => x.toJson())),
         "Tables": List<dynamic>.from(tables.map((x) => x.toJson())),
-        "ItemSubItems": List<dynamic>.from(itemSubItems.map((x) => x.toJson())),
+        "SubItemsForceQuestions": List<dynamic>.from(subItemsForceQuestions.map((x) => x.toJson())),
+        "ComboItemsForceQuestion": List<dynamic>.from(comboItemsForceQuestion.map((x) => x.toJson())),
       };
 }

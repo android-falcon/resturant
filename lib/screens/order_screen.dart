@@ -9,8 +9,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/all_data/category_with_modifire_model.dart';
+import 'package:restaurant_system/models/all_data/combo_items_force_question_model.dart';
 import 'package:restaurant_system/models/all_data/item_model.dart';
-import 'package:restaurant_system/models/all_data/item_sub_items_model.dart';
+import 'package:restaurant_system/models/all_data/sub_items_force_questions_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
@@ -401,7 +402,6 @@ class _OrderScreenState extends State<OrderScreen> {
 
     int i = 0;
     while (i < answersModifire.length) {
-      log('ananan $i');
       var modifireForceQuestions = allDataModel.modifireForceQuestions.indexWhere((element) => element.forceQuestion.id == answersModifire[i].id && element.modifires.isNotEmpty);
       if (modifireForceQuestions == -1) {
         i++;
@@ -420,7 +420,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 8.h),
                     child: Text(
-                      '(${answersModifire[i].id}) - ${answersModifire[i].question}?',
+                      '(${answersModifire[i].id}) - ${answersModifire[i].question}',
                       style: kStyleTextTitle,
                     ),
                   ),
@@ -539,135 +539,179 @@ class _OrderScreenState extends State<OrderScreen> {
     return answersModifire;
   }
 
-  Future<List<CartItemModel>> _showSubItemDialog({required List<ItemSubItemsModel> subItems, required String parentRandomId, required int parentQty}) async {
-    List<CartItemModel> _cartSubItem = [];
-    List<ItemModel> _subItems = allDataModel.items.where((item) => subItems.any((subItem) => item.id == subItem.subitemId)).toList();
-    await Get.dialog(
-      CustomDialog(
-        builder: (context, setState, constraints) => Column(
-          children: [
-            Text(
-              'Sub Item'.tr,
-              style: kStyleTextTitle,
-            ),
-            const Divider(thickness: 2),
-            StaggeredGrid.count(
-              crossAxisCount: 2,
-              children: _subItems
-                  .map((e) => Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.r),
-                          side: _cartSubItem.any((element) => element.id == e.id) ? const BorderSide(width: 1) : BorderSide.none,
-                        ),
-                        elevation: 0,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(5.r),
-                          onTap: () async {
-                            var indexSubItem = _cartSubItem.indexWhere((element) => element.id == e.id);
-                            if (indexSubItem != -1) {
-                              _cartSubItem.removeAt(indexSubItem);
-                            } else {
-                              _cartSubItem.add(CartItemModel(
-                                uuid: const Uuid().v1(),
-                                parentUuid: parentRandomId,
-                                orderType: widget.type,
-                                id: e.id,
-                                categoryId: e.category.id,
-                                taxType: e.taxType.id,
-                                taxPercent: e.taxPercent.percent,
-                                name: e.menuName,
-                                qty: parentQty,
-                                price: e.price,
-                                priceChange: e.price,
-                                total: e.price * parentQty,
-                                tax: 0,
-                                discountAvailable: e.discountAvailable == 1,
-                                openPrice: e.openPrice == 1,
-                                rowSerial: 0,
-                                printerId: e.kitchenPrinter.id,
-                              ));
-                            }
-                            setState(() {});
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                            child: Row(
-                              children: [
-                                CachedNetworkImage(
-                                  imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
-                                  height: 50.h,
-                                  width: 50.w,
-                                  fit: BoxFit.contain,
-                                  placeholder: (context, url) => SizedBox(
-                                    height: 50.h,
-                                    width: 50.w,
+
+  Future<List<CartItemModel>> _showQuestionSubItemDialog({required List<ComboItemsForceQuestionModel> questionsSubItems, required String parentRandomId, required int parentQty}) async {
+    List<CartItemModel> answersSubItem = [];
+    int i = 0;
+    while (i < questionsSubItems.length) {
+      var indexSubItemsForceQuestions = allDataModel.subItemsForceQuestions.indexWhere((element) => element.id == questionsSubItems[i].subItemsForceQuestionId && element.items.isNotEmpty);
+      if (indexSubItemsForceQuestions == -1) {
+        i++;
+      } else {
+        await Get.dialog(
+          WillPopScope(
+            onWillPop: () async => false,
+            child: CustomDialog(
+              builder: (context, setState, constraints) => Column(
+                children: [
+                  Text(
+                    'Sub Items Question'.tr,
+                    style: kStyleTextTitle,
+                  ),
+                  const Divider(thickness: 2),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.h),
+                    child: Text(
+                      '(${allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].id}) - ${allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].qText}',
+                      style: kStyleTextTitle,
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${'Answers'.tr} :',
+                        style: kStyleForceQuestion,
+                      ),
+                      StaggeredGrid.count(
+                        crossAxisCount: 2,
+                        children: allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items
+                            .map((e) => Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5.r),
+                                    side: answersSubItem.any((element) => element.id == e.id) ? const BorderSide(width: 1) : BorderSide.none,
                                   ),
-                                  errorWidget: (context, url, error) => SizedBox(
-                                    height: 50.h,
-                                    width: 50.w,
+                                  elevation: 0,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(5.r),
+                                    onTap: () async {
+                                      var indexSubItem = answersSubItem.indexWhere((element) => element.id == e.id);
+                                      if (indexSubItem != -1) {
+                                        answersSubItem.removeAt(indexSubItem);
+                                      } else {
+                                        answersSubItem.removeWhere((elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id));
+                                        answersSubItem.add(CartItemModel(
+                                          uuid: const Uuid().v1(),
+                                          parentUuid: parentRandomId,
+                                          orderType: widget.type,
+                                          id: e.id,
+                                          categoryId: e.category.id,
+                                          taxType: e.taxType.id,
+                                          taxPercent: e.taxPercent.percent,
+                                          name: e.menuName,
+                                          qty: parentQty,
+                                          price: e.price,
+                                          priceChange: e.price,
+                                          total: e.price * parentQty,
+                                          tax: 0,
+                                          discountAvailable: e.discountAvailable == 1,
+                                          openPrice: e.openPrice == 1,
+                                          rowSerial: 0,
+                                          printerId: e.kitchenPrinter.id,
+                                        ));
+                                      }
+                                      setState(() {});
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                      child: Row(
+                                        children: [
+                                          CachedNetworkImage(
+                                            imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
+                                            height: 50.h,
+                                            width: 50.w,
+                                            fit: BoxFit.contain,
+                                            placeholder: (context, url) => SizedBox(
+                                              height: 50.h,
+                                              width: 50.w,
+                                            ),
+                                            errorWidget: (context, url, error) => SizedBox(
+                                              height: 50.h,
+                                              width: 50.w,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  e.menuName,
+                                                  style: kStyleTextTitle,
+                                                ),
+                                                Text(
+                                                  e.description,
+                                                  style: kStyleTextDefault,
+                                                ),
+                                                Text(
+                                                  e.price.toStringAsFixed(2),
+                                                  style: kStyleTextTitle,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        e.menuName,
-                                        style: kStyleTextTitle,
-                                      ),
-                                      Text(
-                                        e.description,
-                                        style: kStyleTextDefault,
-                                      ),
-                                      Text(
-                                        e.price.toStringAsFixed(2),
-                                        style: kStyleTextTitle,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                                ))
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: Container()),
+                      if (i > 0)
+                        Expanded(
+                          child: CustomButton(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text('Previous'.tr),
+                            backgroundColor: ColorsApp.primaryColor,
+                            onPressed: () {
+                              i--;
+                              Get.back();
+                            },
                           ),
                         ),
-                      ))
-                  .toList(),
-            ),
-            Row(
-              children: [
-                Expanded(child: Container()),
-                Expanded(
-                  child: CustomButton(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('Save'.tr),
-                    backgroundColor: ColorsApp.green,
-                    onPressed: () {
-                      Get.back();
-                    },
+                      if (i + 1 < questionsSubItems.length)
+                        Expanded(
+                          child: CustomButton(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text('Next'.tr),
+                            backgroundColor: ColorsApp.primaryColor,
+                            onPressed: () {
+                              i++;
+                              Get.back();
+                            },
+                          ),
+                        ),
+                      if (i + 1 == questionsSubItems.length)
+                        Expanded(
+                          child: CustomButton(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text('Save'.tr),
+                            backgroundColor: ColorsApp.primaryColor,
+                            onPressed: () {
+                              i++;
+                              Get.back();
+                            },
+                          ),
+                        ),
+                      Expanded(child: Container()),
+                    ],
                   ),
-                ),
-                Expanded(
-                  child: CustomButton(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('Exit'.tr),
-                    backgroundColor: ColorsApp.red,
-                    onPressed: () {
-                      _cartSubItem = [];
-                      Get.back();
-                    },
-                  ),
-                ),
-                Expanded(child: Container()),
-              ],
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
-      barrierDismissible: false,
-    );
-    return _cartSubItem;
+          ),
+          barrierDismissible: false,
+        );
+      }
+    }
+    return answersSubItem;
   }
 
   Future<int> _showQtyDialog({TextEditingController? controller, int? maxQty, int minQty = 0, required int rQty}) async {
@@ -1062,47 +1106,27 @@ class _OrderScreenState extends State<OrderScreen> {
                                           bool itemIsAdded = false;
                                           var indexItem = _cartModel.items.indexWhere((element) => element.id == e.id && element.parentUuid == '' && element.modifiers.isEmpty);
                                           var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == e.id).toList();
-                                          var subItems = allDataModel.itemSubItems.where((element) => element.itemsId == e.id).toList();
-                                          if (indexItem != -1 && questionsItem.isEmpty && subItems.isEmpty) {
+                                          var questionsSubItems = allDataModel.comboItemsForceQuestion.where((element) => element.itemId == e.id).toList();
+                                          if (indexItem != -1 && questionsItem.isEmpty && questionsSubItems.isEmpty) {
                                             itemIsAdded = true;
                                           }
                                           if (itemIsAdded) {
                                             _cartModel.items[indexItem].qty += 1;
                                           } else {
-                                            _cartModel.items.add(CartItemModel(
-                                              uuid: const Uuid().v1(),
-                                              parentUuid: '',
-                                              orderType: widget.type,
-                                              id: e.id,
-                                              categoryId: e.category.id,
-                                              taxType: e.taxType.id,
-                                              taxPercent: e.taxPercent.percent,
-                                              name: e.menuName,
-                                              qty: 1,
-                                              price: e.price,
-                                              priceChange: e.price,
-                                              total: e.price,
-                                              tax: 0,
-                                              discountAvailable: e.discountAvailable == 1,
-                                              openPrice: e.openPrice == 1,
-                                              rowSerial: _cartModel.items.length + 1,
-                                              printerId: e.kitchenPrinter.id
-                                            ));
+                                            _cartModel.items.add(CartItemModel(uuid: const Uuid().v1(), parentUuid: '', orderType: widget.type, id: e.id, categoryId: e.category.id, taxType: e.taxType.id, taxPercent: e.taxPercent.percent, name: e.menuName, qty: 1, price: e.price, priceChange: e.price, total: e.price, tax: 0, discountAvailable: e.discountAvailable == 1, openPrice: e.openPrice == 1, rowSerial: _cartModel.items.length + 1, printerId: e.kitchenPrinter.id));
                                             int indexAddedItem = _cartModel.items.length - 1;
-                                            if (questionsItem.isNotEmpty) {
-                                              var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
-                                              _cartModel.items.last.questions = questions;
-                                            }
-                                            if (subItems.isNotEmpty) {
-                                              var cartSubItems = await _showSubItemDialog(subItems: subItems, parentRandomId: _cartModel.items[indexAddedItem].uuid, parentQty: 1);
-                                              if (cartSubItems.isEmpty) {
-                                                _cartModel.items.removeAt(indexAddedItem);
-                                              } else {
-                                                _cartModel.items[indexAddedItem].price = cartSubItems.fold(0.0, (sum, element) => sum + element.price);
-                                                _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(0.0, (sum, element) => sum + element.priceChange);
+                                            if (questionsSubItems.isNotEmpty) {
+                                              var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid, parentQty: 1);
+                                              if (cartSubItems.isNotEmpty) {
+                                                _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
+                                                _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
                                                 _cartModel.items[indexAddedItem].openPrice = false;
                                                 _cartModel.items.addAll(cartSubItems);
                                               }
+                                            }
+                                            if (questionsItem.isNotEmpty) {
+                                              var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
+                                              _cartModel.items.last.questions = questions;
                                             }
                                           }
                                           _calculateOrder();
@@ -1615,41 +1639,41 @@ class _OrderScreenState extends State<OrderScreen> {
                 color: ColorsApp.accentColor,
                 child: Row(
                   children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          if (_indexItemSelect != -1) {
-                            var subItems = allDataModel.itemSubItems.where((element) => element.itemsId == _cartModel.items[_indexItemSelect].id).toList();
-                            if (subItems.isNotEmpty) {
-                              var cartSubItems = await _showSubItemDialog(subItems: subItems, parentRandomId: _cartModel.items[_indexItemSelect].uuid, parentQty: _cartModel.items[_indexItemSelect].qty);
-                              _cartModel.items.addAll(cartSubItems);
-                              setState(() {});
-                            } else {
-                              Fluttertoast.showToast(msg: 'This item cannot be sub item'.tr);
-                            }
-                          } else {
-                            Fluttertoast.showToast(msg: 'Please select the item you want to sub item'.tr);
-                          }
-                        },
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Sub Item'.tr,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: kStyleTextDefault,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
+                    // Expanded(
+                    //   child: InkWell(
+                    //     onTap: () async {
+                    //       if (_indexItemSelect != -1) {
+                    //         var subItems = allDataModel.subItemsForceQuestions.where((element) => element.itemId == _cartModel.items[_indexItemSelect].id).toList();
+                    //         if (subItems.isNotEmpty) {
+                    //           var cartSubItems = await _showSubItemDialog(subItems: subItems, parentRandomId: _cartModel.items[_indexItemSelect].uuid, parentQty: _cartModel.items[_indexItemSelect].qty);
+                    //           _cartModel.items.addAll(cartSubItems);
+                    //           setState(() {});
+                    //         } else {
+                    //           Fluttertoast.showToast(msg: 'This item cannot be sub item'.tr);
+                    //         }
+                    //       } else {
+                    //         Fluttertoast.showToast(msg: 'Please select the item you want to sub item'.tr);
+                    //       }
+                    //     },
+                    //     child: SizedBox(
+                    //       width: double.infinity,
+                    //       height: double.infinity,
+                    //       child: Center(
+                    //         child: Text(
+                    //           'Sub Item'.tr,
+                    //           textAlign: TextAlign.center,
+                    //           overflow: TextOverflow.ellipsis,
+                    //           maxLines: 1,
+                    //           style: kStyleTextDefault,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // const VerticalDivider(
+                    //   width: 1,
+                    //   thickness: 2,
+                    // ),
                     Expanded(
                       child: InkWell(
                         onTap: () async {

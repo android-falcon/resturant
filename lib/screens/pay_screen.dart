@@ -223,6 +223,7 @@ class _PayScreenState extends State<PayScreen> {
                     Printer.init(cart: widget.cart);
                   },
                 ),
+                SizedBox(width: 10.w),
                 CustomButton(
                   fixed: true,
                   child: Text('Close'.tr),

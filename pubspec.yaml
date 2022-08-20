@@ -43,7 +43,10 @@ dependencies:
   sqflite: ^2.0.2+1
   cached_network_image: ^3.2.0
   esc_pos_printer: ^4.1.0
-  flutter_esc_pos_utils: ^0.1.7
+#  esc_pos_utils:
+#    git:
+#      url: https://github.com/guohongquan/esc_pos_utils.git
+#      ref: 4f6bcd90d6d1561d946d59df8ec75b9f31992bb0
   charset_converter: ^2.1.0
   socket_io_client: ^1.0.2
   uuid: ^3.0.6

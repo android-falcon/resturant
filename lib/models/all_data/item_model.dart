@@ -79,7 +79,7 @@ class ItemModel {
         showInMenu: json["SHOW_IN_MENU"] ?? 0,
         itemPicture: json["ITEM_PICTURE"] ?? "",
         unit: json["Unit"],
-        unitId: json["UnitId"],
+        unitId: json["UnitId"] ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
