@@ -139,10 +139,10 @@ class _PayScreenState extends State<PayScreen> {
                       child: numPadWidget(
                         _controllerSelected,
                         (p0) {
-                          if(_controllerSelected == controllerCreditCard){
+                          if (_controllerSelected == controllerCreditCard) {
                             creditCardType = detectCCType(controllerCreditCard!.text);
                           }
-                          setState((){});
+                          setState(() {});
                           setState;
                         },
                         onSubmit: () {
@@ -162,7 +162,7 @@ class _PayScreenState extends State<PayScreen> {
       barrierDismissible: false,
     );
     double _received = result == null ? received : double.parse(result);
-    if((_received - double.parse(balance.toStringAsFixed(3)) == 0)){
+    if ((_received - double.parse(balance.toStringAsFixed(3)) == 0)) {
       _received = balance;
     } else if (enableReturnValue && _received > balance) {
       await Get.dialog(
@@ -219,6 +219,13 @@ class _PayScreenState extends State<PayScreen> {
                 CustomButton(
                   fixed: true,
                   child: Text('Print'.tr),
+                  onPressed: () {
+                    Printer.init(cart: widget.cart);
+                  },
+                ),
+                CustomButton(
+                  fixed: true,
+                  child: Text('Close'.tr),
                   onPressed: () {
                     Get.back();
                   },
@@ -980,7 +987,7 @@ class _PayScreenState extends State<PayScreen> {
                                               }
                                               RestApi.invoice(widget.cart);
                                               mySharedPreferences.inVocNo++;
-                                              // Printer.init();
+                                              Printer.init(cart: widget.cart);
                                               // KitchenSocketClient.test();
                                               _showPrintDialog().then((value) {
                                                 Get.offAll(HomeScreen());

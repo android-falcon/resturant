@@ -584,6 +584,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 discountAvailable: e.discountAvailable == 1,
                                 openPrice: e.openPrice == 1,
                                 rowSerial: 0,
+                                printerId: e.kitchenPrinter.id,
                               ));
                             }
                             setState(() {});
@@ -1085,6 +1086,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                               discountAvailable: e.discountAvailable == 1,
                                               openPrice: e.openPrice == 1,
                                               rowSerial: _cartModel.items.length + 1,
+                                              printerId: e.kitchenPrinter.id
                                             ));
                                             int indexAddedItem = _cartModel.items.length - 1;
                                             if (questionsItem.isNotEmpty) {

@@ -168,6 +168,7 @@ class CartItemModel {
     required this.total,
     required this.tax,
     required this.rowSerial,
+    required this.printerId,
     this.lineDiscountType = DiscountType.percentage,
     this.lineDiscount = 0,
     this.totalLineDiscount = 0,
@@ -205,6 +206,7 @@ class CartItemModel {
   bool openPrice;
   int rowSerial;
   String note;
+  int printerId;
   List<CartItemModifierModel> modifiers;
   List<CartItemQuestionModel> questions;
 
@@ -232,6 +234,7 @@ class CartItemModel {
         openPrice: json['openPrice'],
         rowSerial: json['rowSerial'],
         note: json['note'],
+        printerId: json['printerId'],
         modifiers: List<CartItemModifierModel>.from(json['modifiers'].map((e) => CartItemModifierModel.fromJson(e))),
         questions: List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
       );
@@ -260,6 +263,7 @@ class CartItemModel {
         "openPrice": openPrice,
         "rowSerial": rowSerial,
         "note": note,
+        "printerId": printerId,
         "modifiers": List<dynamic>.from(modifiers.map((e) => e.toJson())),
         "questions": List<dynamic>.from(questions.map((e) => e.toJson())),
       };
