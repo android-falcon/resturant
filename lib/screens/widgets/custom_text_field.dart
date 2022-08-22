@@ -124,22 +124,22 @@ class _CustomTextFieldState extends State<CustomTextField> {
           //   child: icon,
           // ),
           errorMaxLines: 3,
-          // focusedBorder: OutlineInputBorder(
-          //   borderRadius: BorderRadius.circular(8),
-          //   borderSide: const BorderSide(color: Colors.grey, width: 2),
-          // ),
-          // enabledBorder: OutlineInputBorder(
-          //   borderRadius: BorderRadius.circular(8),
-          //   borderSide: const BorderSide(color: Colors.grey, width: 2),
-          // ),
-          // errorBorder: OutlineInputBorder(
-          //   borderRadius: BorderRadius.circular(8),
-          //   borderSide: const BorderSide(color: Colors.red, width: 2),
-          // ),
-          // focusedErrorBorder: OutlineInputBorder(
-          //   borderRadius: BorderRadius.circular(8),
-          //   borderSide: const BorderSide(color: Colors.red, width: 2),
-          // ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: widget.borderColor == null ? const BorderSide()  : BorderSide(color: widget.borderColor!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: widget.borderColor == null ? const BorderSide()  : BorderSide(color: widget.borderColor!),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: widget.borderColor == null ? const BorderSide()  : BorderSide(color: widget.borderColor!),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: widget.borderColor == null ? const BorderSide()  : BorderSide(color: widget.borderColor!),
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: widget.borderColor == null ? const BorderSide()  : BorderSide(color: widget.borderColor!),

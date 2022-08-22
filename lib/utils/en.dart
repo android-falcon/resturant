@@ -145,4 +145,6 @@ const Map<String, String> en = {
   'Sub Items Question': 'Sub Items Question',
   'Void Reason': 'Void Reason',
   'Please select void reason': 'Please select void reason',
+  'Visa': 'Visa',
+  'Mastercard': 'Mastercard',
 };

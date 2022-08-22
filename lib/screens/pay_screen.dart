@@ -21,7 +21,6 @@ import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
-import 'package:restaurant_system/utils/validation.dart';
 
 class PayScreen extends StatefulWidget {
   final CartModel cart;
@@ -55,7 +54,8 @@ class _PayScreenState extends State<PayScreen> {
     if (controllerReceived.text.endsWith('.000')) {
       controllerReceived.text = controllerReceived.text.replaceFirst('.000', '');
     }
-    CreditCardType? creditCardType = CreditCardType.unknown;
+    CreditCardType creditCardType = CreditCardType.unknown;
+    CreditCardType selectedCreditCard = CreditCardType.visa;
     TextEditingController _controllerSelected = controllerReceived;
     var result = await Get.dialog(
       CustomDialog(
@@ -103,32 +103,63 @@ class _PayScreenState extends State<PayScreen> {
                         ),
                         SizedBox(height: 8.h),
                         if (controllerCreditCard != null)
-                          CustomTextField(
-                            controller: controllerCreditCard,
-                            label: Text('Card Number'.tr),
-                            hintText: 'XXXX XXXX XXXX XXXX',
-                            fillColor: Colors.white,
-                            maxLines: 1,
-                            maxLength: 19,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              CardNumberFormatter(),
+                          Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: RadioListTile(
+                                      title: Text('Visa'.tr),
+                                      dense: true,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                                      value: CreditCardType.visa,
+                                      groupValue: selectedCreditCard,
+                                      onChanged: (value) {
+                                        selectedCreditCard = value as CreditCardType;
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: RadioListTile(
+                                      title: Text('Mastercard'.tr),
+                                      dense: true,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                                      value: CreditCardType.mastercard,
+                                      groupValue: selectedCreditCard,
+                                      onChanged: (value) {
+                                        selectedCreditCard = value as CreditCardType;
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              CustomTextField(
+                                controller: controllerCreditCard,
+                                label: Text('Card Number'.tr),
+                                hintText: 'XXXX XXXX XXXX XXXX',
+                                fillColor: Colors.white,
+                                maxLines: 1,
+                                maxLength: 19,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  CardNumberFormatter(),
+                                ],
+                                keyboardType: TextInputType.number,
+                                borderColor: _controllerSelected == controllerCreditCard ? ColorsApp.primaryColor : null,
+                                suffixIcon: iconCreditCard(type: creditCardType),
+                                onChanged: (value) {
+                                  creditCardType = detectCCType(value);
+                                  setState(() {});
+                                },
+                                onTap: () {
+                                  FocusScope.of(context).requestFocus(FocusNode());
+                                  _controllerSelected = controllerCreditCard;
+                                  setState(() {});
+                                },
+                              ),
                             ],
-                            keyboardType: TextInputType.number,
-                            borderColor: _controllerSelected == controllerCreditCard ? ColorsApp.primaryColor : null,
-                            suffixIcon: iconCreditCard(type: creditCardType!),
-                            onChanged: (value) {
-                              creditCardType = detectCCType(value);
-                              setState(() {});
-                            },
-                            onTap: () {
-                              FocusScope.of(context).requestFocus(FocusNode());
-                              _controllerSelected = controllerCreditCard;
-                              setState(() {});
-                            },
-                            validator: (value) {
-                              return Validation.validateCardNumWithLuhnAlgorithm(value!);
-                            },
                           ),
                       ],
                     ),
@@ -202,6 +233,7 @@ class _PayScreenState extends State<PayScreen> {
     return {
       "received": _received,
       "credit_card": controllerCreditCard?.text ?? "",
+      "credit_card_type": selectedCreditCard.name,
     };
   }
 
@@ -718,6 +750,7 @@ class _PayScreenState extends State<PayScreen> {
                                             var result = await _showPayDialog(balance: remaining + widget.cart.credit, received: widget.cart.credit, enableReturnValue: false, controllerCreditCard: TextEditingController(text: widget.cart.creditCardNumber));
                                             widget.cart.credit = result['received'];
                                             widget.cart.creditCardNumber = result['credit_card'];
+                                            widget.cart.creditCardType = result['credit_card_type'];
                                             calculateRemaining();
                                           },
                                         ),

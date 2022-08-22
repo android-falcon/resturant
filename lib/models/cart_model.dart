@@ -23,6 +23,7 @@ class CartModel {
     this.cash = 0,
     this.credit = 0,
     this.creditCardNumber = '',
+    this.creditCardType = '',
     this.cheque = 0,
     this.coupon = 0,
     this.gift = 0,
@@ -47,6 +48,7 @@ class CartModel {
   double cash;
   double credit;
   String creditCardNumber;
+  String creditCardType;
   double cheque;
   double coupon;
   double gift;
@@ -148,8 +150,8 @@ class CartModel {
         "TableId": 0, //
         "NoOfSeats": 0, //
         "SaleInvNo": 0,
-        "Card1Name": "",
-        "Card1Code": "",
+        "Card1Name": creditCardType,
+        "Card1Code": creditCardNumber,
       };
 }
 
