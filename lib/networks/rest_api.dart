@@ -534,4 +534,104 @@ class RestApi {
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
   }
+
+  static Future<void> saveVoidItem({required CartItemModel item, required String reason}) async {
+    try {
+      var body = jsonEncode({
+        "Id": 0,
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "PosNo": mySharedPreferences.posNo,
+        "CashNo": mySharedPreferences.cashNo,
+        "VoidDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "RowNo": item.rowSerial,
+        "Reason": reason,
+        "ItemID": item.id,
+        "Qty": item.qty,
+        "UserID": mySharedPreferences.employee.id,
+      });
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'SAVE_VOID_ITEMS',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.SAVE_VOID_ITEMS,
+        method: 'POST',
+        params: '',
+        body: body,
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryLastRow();
+      final response = await restDio.post(ApiUrl.SAVE_VOID_ITEMS, data: body);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
+
+  static Future<void> saveVoidAllItems({required List<CartItemModel> items, required String reason}) async {
+    try {
+      var body = jsonEncode(items
+          .map((e) => {
+                "Id": 0,
+                "CoYear": mySharedPreferences.dailyClose.year,
+                "PosNo": mySharedPreferences.posNo,
+                "CashNo": mySharedPreferences.cashNo,
+                "VoidDate": mySharedPreferences.dailyClose.toIso8601String(),
+                "RowNo": e.rowSerial,
+                "Reason": reason,
+                "ItemID": e.id,
+                "Qty": e.qty,
+                "UserID": mySharedPreferences.employee.id,
+              })
+          .toList());
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'SAVE_VOID_ALL_ITEMS',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.SAVE_VOID_ALL_ITEMS,
+        method: 'POST',
+        params: '',
+        body: body,
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryLastRow();
+      final response = await restDio.post(ApiUrl.SAVE_VOID_ALL_ITEMS, data: body);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
 }

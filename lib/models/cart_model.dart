@@ -153,6 +153,32 @@ class CartModel {
         "Card1Name": creditCardType,
         "Card1Code": creditCardNumber,
       };
+
+  // Map<String, dynamic> toKitchen(String kitchenId) => {
+  //   'orderNo': mySharedPreferences.inVocNo,
+  //   'tableNo': tableNo,
+  //   'sectionNo': 0,
+  //   'orderType': orderType.index,
+  //   'items': items.where((element) => false)
+  // };
+  // {
+  // 'orderNo': 1,
+  // 'tableNo': 2,
+  // 'sectionNo': 3,
+  // 'orderType': 1,
+  // 'items': [
+  // {
+  // 'itemName': 'Shawrma',
+  // 'qty': 1,
+  // 'note': 'ana',
+  // },
+  // {
+  // 'itemName': 'Shawrma',
+  // 'qty': 1,
+  // 'note': 'ana',
+  // },
+  // ],
+  // }
 }
 
 class CartItemModel {

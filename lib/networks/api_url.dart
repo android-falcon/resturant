@@ -21,4 +21,8 @@ class ApiUrl{
   static String UNLOCK_TABLE = "/api/postData/UNLOCKTABLE";
   // ignore: non_constant_identifier_names
   static String SET_TABLE_CONFIG = "/api/postData/SetTableConfig";
+  // ignore: non_constant_identifier_names
+  static String SAVE_VOID_ITEMS = "/api/postData/SaveVoidItems";
+  // ignore: non_constant_identifier_names
+  static String SAVE_VOID_ALL_ITEMS = "/api/postData/SaveVoidAllItems";
 }

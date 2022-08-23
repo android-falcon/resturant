@@ -147,4 +147,6 @@ const Map<String, String> en = {
   'Please select void reason': 'Please select void reason',
   'Visa': 'Visa',
   'Mastercard': 'Mastercard',
+  'Delivery price cannot be added and there are no selected items': 'Delivery price cannot be added and there are no selected items',
+  'Void All': 'Void All',
 };

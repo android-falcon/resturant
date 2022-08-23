@@ -67,7 +67,6 @@ class _OrderScreenState extends State<OrderScreen> {
     }
   }
 
-
   @override
   void dispose() {
     super.dispose();
@@ -1023,6 +1022,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           } else {
                             _showVoidReasonDialog().then((value) {
                               if (value != null) {
+                                RestApi.saveVoidAllItems(items: _cartModel.items, reason: value.reasonName);
                                 Get.back();
                               }
                             });
@@ -1838,27 +1838,18 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (_indexItemSelect != -1) {
                             VoidReasonModel? result = await _showVoidReasonDialog();
                             if (result != null) {
+                              RestApi.saveVoidItem(item: _cartModel.items[_indexItemSelect], reason: result.reasonName);
                               _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
                               _cartModel.items.removeAt(_indexItemSelect);
                               _indexItemSelect = -1;
-                              setState(() {});
+                              if (_cartModel.items.isEmpty) {
+                                _cartModel.deliveryCharge = 0;
+                                _cartModel.discount = 0;
+                              } else if(_cartModel.items.every((element) => !element.discountAvailable)){
+                                _cartModel.discount = 0;
+                              }
+                              _calculateOrder();
                             }
-                            // Get.defaultDialog(
-                            //   title: '${'Are you sure to remove the'.tr} ${_cartModel.items[_indexItemSelect].name} ${'item'.tr}?',
-                            //   titleStyle: kStyleTextTitle,
-                            //   content: Container(),
-                            //   textCancel: 'Cancel'.tr,
-                            //   textConfirm: 'Confirm'.tr,
-                            //   confirmTextColor: Colors.white,
-                            //   onConfirm: () {
-                            //     _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
-                            //     _cartModel.items.removeAt(_indexItemSelect);
-                            //     _indexItemSelect = -1;
-                            //     Get.back();
-                            //   },
-                            // ).then((value) {
-                            //   _calculateOrder();
-                            // });
                           } else {
                             Fluttertoast.showToast(msg: 'Please select the item you want to remove'.tr);
                           }
@@ -1885,8 +1876,44 @@ class _OrderScreenState extends State<OrderScreen> {
                     Expanded(
                       child: InkWell(
                         onTap: () async {
-                          _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
-                          _calculateOrder();
+                          VoidReasonModel? result = await _showVoidReasonDialog();
+                          if (result != null) {
+                            RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
+                            _indexItemSelect = -1;
+                            _cartModel.items = [];
+                            _cartModel.deliveryCharge = 0;
+                            _cartModel.discount = 0;
+                            _calculateOrder();
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Void All'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const VerticalDivider(
+                      width: 1,
+                      thickness: 2,
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          if(_cartModel.items.isNotEmpty){
+                            _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
+                            _calculateOrder();
+                          } else {
+                            Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
+                          }
                         },
                         child: SizedBox(
                           width: double.infinity,
