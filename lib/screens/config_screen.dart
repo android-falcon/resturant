@@ -18,7 +18,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
   final TextEditingController _controllerCashNo = TextEditingController(text: '${mySharedPreferences.cashNo}');
   final TextEditingController _controllerStoreNo = TextEditingController(text: '${mySharedPreferences.storeNo}');
   final TextEditingController _controllerInVocNo = TextEditingController(text: '${mySharedPreferences.inVocNo}');
-  final TextEditingController _controllerOutVocNo = TextEditingController(text: '${mySharedPreferences.outVocNo}');
+  final TextEditingController _controllerOutVocNo = TextEditingController(text: '${mySharedPreferences.payInOutNo}');
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +51,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
                 ),
                 CustomTextField(
                   controller: _controllerOutVocNo,
-                  label: Text('Out Voc No'.tr),
+                  label: Text('Pay In Out No'.tr),
                 ),
                 Row(
                   children: [
@@ -66,7 +66,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
                           mySharedPreferences.cashNo = _controllerCashNo.text.isEmpty ? 0 : int.parse(_controllerCashNo.text);
                           mySharedPreferences.storeNo = _controllerStoreNo.text.isEmpty ? 0 : int.parse(_controllerStoreNo.text);
                           mySharedPreferences.inVocNo = _controllerInVocNo.text.isEmpty ? 0 : int.parse(_controllerInVocNo.text);
-                          mySharedPreferences.outVocNo = _controllerOutVocNo.text.isEmpty ? 0 : int.parse(_controllerOutVocNo.text);
+                          mySharedPreferences.payInOutNo = _controllerOutVocNo.text.isEmpty ? 0 : int.parse(_controllerOutVocNo.text);
                           Get.back();
                         },
                       ),

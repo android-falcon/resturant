@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -9,7 +10,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
-import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/screens/table_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
@@ -44,84 +44,87 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _menu = <HomeMenu>[
-      // HomeMenu(
-      //   name: 'Time Card'.tr,
-      //   onTab: () {
-      //     _showTimeCardDialog();
-      //   },
-      // ),
-      // HomeMenu(
-      //   name: 'Cash In'.tr,
-      //   onTab: () {
-      //     _showInOutDialog(type: InOutType.cashIn);
-      //   },
-      // ),
-      // HomeMenu(
-      //   name: 'Cash Out'.tr,
-      //   onTab: () {
-      //     _showInOutDialog(type: InOutType.cashOut);
-      //   },
-      // ),
-      HomeMenu(
-        name: 'Pay In'.tr,
-        onTab: () {
-          _showInOutDialog(type: InOutType.payIn);
-        },
-      ),
-      HomeMenu(
-        name: 'Pay Out'.tr,
-        onTab: () {
-          _showInOutDialog(type: InOutType.payOut);
-        },
-      ),
-      HomeMenu(
-        name: 'Refund'.tr,
-        onTab: () {
-          _showRefundDialog();
-        },
-      ),
-      HomeMenu(
-        name: 'Cash Drawer'.tr,
-        onTab: () async {},
-      ),
-      if (mySharedPreferences.employee.isMaster)
+    SchedulerBinding.instance!.addPostFrameCallback((timeStamp) {
+      _menu = <HomeMenu>[
+        // HomeMenu(
+        //   name: 'Time Card'.tr,
+        //   onTab: () {
+        //     _showTimeCardDialog();
+        //   },
+        // ),
+        // HomeMenu(
+        //   name: 'Cash In'.tr,
+        //   onTab: () {
+        //     _showInOutDialog(type: InOutType.cashIn);
+        //   },
+        // ),
+        // HomeMenu(
+        //   name: 'Cash Out'.tr,
+        //   onTab: () {
+        //     _showInOutDialog(type: InOutType.cashOut);
+        //   },
+        // ),
         HomeMenu(
-          name: 'Daily Close'.tr,
+          name: 'Pay In'.tr,
           onTab: () {
-            Get.defaultDialog(
-              title: 'Daily Close'.tr,
-              titleStyle: kStyleTextTitle,
-              content: Column(
-                children: [
-                  Text('Are you sure?'.tr),
-                  Text('${'Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}'),
-                  Text('${'New Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose.add(const Duration(days: 1)))}'),
-                ],
-              ),
-              textCancel: 'Cancel'.tr,
-              textConfirm: 'Confirm'.tr,
-              confirmTextColor: Colors.white,
-              onConfirm: () {
-                RestApi.posDailyClose(closeDate: mySharedPreferences.dailyClose.add(const Duration(days: 1)));
-              },
-            );
+            _showInOutDialog(type: InOutType.payIn);
           },
         ),
-      HomeMenu(
-        name: 'Exit'.tr,
-        onTab: () async {
-          var result = await showAreYouSureDialog(title: 'Close App'.tr);
-          if (result) {
-            if (Platform.isAndroid) {
-              SystemNavigator.pop();
-            } else if (Platform.isIOS) {
-              exit(0);
+        HomeMenu(
+          name: 'Pay Out'.tr,
+          onTab: () {
+            _showInOutDialog(type: InOutType.payOut);
+          },
+        ),
+        HomeMenu(
+          name: 'Refund'.tr,
+          onTab: () {
+            _showRefundDialog();
+          },
+        ),
+        HomeMenu(
+          name: 'Cash Drawer'.tr,
+          onTab: () async {},
+        ),
+        if (mySharedPreferences.employee.isMaster)
+          HomeMenu(
+            name: 'Daily Close'.tr,
+            onTab: () {
+              Get.defaultDialog(
+                title: 'Daily Close'.tr,
+                titleStyle: kStyleTextTitle,
+                content: Column(
+                  children: [
+                    Text('Are you sure?'.tr),
+                    Text('${'Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}'),
+                    Text('${'New Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose.add(const Duration(days: 1)))}'),
+                  ],
+                ),
+                textCancel: 'Cancel'.tr,
+                textConfirm: 'Confirm'.tr,
+                confirmTextColor: Colors.white,
+                onConfirm: () {
+                  RestApi.posDailyClose(closeDate: mySharedPreferences.dailyClose.add(const Duration(days: 1)));
+                },
+              );
+            },
+          ),
+        HomeMenu(
+          name: 'Exit'.tr,
+          onTab: () async {
+            var result = await showAreYouSureDialog(title: 'Close App'.tr);
+            if (result) {
+              if (Platform.isAndroid) {
+                SystemNavigator.pop();
+              } else if (Platform.isIOS) {
+                exit(0);
+              }
             }
-          }
-        },
-      ),
-    ];
+          },
+        ),
+      ];
+      setState(() {});
+    });
   }
 
   _showTimeCardDialog() {

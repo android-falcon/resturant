@@ -354,7 +354,7 @@ class RestApi {
       var body = jsonEncode({
         "CoYear": mySharedPreferences.dailyClose.year,
         "VoucherType": type,
-        "VoucherNo": mySharedPreferences.inVocNo,
+        "VoucherNo": mySharedPreferences.payInOutNo,
         "PosNo": mySharedPreferences.posNo,
         "CashNo": mySharedPreferences.cashNo,
         "VoucherDate": mySharedPreferences.dailyClose.toIso8601String(),
@@ -364,7 +364,7 @@ class RestApi {
         "UserId": mySharedPreferences.employee.id,
         "ShiftId": 0,
       });
-      mySharedPreferences.inVocNo++;
+      mySharedPreferences.payInOutNo++;
       await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'PAY_IN_OUT',
@@ -538,7 +538,6 @@ class RestApi {
   static Future<void> saveVoidItem({required CartItemModel item, required String reason}) async {
     try {
       var body = jsonEncode({
-        "Id": 0,
         "CoYear": mySharedPreferences.dailyClose.year,
         "PosNo": mySharedPreferences.posNo,
         "CashNo": mySharedPreferences.cashNo,
@@ -588,7 +587,6 @@ class RestApi {
     try {
       var body = jsonEncode(items
           .map((e) => {
-                "Id": 0,
                 "CoYear": mySharedPreferences.dailyClose.year,
                 "PosNo": mySharedPreferences.posNo,
                 "CashNo": mySharedPreferences.cashNo,

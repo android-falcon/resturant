@@ -16,13 +16,7 @@ class KitchenSocketClient {
   Future<void> connect() async {
     socket = IO.io(
       'http://$host:$port',
-      IO.OptionBuilder()
-          .setTransports(['websocket'])
-          .enableForceNewConnection()
-          .enableForceNew()
-          .disableAutoConnect()
-          .enableReconnection()
-          .build(),
+      IO.OptionBuilder().setTransports(['websocket']).enableForceNewConnection().enableForceNew().disableAutoConnect().enableReconnection().build(),
     );
     _socketLog('IO');
     socket.connect();
@@ -36,27 +30,22 @@ class KitchenSocketClient {
     socket.dispose();
   }
 
-  sendOrder(CartModel cart) {
+  sendOrder({required int orderNo, required CartModel cart}) {
     if (socket.connected) {
       socket.emit(
           'new_order',
           jsonEncode({
-            'orderNo': 1,
-            'tableNo': 2,
-            'sectionNo': 3,
-            'orderType': 1,
-            'items': [
-              {
-                'itemName': 'Shawrma',
-                'qty': 1,
-                'note': 'ana',
-              },
-              {
-                'itemName': 'Shawrma',
-                'qty': 1,
-                'note': 'ana',
-              },
-            ],
+            'orderNo': orderNo,
+            'tableNo': cart.tableNo,
+            'sectionNo': 0,
+            'orderType': cart.orderType.index,
+            'items': cart.items
+                .map((e) => {
+                      'itemName': e.name,
+                      'qty': e.qty,
+                      'note': e.note,
+                    })
+                .toList(),
           }));
     } else {
       socket.dispose();

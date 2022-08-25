@@ -13,6 +13,7 @@ import 'package:restaurant_system/models/all_data/families_model.dart';
 import 'package:restaurant_system/models/all_data/force_question_model.dart';
 import 'package:restaurant_system/models/all_data/image_path_model.dart';
 import 'package:restaurant_system/models/all_data/item_model.dart';
+import 'package:restaurant_system/models/all_data/items_printers_model.dart';
 import 'package:restaurant_system/models/all_data/sub_items_force_questions_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
@@ -49,6 +50,7 @@ class AllDataModel {
     required this.tables,
     required this.subItemsForceQuestions,
     required this.comboItemsForceQuestion,
+    required this.itemsPrintersModel,
   });
 
   DateTime serverTime;
@@ -71,6 +73,7 @@ class AllDataModel {
   List<TablesModel> tables;
   List<SubItemsForceQuestionsModel> subItemsForceQuestions;
   List<ComboItemsForceQuestionModel> comboItemsForceQuestion;
+  List<ItemsPrintersModel> itemsPrintersModel;
 
   factory AllDataModel.init() => AllDataModel(
         serverTime: DateTime.now(),
@@ -93,6 +96,7 @@ class AllDataModel {
         tables: [],
         subItemsForceQuestions: [],
         comboItemsForceQuestion: [],
+        itemsPrintersModel: [],
       );
 
   factory AllDataModel.fromJson(Map<String, dynamic> json) => AllDataModel(
@@ -116,6 +120,7 @@ class AllDataModel {
         tables: json["Tables"] == null ? [] : List<TablesModel>.from(json["Tables"].map((x) => TablesModel.fromJson(x))),
         subItemsForceQuestions: json["SubItemsForceQuestions"] == null ? [] : List<SubItemsForceQuestionsModel>.from(json["SubItemsForceQuestions"].map((x) => SubItemsForceQuestionsModel.fromJson(x))),
         comboItemsForceQuestion: json["ComboItemsForceQuestion"] == null ? [] : List<ComboItemsForceQuestionModel>.from(json["ComboItemsForceQuestion"].map((x) => ComboItemsForceQuestionModel.fromJson(x))),
+        itemsPrintersModel: json["ItemsPrintersViewModel"] == null ? [] : List<ItemsPrintersModel>.from(json["ItemsPrintersViewModel"].map((x) => ItemsPrintersModel.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -139,5 +144,6 @@ class AllDataModel {
         "Tables": List<dynamic>.from(tables.map((x) => x.toJson())),
         "SubItemsForceQuestions": List<dynamic>.from(subItemsForceQuestions.map((x) => x.toJson())),
         "ComboItemsForceQuestion": List<dynamic>.from(comboItemsForceQuestion.map((x) => x.toJson())),
+        "ItemsPrintersViewModel": List<dynamic>.from(itemsPrintersModel.map((x) => x.toJson())),
       };
 }

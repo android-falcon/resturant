@@ -28,6 +28,7 @@ class CartModel {
     this.coupon = 0,
     this.gift = 0,
     this.point = 0,
+    this.tableNo = 0,
   });
 
   OrderType orderType;
@@ -53,6 +54,7 @@ class CartModel {
   double coupon;
   double gift;
   double point;
+  int tableNo;
 
   factory CartModel.init({required OrderType orderType}) => CartModel(
         orderType: orderType,
@@ -95,6 +97,7 @@ class CartModel {
         coupon: json['coupon'] == null ? 0 : json['coupon'].toDouble(),
         gift: json['gift'] == null ? 0 : json['gift'].toDouble(),
         point: json['point'] == null ? 0 : json['point'].toDouble(),
+    tableNo: json['tableNo'] ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
@@ -120,6 +123,7 @@ class CartModel {
         'coupon': coupon,
         'gift': gift,
         'point': point,
+        'tableNo': tableNo,
       };
 
   Map<String, dynamic> toInvoice() => {

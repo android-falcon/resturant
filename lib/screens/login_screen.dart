@@ -3,6 +3,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:restaurant_system/models/all_data/company_config_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/config_screen.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
@@ -95,7 +96,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               } else {
                                 mySharedPreferences.dailyClose = DateTime.parse('0000-00-00T00:00:00.000');
                               }
-                              Get.offAll(() => const HomeScreen());
+                              if(allDataModel.companyConfig.isEmpty){
+                                allDataModel.companyConfig.add(CompanyConfigModel.fromJson({}));
+                              }
+                              Get.to(() => const HomeScreen());
                             } else {
                               Fluttertoast.showToast(msg: 'Incorrect username or password'.tr, timeInSecForIosWeb: 3);
                             }

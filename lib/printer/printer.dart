@@ -1,100 +1,164 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
-import 'package:flutter/material.dart';
 import 'dart:typed_data';
-import 'package:charset_converter/charset_converter.dart';
 
-import 'package:get/get.dart';
+import 'package:pdf/widgets.dart' as pdf;
+import 'package:pdf/src/pdf/page_format.dart' as pdf_format;
+import 'package:printing/printing.dart';
 import 'package:image/image.dart' as img;
 import 'package:esc_pos_printer/esc_pos_printer.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
-import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/print_invoice_model.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 
+extension PdfRasterExt on PdfRaster {
+  img.Image asImage() {
+    return img.Image.fromBytes(width, height, pixels);
+  }
+}
+
 class Printer {
   // String imageUrl = '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'COMPANY_LOGO')?.imgPath ?? ''}${allDataModel.companyConfig.first.companyLogo}';
 
-  static init({required CartModel cart, Uint8List? image}) async {
+  static init({required CartModel cart}) async {
     final profile = await CapabilityProfile.load(); //name: 'TP806L'
-    List<PrintInvoiceModel> kitchenPrinters = [];
-    NetworkPrinter? cashNetworkPrinter;
-    PosPrintResult? cashPosPrintResult;
-    for (var element in allDataModel.printers) {
-      if (element.cashNo == mySharedPreferences.cashNo) {
-        cashNetworkPrinter = NetworkPrinter(PaperSize.mm80, profile);
-        cashPosPrintResult = await cashNetworkPrinter.connect(element.ipAddress, port: 9100);
+    for (var printer in allDataModel.printers) {
+      if (printer.cashNo == mySharedPreferences.cashNo) {
+        final cashNetworkPrinter = NetworkPrinter(PaperSize.mm80, profile);
+        final cashPosPrintResult = await cashNetworkPrinter.connect(printer.ipAddress, port: 9100);
+        if (cashPosPrintResult == PosPrintResult.success) {
+          try {
+            // await printInvoiceImage(cashNetworkPrinter);
+            await printInvoice(cashNetworkPrinter, cart);
+            cashNetworkPrinter.disconnect();
+            await Future.delayed(const Duration(seconds: 1));
+          } catch (e) {
+            cashNetworkPrinter.disconnect();
+            log('cashPrinter catch ${e.toString()}');
+          }
+        } else {
+          log('cashPrinter catch ${cashPosPrintResult.msg} ${printer.ipAddress}');
+        }
       }
-      List<CartItemModel> cartItems = cart.items.where((element) => element.printerId == element.id).toList();
+      var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
+      List<CartItemModel> cartItems = cart.items.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
       if (cartItems.isNotEmpty) {
         final kitchenNetworkPrinter = NetworkPrinter(PaperSize.mm80, profile);
-        final PosPrintResult kitchenPosPrintResult = await kitchenNetworkPrinter.connect(element.ipAddress, port: 9100);
-        kitchenPrinters.add(PrintInvoiceModel(
-          printerId: element.id,
-          networkPrinter: kitchenNetworkPrinter,
-          posPrintResult: kitchenPosPrintResult,
-          invoiceNo: cart.id,
+        final PosPrintResult kitchenPosPrintResult = await kitchenNetworkPrinter.connect(printer.ipAddress, port: 9100);
+        var printInvoiceModel = PrintInvoiceModel(
+          invoiceNo: mySharedPreferences.inVocNo - 1,
           orderType: cart.orderType.name,
           items: cartItems,
-        ));
-      }
-    }
-    if (cashNetworkPrinter != null && cashPosPrintResult == PosPrintResult.success) {
-      try {
-        await printInvoice(cashNetworkPrinter, cart);
-        cashNetworkPrinter.disconnect();
-      } catch (e) {
-        cashNetworkPrinter.disconnect();
-        log('printer catch ${e.toString()}');
-      }
-    }
-    for (var kitchenPrinter in kitchenPrinters) {
-      if (kitchenPrinter.posPrintResult == PosPrintResult.success) {
-        try {
-          await printKitchen(kitchenPrinter);
-          kitchenPrinter.networkPrinter.disconnect();
-        } catch (e) {
-          kitchenPrinter.networkPrinter.disconnect();
-          log('printer catch ${e.toString()}');
+        );
+        if (kitchenPosPrintResult == PosPrintResult.success) {
+          try {
+            await printKitchen(kitchenNetworkPrinter, printInvoiceModel);
+            kitchenNetworkPrinter.disconnect();
+            await Future.delayed(const Duration(seconds: 1));
+          } catch (e) {
+            kitchenNetworkPrinter.disconnect();
+            log('printKitchen catch ${e.toString()}');
+          }
+        } else {
+          log('printKitchen catch ${kitchenPosPrintResult.msg}');
         }
       }
     }
   }
 
-  static Future<void> printKitchen(PrintInvoiceModel printer) async {
-    printer.networkPrinter.hr(linesAfter: 1);
-    printer.networkPrinter.text(
-      'Invoice No  : ${printer.invoiceNo}',
+  static Future<void> printKitchen(NetworkPrinter printer, PrintInvoiceModel printInvoiceModel) async {
+    printer.hr(linesAfter: 1);
+    printer.text(
+      'Invoice No  : ${printInvoiceModel.invoiceNo}',
       styles: const PosStyles(
         align: PosAlign.center,
         height: PosTextSize.size2,
         width: PosTextSize.size2,
       ),
     );
-    printer.networkPrinter.text(
-      printer.orderType,
+    printer.text(
+      printInvoiceModel.orderType,
       styles: const PosStyles(
         height: PosTextSize.size2,
         width: PosTextSize.size2,
       ),
     );
-    printer.networkPrinter.hr(linesAfter: 1);
-    printer.networkPrinter.row([PosColumn(text: 'Item Name'), PosColumn(text: 'QTY'), PosColumn(text: 'Note')]);
-    for (var item in printer.items) {
-      printer.networkPrinter.row([PosColumn(text: item.name), PosColumn(text: '${item.qty}'), PosColumn(text: item.note)]);
+    printer.hr(linesAfter: 1);
+    printer.row([
+      PosColumn(text: 'Item Name', width: 6),
+      PosColumn(text: 'QTY', width: 2),
+      PosColumn(text: 'Note', width: 4),
+    ]);
+    for (var item in printInvoiceModel.items) {
+      printer.row([
+        PosColumn(text: 'item.name', width: 6),
+        PosColumn(text: '${item.qty}', width: 2),
+        PosColumn(text: item.note, width: 4),
+      ]);
     }
-    printer.networkPrinter.hr(linesAfter: 2);
-    printer.networkPrinter.cut();
+    printer.hr(linesAfter: 2);
+    printer.cut();
   }
 
-  static Future<void> printInvoiceImage(NetworkPrinter printer, Uint8List imageBytes) async {
-    final img.Image? image = img.decodeImage(imageBytes);
-    printer.image(image!, align: PosAlign.center);
-    printer.cut();
+  static Future<Uint8List> _buildDocument() async {
+    final doc = pdf.Document();
+    doc.addPage(
+      pdf.Page(
+        orientation: pdf.PageOrientation.landscape,
+        pageFormat: pdf_format.PdfPageFormat.roll80,
+        build: (context) => pdf.Column(
+          children: [
+            pdf.Text(
+              'Hello World',
+              style: pdf.TextStyle(
+                fontWeight: pdf.FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            pdf.Text(
+              'Hello World',
+              style: pdf.TextStyle(
+                fontWeight: pdf.FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            pdf.Text(
+              'Hello World',
+              style: pdf.TextStyle(
+                fontWeight: pdf.FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            pdf.Text(
+              'Hello World',
+              style: pdf.TextStyle(
+                fontWeight: pdf.FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    return await doc.save();
+  }
+
+  static Future<void> printInvoiceImage(NetworkPrinter printer) async {
+    // final img.Image? image = img.decodeImage(imageBytes);
+    // printer.image(image!, align: PosAlign.center);
+    // printer.cut();
+    var ana = await _buildDocument();
+    // Printing.layoutPdf(onLayout: _buildDocument());
+    await for (var page in Printing.raster(await _buildDocument(), dpi: 203)) {
+      final image = page.asImage();
+      printer.image(image, align: PosAlign.center);
+      printer.feed(2);
+      printer.cut();
+    }
+
+    // printer.rawBytes(ticket);
   }
 
   static Future<void> printInvoice(NetworkPrinter printer, CartModel cart) async {
@@ -131,7 +195,7 @@ class Printer {
     ]);
     final encodedStr = utf8.encode("فاتورة ضريبة");
     printer.textEncoded(Uint8List.fromList([
-      ...[0x1B, 0x74, 0x49,],
+      ...[0x1C, 0x26, 0x1C, 0x43, 0xFF],
       ...encodedStr
     ]));
     // Uint8List encoded = await CharsetConverter.encode('Windows-1251', "فاتورة ضريبة");
@@ -139,7 +203,7 @@ class Printer {
     // printer.text('ا ب ت ث ج ح خ د ذ ر ز س ش ص ض ف ق ك ل م ن ه و ي', styles: const PosStyles(codeTable: 'ISO-8859-6'));
     for (var item in cart.items) {
       printer.row([
-        PosColumn(text: 'ana', width: 6),
+        PosColumn(text: 'item.name', width: 6),
         PosColumn(text: '${item.qty}', width: 2),
         PosColumn(text: item.priceChange.toStringAsFixed(2), width: 2),
         PosColumn(text: item.total.toStringAsFixed(2), width: 2),
