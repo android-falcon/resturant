@@ -51,7 +51,12 @@ class _PayScreenState extends State<PayScreen> {
 
   Future<Map<String, dynamic>> _showPayDialog({TextEditingController? controllerReceived, required double balance, required double received, bool enableReturnValue = false, TextEditingController? controllerCreditCard}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
-    controllerReceived ??= TextEditingController(text: received.toStringAsFixed(3));
+    if(controllerCreditCard != null && received == 0){
+      controllerReceived ??= TextEditingController(text: balance.toStringAsFixed(3));
+    } else {
+      controllerReceived ??= TextEditingController(text: received.toStringAsFixed(3));
+    }
+
     if (controllerReceived.text.endsWith('.000')) {
       controllerReceived.text = controllerReceived.text.replaceFirst('.000', '');
     }
@@ -72,9 +77,14 @@ class _PayScreenState extends State<PayScreen> {
                     child: Column(
                       children: [
                         SizedBox(height: 16.h),
-                        Text(
-                          '${'Balance'.tr} : ${balance.toStringAsFixed(3)}',
-                          style: kStyleTextTitle,
+                        InkWell(
+                          onTap: (){
+                            controllerReceived!.text = balance.toStringAsFixed(3);
+                          },
+                          child: Text(
+                            '${'Balance'.tr} : ${balance.toStringAsFixed(3)}',
+                            style: kStyleTextTitle,
+                          ),
                         ),
                         SizedBox(height: 8.h),
                         CustomTextField(
