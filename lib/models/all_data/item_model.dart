@@ -29,7 +29,6 @@ class ItemModel {
     required this.discountAvailable,
     required this.pointAvailable,
     required this.openPrice,
-    required this.kitchenPrinter,
     required this.showInMenu,
     required this.itemPicture,
   });
@@ -53,7 +52,6 @@ class ItemModel {
   int discountAvailable;
   String pointAvailable;
   int openPrice;
-  KitchenPrinter kitchenPrinter;
   int showInMenu;
   String itemPicture;
 
@@ -75,7 +73,6 @@ class ItemModel {
         discountAvailable: json["DISCOUNT_AVAILABLE"] ?? 0,
         pointAvailable: json["POINT_AVAILABLE"] ?? "",
         openPrice: json["OPEN_PRICE"] ?? 0,
-        kitchenPrinter: json["KitchenPrinter"] == null ? KitchenPrinter.init() : KitchenPrinter.fromJson(json["KitchenPrinter"]),
         showInMenu: json["SHOW_IN_MENU"] ?? 0,
         itemPicture: json["ITEM_PICTURE"] ?? "",
         unit: json["Unit"],
@@ -100,7 +97,6 @@ class ItemModel {
         "DISCOUNT_AVAILABLE": discountAvailable,
         "POINT_AVAILABLE": pointAvailable,
         "OPEN_PRICE": openPrice,
-        "KitchenPrinter": kitchenPrinter.toJson(),
         "SHOW_IN_MENU": showInMenu,
         "ITEM_PICTURE": itemPicture,
         "Unit": unit,

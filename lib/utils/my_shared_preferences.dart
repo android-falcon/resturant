@@ -85,6 +85,12 @@ class MySharedPreferences {
     _sharedPreferences.setString(keyBaseUrl, value);
   }
 
+  int get orderNo => _sharedPreferences.getInt(keyOrderNo) ?? 1;
+
+  set orderNo(int value) {
+    _sharedPreferences.setInt(keyOrderNo, value);
+  }
+
   int get inVocNo => _sharedPreferences.getInt(keyInVocNo) ?? 1;
 
   set inVocNo(int value) {
@@ -129,6 +135,7 @@ const String keyDineIn = "key_dine_in";
 const String keyDailyClose = "key_daily_close";
 const String keyBaseUrl = "key_base_url";
 const String keyInVocNo = "key_in_voc_no";
+const String keyOrderNo = "key_order_no";
 const String keyPayInOutNoNo = "key_pay_in_out_no";
 const String keyPosNo = "key_pos_no";
 const String keyCashNo = "key_cash_no";

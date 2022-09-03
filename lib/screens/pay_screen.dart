@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -7,8 +9,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
+import 'package:restaurant_system/models/print_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
-import 'package:restaurant_system/printer/printer.dart';
+import 'package:restaurant_system/printer/print_invoice.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -19,9 +22,11 @@ import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/credit_card_type_detector.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
+import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
+import 'package:screenshot/screenshot.dart';
 
 class PayScreen extends StatefulWidget {
   final CartModel cart;
@@ -51,7 +56,7 @@ class _PayScreenState extends State<PayScreen> {
 
   Future<Map<String, dynamic>> _showPayDialog({TextEditingController? controllerReceived, required double balance, required double received, bool enableReturnValue = false, TextEditingController? controllerCreditCard}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
-    if(controllerCreditCard != null && received == 0){
+    if (controllerCreditCard != null && received == 0) {
       controllerReceived ??= TextEditingController(text: balance.toStringAsFixed(3));
     } else {
       controllerReceived ??= TextEditingController(text: received.toStringAsFixed(3));
@@ -78,7 +83,7 @@ class _PayScreenState extends State<PayScreen> {
                       children: [
                         SizedBox(height: 16.h),
                         InkWell(
-                          onTap: (){
+                          onTap: () {
                             controllerReceived!.text = balance.toStringAsFixed(3);
                           },
                           child: Text(
@@ -249,11 +254,39 @@ class _PayScreenState extends State<PayScreen> {
   }
 
   Future<void> _showPrintDialog() async {
+    ScreenshotController _screenshotControllerCash = ScreenshotController();
+    List<PrintInvoiceModel> invoices = [];
+
+    for (var printer in allDataModel.printers) {
+      if (printer.cashNo == mySharedPreferences.cashNo) {
+        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress, screenshotController: ScreenshotController(), items: []));
+      }
+      var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
+      List<CartItemModel> cartItems = widget.cart.items.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
+      if (cartItems.isNotEmpty) {
+        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress, screenshotController: ScreenshotController(), items: cartItems));
+      }
+    }
+    Future.delayed(const Duration(milliseconds: 100)).then((value) async {
+      var screenshotCash = await _screenshotControllerCash.capture(delay: const Duration(milliseconds: 10));
+      await Future.forEach(invoices, (PrintInvoiceModel element) async {
+        if (element.items.isEmpty) {
+          element.invoice = screenshotCash;
+        } else {
+          var screenshotKitchen = await element.screenshotController.capture(delay: const Duration(milliseconds: 10));
+          element.invoice = screenshotKitchen;
+        }
+      });
+      invoices.removeWhere((element) => element.invoice == null);
+      PrintInvoice.init(invoices: invoices);
+      // KitchenSocketClient.init();
+      log('ananan ${invoices.length}');
+    });
+
     await Get.dialog(
       CustomDialog(
+        width: 100,
         builder: (context, setState, constraints) => Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -263,7 +296,7 @@ class _PayScreenState extends State<PayScreen> {
                   fixed: true,
                   child: Text('Print'.tr),
                   onPressed: () {
-                    Printer.init(cart: widget.cart);
+                    PrintInvoice.init(invoices: invoices);
                   },
                 ),
                 SizedBox(width: 10.w),
@@ -277,356 +310,565 @@ class _PayScreenState extends State<PayScreen> {
               ],
             ),
             const Divider(thickness: 2),
-            Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${'Date'.tr} : '),
-                      SizedBox(height: 15.h),
-                      Text('${'Invoice No'.tr} : '),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)), // hh:mm:ss a
-                      SizedBox(height: 15.h),
-                      Text('${mySharedPreferences.inVocNo - 1}'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const Divider(thickness: 2),
-            Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Qty'.tr,
-                          style: kStyleHeaderTable,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          'Pro-Nam'.tr,
-                          style: kStyleHeaderTable,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Price'.tr,
-                          style: kStyleHeaderTable,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Total'.tr,
-                          style: kStyleHeaderTable,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(color: Colors.black, height: 1),
-                ListView.separated(
-                  itemCount: widget.cart.items.length,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
-                  itemBuilder: (context, index) {
-                    if (widget.cart.items[index].parentUuid.isNotEmpty) {
-                      return Container();
-                    } else {
-                      var subItem = widget.cart.items.where((element) => element.parentUuid == widget.cart.items[index].uuid).toList();
-                      return Column(
+            Screenshot(
+              controller: _screenshotControllerCash,
+              child: SizedBox(
+                width: 215,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Column(
                         children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                            child: Row(
+                          Text(
+                            widget.cart.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
+                            style: kStyleLargePrinter,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            'Order No'.tr,
+                            style: kStyleLargePrinter,
+                          ),
+                          Text(
+                            '${mySharedPreferences.orderNo - 1}',
+                            style: kStyleLargePrinter,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(color: Colors.black, thickness: 2),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${'Invoice No'.tr} : ${mySharedPreferences.inVocNo - 1}',
+                                style: kStyleDataPrinter,
+                              ),
+                              Text(
+                                '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
+                                style: kStyleDataPrinter,
+                              ),
+                              Text(
+                                '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
+                                style: kStyleDataPrinter,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (widget.cart.orderType == OrderType.dineIn)
+                                Text(
+                                  '${'Table No'.tr} : ${widget.cart.tableNo}',
+                                  style: kStyleDataPrinter,
+                                  maxLines: 1,
+                                ),
+                              Text(
+                                '${'User'.tr} : ${mySharedPreferences.employee.empName}',
+                                style: kStyleDataPrinter,
+                                maxLines: 1,
+                              ),
+                              Text(
+                                '${'Phone'.tr} : ${allDataModel.companyConfig[0].phoneNo}',
+                                style: kStyleDataPrinter,
+                                maxLines: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(color: Colors.black, thickness: 2),
+                    Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 4,
+                                child: Text(
+                                  'Pro-Nam'.tr,
+                                  style: kStyleDataPrinter,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  'Qty'.tr,
+                                  style: kStyleDataPrinter,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  'Total'.tr,
+                                  style: kStyleDataPrinter,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(color: Colors.black, height: 1),
+                        ListView.separated(
+                          itemCount: widget.cart.items.length,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
+                          itemBuilder: (context, index) {
+                            if (widget.cart.items[index].parentUuid.isNotEmpty) {
+                              return Container();
+                            } else {
+                              var subItem = widget.cart.items.where((element) => element.parentUuid == widget.cart.items[index].uuid).toList();
+                              return Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 4,
+                                          child: Text(
+                                            widget.cart.items[index].name,
+                                            style: kStyleDataPrinter,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            '${widget.cart.items[index].qty}',
+                                            style: kStyleDataPrinter,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            widget.cart.items[index].total.toStringAsFixed(2),
+                                            style: kStyleDataPrinter,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                    child: Column(
+                                      children: [
+                                        ListView.builder(
+                                          itemCount: widget.cart.items[index].questions.length,
+                                          shrinkWrap: true,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          itemBuilder: (context, indexQuestions) => Column(
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      '- ${widget.cart.items[index].questions[indexQuestions].question.trim()}',
+                                                      style: kStyleDataPrinter,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              ListView.builder(
+                                                itemCount: widget.cart.items[index].questions[indexQuestions].modifiers.length,
+                                                shrinkWrap: true,
+                                                physics: const NeverScrollableScrollPhysics(),
+                                                itemBuilder: (context, indexModifiers) => Column(
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            '  • ${widget.cart.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
+                                                            style: kStyleDataPrinter,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        ListView.builder(
+                                          itemCount: widget.cart.items[index].modifiers.length,
+                                          shrinkWrap: true,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          itemBuilder: (context, indexModifiers) => Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  '• ${widget.cart.items[index].modifiers[indexModifiers].name} * ${widget.cart.items[index].modifiers[indexModifiers].modifier}',
+                                                  style: kStyleDataPrinter,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (subItem.isNotEmpty)
+                                          ListView.builder(
+                                            itemCount: subItem.length,
+                                            shrinkWrap: true,
+                                            physics: const NeverScrollableScrollPhysics(),
+                                            itemBuilder: (context, indexSubItem) {
+                                              return Row(
+                                                children: [
+                                                  Expanded(
+                                                    flex: 3,
+                                                    child: Text(
+                                                      subItem[indexSubItem].name,
+                                                      style: kStyleDataPrinter,
+                                                      textAlign: TextAlign.center,
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      subItem[indexSubItem].priceChange.toStringAsFixed(2),
+                                                      style: kStyleDataPrinter,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      subItem[indexSubItem].total.toStringAsFixed(2),
+                                                      style: kStyleDataPrinter,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    const Divider(color: Colors.black, thickness: 2),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 4.h),
+                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Total'.tr,
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Text(
+                                widget.cart.total.toStringAsFixed(3),
+                                style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Discount'.tr,
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Text(
+                                widget.cart.totalDiscount.toStringAsFixed(3),
+                                style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Line Discount'.tr,
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Text(
+                                widget.cart.totalLineDiscount.toStringAsFixed(3),
+                                style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Delivery Charge'.tr,
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Text(
+                                widget.cart.deliveryCharge.toStringAsFixed(3),
+                                style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Service'.tr,
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Text(
+                                widget.cart.service.toStringAsFixed(3),
+                                style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Tax'.tr,
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Text(
+                                widget.cart.tax.toStringAsFixed(3),
+                                style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Amount Due'.tr,
+                                  style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Text(
+                                widget.cart.amountDue.toStringAsFixed(3),
+                                style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          const Divider(color: Colors.black, thickness: 2),
+                          if (widget.cart.cash != 0)
+                            Row(
                               children: [
                                 Expanded(
                                   child: Text(
-                                    '${widget.cart.items[index].qty}',
-                                    style: kStyleDataTable,
-                                    textAlign: TextAlign.center,
+                                    'Cash'.tr,
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
                                   ),
                                 ),
-                                Expanded(
-                                  flex: 3,
-                                  child: Text(
-                                    widget.cart.items[index].name,
-                                    style: kStyleDataTable,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    widget.cart.items[index].priceChange.toStringAsFixed(2),
-                                    style: kStyleDataTable,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    widget.cart.items[index].total.toStringAsFixed(2),
-                                    style: kStyleDataTable,
-                                    textAlign: TextAlign.center,
-                                  ),
+                                Text(
+                                  widget.cart.cash.toStringAsFixed(3),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                            child: Column(
+                          if (widget.cart.credit != 0)
+                            Row(
                               children: [
-                                ListView.builder(
-                                  itemCount: widget.cart.items[index].questions.length,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, indexQuestions) => Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              '• ${widget.cart.items[index].questions[indexQuestions].question.trim()}?',
-                                              style: kStyleDataTableModifiers,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      ListView.builder(
-                                        itemCount: widget.cart.items[index].questions[indexQuestions].modifiers.length,
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        itemBuilder: (context, indexModifiers) => Column(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    '   * ${widget.cart.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
-                                                    style: kStyleDataTableModifiers,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                                Expanded(
+                                  child: Text(
+                                    'Credit'.tr,
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
                                   ),
                                 ),
-                                ListView.builder(
-                                  itemCount: widget.cart.items[index].modifiers.length,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, indexModifiers) => Row(
+                                Text(
+                                  widget.cart.credit.toStringAsFixed(3),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          SizedBox(height: 15.h),
+                          Image.asset(
+                            'assets/images/welcome.png',
+                            height: 60.h,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(thickness: 2),
+            Text(
+              'Kitchens Invoices'.tr,
+              style: kStyleLargePrinter,
+            ),
+            const Divider(thickness: 2),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: invoices.length,
+                separatorBuilder: (context, index) => invoices[index].items.isEmpty ? Container() : const Divider(thickness: 2),
+                itemBuilder: (context, index) => invoices[index].items.isEmpty
+                    ? Container()
+                    : Screenshot(
+                        controller: invoices[index].screenshotController,
+                        child: SizedBox(
+                          width: 215,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Center(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      widget.cart.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
+                                      style: kStyleLargePrinter,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${'Order No'.tr} : ${mySharedPreferences.orderNo - 1}',
+                                      style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                    if (widget.cart.orderType == OrderType.dineIn)
+                                      Text(
+                                        '${'Table No'.tr} : 1',
+                                        style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                      ),
+                                    Text(
+                                      '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
+                                      style: kStyleDataPrinter,
+                                    ),
+                                    Text(
+                                      '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
+                                      style: kStyleDataPrinter,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Divider(
+                                color: Colors.black,
+                                height: 0,
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                // color: ColorsApp.primaryColor,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 4,
+                                      child: Text(
+                                        'Item Name'.tr,
+                                        style: kStyleDataPrinter,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        'Qty'.tr,
+                                        style: kStyleDataPrinter,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Text(
+                                        'Note'.tr,
+                                        style: kStyleDataPrinter,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Divider(color: Colors.black, height: 1),
+                              ListView.separated(
+                                itemCount: invoices[index].items.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                separatorBuilder: (context, indexItem) => const Divider(
+                                  height: 0,
+                                ),
+                                itemBuilder: (context, indexItem) => Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                  child: Row(
                                     children: [
                                       Expanded(
+                                        flex: 4,
                                         child: Text(
-                                          '• ${widget.cart.items[index].modifiers[indexModifiers].name} * ${widget.cart.items[index].modifiers[indexModifiers].modifier}',
-                                          style: kStyleDataTableModifiers,
+                                          invoices[index].items[indexItem].name,
+                                          style: kStyleDataPrinter,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          '${invoices[index].items[indexItem].qty}',
+                                          style: kStyleDataPrinter,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          invoices[index].items[indexItem].note,
+                                          style: kStyleDataPrinter,
+                                          textAlign: TextAlign.center,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                if (subItem.isNotEmpty)
-                                  ListView.builder(
-                                    itemCount: subItem.length,
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    itemBuilder: (context, indexSubItem) {
-                                      return Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              '• ',
-                                              style: kStyleDataTableModifiers,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 3,
-                                            child: Text(
-                                              subItem[indexSubItem].name,
-                                              style: kStyleDataTableModifiers,
-                                              textAlign: TextAlign.center,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              subItem[indexSubItem].priceChange.toStringAsFixed(2),
-                                              style: kStyleDataTableModifiers,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              subItem[indexSubItem].total.toStringAsFixed(2),
-                                              style: kStyleDataTableModifiers,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                              ],
-                            ),
-                          )
-                        ],
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-            const Divider(thickness: 2),
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 4.h),
-              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Total'.tr,
-                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              if (widget.cart.note.isNotEmpty)
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Divider(
+                                      color: Colors.black,
+                                      height: 0,
+                                    ),
+                                    Text(
+                                      widget.cart.note,
+                                      style: kStyleDataPrinter,
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
                         ),
                       ),
-                      Text(
-                        widget.cart.total.toStringAsFixed(3),
-                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Delivery Charge'.tr,
-                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(
-                        widget.cart.deliveryCharge.toStringAsFixed(3),
-                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Line Discount'.tr,
-                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(
-                        widget.cart.totalLineDiscount.toStringAsFixed(3),
-                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Discount'.tr,
-                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(
-                        widget.cart.totalDiscount.toStringAsFixed(3),
-                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Sub Total'.tr,
-                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(
-                        widget.cart.subTotal.toStringAsFixed(3),
-                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Service'.tr,
-                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(
-                        widget.cart.service.toStringAsFixed(3),
-                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Tax'.tr,
-                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(
-                        widget.cart.tax.toStringAsFixed(3),
-                        style: kStyleTextDefault.copyWith(color: ColorsApp.green, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Amount Due'.tr,
-                          style: kStyleTextDefault.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(
-                        widget.cart.amountDue.toStringAsFixed(3),
-                        style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 15.h),
-                  Image.asset(
-                    'assets/images/welcome.png',
-                    height: 60.h,
-                  ),
-                ],
               ),
             ),
           ],
@@ -1032,10 +1274,9 @@ class _PayScreenState extends State<PayScreen> {
                                               }
                                               RestApi.invoice(widget.cart);
                                               mySharedPreferences.inVocNo++;
-                                              Printer.init(cart: widget.cart);
-                                              // KitchenSocketClient.test();
+                                              mySharedPreferences.orderNo++;
                                               _showPrintDialog().then((value) {
-                                                Get.offAll(HomeScreen());
+                                                // Get.offAll(HomeScreen());
                                               });
                                               if (widget.tableId != null) {
                                                 RestApi.closeTable(widget.tableId!);

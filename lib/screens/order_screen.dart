@@ -611,7 +611,6 @@ class _OrderScreenState extends State<OrderScreen> {
                                           discountAvailable: e.discountAvailable == 1,
                                           openPrice: e.openPrice == 1,
                                           rowSerial: 0,
-                                          printerId: e.kitchenPrinter.id,
                                         ));
                                       }
                                       setState(() {});
@@ -1194,7 +1193,24 @@ class _OrderScreenState extends State<OrderScreen> {
                                           if (itemIsAdded) {
                                             _cartModel.items[indexItem].qty += 1;
                                           } else {
-                                            _cartModel.items.add(CartItemModel(uuid: const Uuid().v1(), parentUuid: '', orderType: widget.type, id: e.id, categoryId: e.category.id, taxType: e.taxType.id, taxPercent: e.taxPercent.percent, name: e.menuName, qty: 1, price: e.price, priceChange: e.price, total: e.price, tax: 0, discountAvailable: e.discountAvailable == 1, openPrice: e.openPrice == 1, rowSerial: _cartModel.items.length + 1, printerId: e.kitchenPrinter.id));
+                                            _cartModel.items.add(CartItemModel(
+                                              uuid: const Uuid().v1(),
+                                              parentUuid: '',
+                                              orderType: widget.type,
+                                              id: e.id,
+                                              categoryId: e.category.id,
+                                              taxType: e.taxType.id,
+                                              taxPercent: e.taxPercent.percent,
+                                              name: e.menuName,
+                                              qty: 1,
+                                              price: e.price,
+                                              priceChange: e.price,
+                                              total: e.price,
+                                              tax: 0,
+                                              discountAvailable: e.discountAvailable == 1,
+                                              openPrice: e.openPrice == 1,
+                                              rowSerial: _cartModel.items.length + 1,
+                                            ));
                                             int indexAddedItem = _cartModel.items.length - 1;
                                             if (questionsSubItems.isNotEmpty) {
                                               var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid, parentQty: 1);
@@ -1845,7 +1861,7 @@ class _OrderScreenState extends State<OrderScreen> {
                               if (_cartModel.items.isEmpty) {
                                 _cartModel.deliveryCharge = 0;
                                 _cartModel.discount = 0;
-                              } else if(_cartModel.items.every((element) => !element.discountAvailable)){
+                              } else if (_cartModel.items.every((element) => !element.discountAvailable)) {
                                 _cartModel.discount = 0;
                               }
                               _calculateOrder();
@@ -1908,7 +1924,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     Expanded(
                       child: InkWell(
                         onTap: () async {
-                          if(_cartModel.items.isNotEmpty){
+                          if (_cartModel.items.isNotEmpty) {
                             _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
                             _calculateOrder();
                           } else {

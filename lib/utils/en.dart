@@ -150,4 +150,9 @@ const Map<String, String> en = {
   'Delivery price cannot be added and there are no selected items': 'Delivery price cannot be added and there are no selected items',
   'Void All': 'Void All',
   'Pay In Out No': 'Pay In Out No',
+  'Kitchens Invoices': 'Kitchens Invoices',
+  'Rest Order No': 'Rest Order No',
+  'Employee Name': 'Employee Name',
+  'User': 'User',
+  'Phone': 'Phone',
 };

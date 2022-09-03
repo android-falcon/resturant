@@ -29,6 +29,7 @@ class CartModel {
     this.gift = 0,
     this.point = 0,
     this.tableNo = 0,
+    this.note = '',
   });
 
   OrderType orderType;
@@ -55,6 +56,7 @@ class CartModel {
   double gift;
   double point;
   int tableNo;
+  String note;
 
   factory CartModel.init({required OrderType orderType}) => CartModel(
         orderType: orderType,
@@ -97,7 +99,8 @@ class CartModel {
         coupon: json['coupon'] == null ? 0 : json['coupon'].toDouble(),
         gift: json['gift'] == null ? 0 : json['gift'].toDouble(),
         point: json['point'] == null ? 0 : json['point'].toDouble(),
-    tableNo: json['tableNo'] ?? 0,
+        tableNo: json['tableNo'] ?? 0,
+        note: json['note'] ?? '',
       );
 
   Map<String, dynamic> toJson() => {
@@ -124,6 +127,7 @@ class CartModel {
         'gift': gift,
         'point': point,
         'tableNo': tableNo,
+        'note': note,
       };
 
   Map<String, dynamic> toInvoice() => {
@@ -158,31 +162,31 @@ class CartModel {
         "Card1Code": creditCardNumber,
       };
 
-  // Map<String, dynamic> toKitchen(String kitchenId) => {
-  //   'orderNo': mySharedPreferences.inVocNo,
-  //   'tableNo': tableNo,
-  //   'sectionNo': 0,
-  //   'orderType': orderType.index,
-  //   'items': items.where((element) => false)
-  // };
-  // {
-  // 'orderNo': 1,
-  // 'tableNo': 2,
-  // 'sectionNo': 3,
-  // 'orderType': 1,
-  // 'items': [
-  // {
-  // 'itemName': 'Shawrma',
-  // 'qty': 1,
-  // 'note': 'ana',
-  // },
-  // {
-  // 'itemName': 'Shawrma',
-  // 'qty': 1,
-  // 'note': 'ana',
-  // },
-  // ],
-  // }
+// Map<String, dynamic> toKitchen(String kitchenId) => {
+//   'orderNo': mySharedPreferences.inVocNo,
+//   'tableNo': tableNo,
+//   'sectionNo': 0,
+//   'orderType': orderType.index,
+//   'items': items.where((element) => false)
+// };
+// {
+// 'orderNo': 1,
+// 'tableNo': 2,
+// 'sectionNo': 3,
+// 'orderType': 1,
+// 'items': [
+// {
+// 'itemName': 'Shawrma',
+// 'qty': 1,
+// 'note': 'ana',
+// },
+// {
+// 'itemName': 'Shawrma',
+// 'qty': 1,
+// 'note': 'ana',
+// },
+// ],
+// }
 }
 
 class CartItemModel {
@@ -200,7 +204,6 @@ class CartItemModel {
     required this.total,
     required this.tax,
     required this.rowSerial,
-    required this.printerId,
     this.lineDiscountType = DiscountType.percentage,
     this.lineDiscount = 0,
     this.totalLineDiscount = 0,
@@ -238,7 +241,6 @@ class CartItemModel {
   bool openPrice;
   int rowSerial;
   String note;
-  int printerId;
   List<CartItemModifierModel> modifiers;
   List<CartItemQuestionModel> questions;
 
@@ -266,7 +268,6 @@ class CartItemModel {
         openPrice: json['openPrice'],
         rowSerial: json['rowSerial'],
         note: json['note'],
-        printerId: json['printerId'],
         modifiers: List<CartItemModifierModel>.from(json['modifiers'].map((e) => CartItemModifierModel.fromJson(e))),
         questions: List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
       );
@@ -295,7 +296,6 @@ class CartItemModel {
         "openPrice": openPrice,
         "rowSerial": rowSerial,
         "note": note,
-        "printerId": printerId,
         "modifiers": List<dynamic>.from(modifiers.map((e) => e.toJson())),
         "questions": List<dynamic>.from(questions.map((e) => e.toJson())),
       };

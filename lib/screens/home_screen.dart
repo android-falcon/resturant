@@ -110,6 +110,15 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         HomeMenu(
+          name: 'Rest Order No'.tr,
+          onTab: () async {
+            var result = await showAreYouSureDialog(title: 'Rest Order No'.tr);
+            if (result) {
+              mySharedPreferences.orderNo = 1;
+            }
+          },
+        ),
+        HomeMenu(
           name: 'Exit'.tr,
           onTab: () async {
             var result = await showAreYouSureDialog(title: 'Close App'.tr);

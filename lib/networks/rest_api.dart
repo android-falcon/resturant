@@ -202,14 +202,14 @@ class RestApi {
       if (mySharedPreferences.allData.isNotEmpty) {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       }
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
       hideLoadingDialog();
       if (mySharedPreferences.allData.isNotEmpty) {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       }
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
   }
 
