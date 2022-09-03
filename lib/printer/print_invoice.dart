@@ -15,12 +15,12 @@ class PrintInvoice {
       if (cashPosPrintResult == PosPrintResult.success) {
         try {
           printInvoiceImage(printer, invoice.invoice!);
-          await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
           printer.disconnect();
-          await Future.delayed(const Duration(milliseconds: 500));
+          await Future.delayed(const Duration(milliseconds: 100));
         } catch (e) {
           printer.disconnect();
-          await Future.delayed(const Duration(milliseconds: 500));
+          await Future.delayed(const Duration(milliseconds: 100));
           log('cashPrinter catch ${e.toString()}');
         }
       } else {

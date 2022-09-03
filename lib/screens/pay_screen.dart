@@ -1276,7 +1276,7 @@ class _PayScreenState extends State<PayScreen> {
                                               mySharedPreferences.inVocNo++;
                                               mySharedPreferences.orderNo++;
                                               _showPrintDialog().then((value) {
-                                                // Get.offAll(HomeScreen());
+                                                Get.offAll(HomeScreen());
                                               });
                                               if (widget.tableId != null) {
                                                 RestApi.closeTable(widget.tableId!);
