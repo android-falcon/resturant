@@ -8,17 +8,22 @@ import 'package:restaurant_system/models/all_data/category_with_modifire_model.d
 import 'package:restaurant_system/models/all_data/combo_items_force_question_model.dart';
 import 'package:restaurant_system/models/all_data/company_config_model.dart';
 import 'package:restaurant_system/models/all_data/currency_model.dart';
+import 'package:restaurant_system/models/all_data/delivery_compant_item_price_model.dart';
+import 'package:restaurant_system/models/all_data/delivery_company_model.dart';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
-import 'package:restaurant_system/models/all_data/families_model.dart';
+import 'package:restaurant_system/models/all_data/family_model.dart';
 import 'package:restaurant_system/models/all_data/force_question_model.dart';
 import 'package:restaurant_system/models/all_data/image_path_model.dart';
 import 'package:restaurant_system/models/all_data/item_model.dart';
+import 'package:restaurant_system/models/all_data/items_kitchen_monitor_model.dart';
 import 'package:restaurant_system/models/all_data/items_printers_model.dart';
+import 'package:restaurant_system/models/all_data/payment_company_model.dart';
+import 'package:restaurant_system/models/all_data/point_of_sales_model.dart';
 import 'package:restaurant_system/models/all_data/sub_items_force_questions_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
 import 'package:restaurant_system/models/all_data/modifier_model.dart';
-import 'package:restaurant_system/models/all_data/modifire_force_questions_model.dart';
+import 'package:restaurant_system/models/all_data/force_question_mod_model.dart';
 import 'package:restaurant_system/models/all_data/pos_close_model.dart';
 import 'package:restaurant_system/models/all_data/printer_model.dart';
 import 'package:restaurant_system/models/all_data/tables_model.dart';
@@ -51,6 +56,11 @@ class AllDataModel {
     required this.subItemsForceQuestions,
     required this.comboItemsForceQuestion,
     required this.itemsPrintersModel,
+    required this.itemsKitchenMonitorModel,
+    required this.pointOfSalesModel,
+    required this.paymentCompanyModel,
+    required this.deliveryCompanyModel,
+    required this.deliveryCompanyItemPriceModel,
   });
 
   DateTime serverTime;
@@ -59,10 +69,10 @@ class AllDataModel {
   List<PosCloseModel> posClose;
   List<ItemModel> items;
   List<CategoryModel> categories;
-  List<FamiliesModel> families;
+  List<FamilyModel> families;
   List<ModifierModel> modifires;
   List<ForceQuestionModel> forceQuestions;
-  List<ModifireForceQuestionsModel> modifireForceQuestions;
+  List<ForceQuestionModModel> modifireForceQuestions;
   List<EmployeeModel> employees;
   List<ItemWithQuestionsModel> itemWithQuestions;
   List<ItemWithModifireModel> itemWithModifires;
@@ -74,30 +84,11 @@ class AllDataModel {
   List<SubItemsForceQuestionsModel> subItemsForceQuestions;
   List<ComboItemsForceQuestionModel> comboItemsForceQuestion;
   List<ItemsPrintersModel> itemsPrintersModel;
-
-  factory AllDataModel.init() => AllDataModel(
-        serverTime: DateTime.now(),
-        companyConfig: [],
-        imagePaths: [],
-        posClose: [],
-        items: [],
-        categories: [],
-        families: [],
-        modifires: [],
-        forceQuestions: [],
-        modifireForceQuestions: [],
-        employees: [],
-        itemWithQuestions: [],
-        itemWithModifires: [],
-        categoryWithModifires: [],
-        currencies: [],
-        printers: [],
-        voidReason: [],
-        tables: [],
-        subItemsForceQuestions: [],
-        comboItemsForceQuestion: [],
-        itemsPrintersModel: [],
-      );
+  List<ItemsKitchenMonitorModel> itemsKitchenMonitorModel;
+  List<PointOfSalesModel> pointOfSalesModel;
+  List<PaymentCompanyModel> paymentCompanyModel;
+  List<DeliveryCompanyModel> deliveryCompanyModel;
+  List<DeliveryCompanyItemPriceModel> deliveryCompanyItemPriceModel;
 
   factory AllDataModel.fromJson(Map<String, dynamic> json) => AllDataModel(
         serverTime: json["serverDate"] == null ? DateTime.now() : DateFormat('M/dd/yyyy h:mm:ss a').parse(json["serverDate"]),
@@ -106,10 +97,10 @@ class AllDataModel {
         posClose: json["PosClose"] == null ? [] : List<PosCloseModel>.from(json["PosClose"].map((x) => PosCloseModel.fromJson(x))),
         items: json["Items"] == null ? [] : List<ItemModel>.from(json["Items"].map((x) => ItemModel.fromJson(x))),
         categories: json["Categories"] == null ? [] : List<CategoryModel>.from(json["Categories"].map((x) => CategoryModel.fromJson(x))),
-        families: json["Families"] == null ? [] : List<FamiliesModel>.from(json["Families"].map((x) => FamiliesModel.fromJson(x))),
+        families: json["Families"] == null ? [] : List<FamilyModel>.from(json["Families"].map((x) => FamilyModel.fromJson(x))),
         modifires: json["Modifires"] == null ? [] : List<ModifierModel>.from(json["Modifires"].map((x) => ModifierModel.fromJson(x))),
         forceQuestions: json["ForceQuestions"] == null ? [] : List<ForceQuestionModel>.from(json["ForceQuestions"].map((x) => ForceQuestionModel.fromJson(x))),
-        modifireForceQuestions: json["ForceQuestionModViewModels"] == null ? [] : List<ModifireForceQuestionsModel>.from(json["ForceQuestionModViewModels"].map((x) => ModifireForceQuestionsModel.fromJson(x))),
+        modifireForceQuestions: json["ForceQuestionModViewModels"] == null ? [] : List<ForceQuestionModModel>.from(json["ForceQuestionModViewModels"].map((x) => ForceQuestionModModel.fromJson(x))),
         employees: json["Employees"] == null ? [] : List<EmployeeModel>.from(json["Employees"].map((x) => EmployeeModel.fromJson(x))),
         itemWithQuestions: json["ItemWithQuestions"] == null ? [] : List<ItemWithQuestionsModel>.from(json["ItemWithQuestions"].map((x) => ItemWithQuestionsModel.fromJson(x))),
         itemWithModifires: json["ItemWithModifires"] == null ? [] : List<ItemWithModifireModel>.from(json["ItemWithModifires"].map((x) => ItemWithModifireModel.fromJson(x))),
@@ -121,6 +112,11 @@ class AllDataModel {
         subItemsForceQuestions: json["SubItemsForceQuestions"] == null ? [] : List<SubItemsForceQuestionsModel>.from(json["SubItemsForceQuestions"].map((x) => SubItemsForceQuestionsModel.fromJson(x))),
         comboItemsForceQuestion: json["ComboItemsForceQuestion"] == null ? [] : List<ComboItemsForceQuestionModel>.from(json["ComboItemsForceQuestion"].map((x) => ComboItemsForceQuestionModel.fromJson(x))),
         itemsPrintersModel: json["ItemsPrintersViewModel"] == null ? [] : List<ItemsPrintersModel>.from(json["ItemsPrintersViewModel"].map((x) => ItemsPrintersModel.fromJson(x))),
+        itemsKitchenMonitorModel: json["ItemsKitchenMonitorViewModel"] == null ? [] : List<ItemsKitchenMonitorModel>.from(json["ItemsKitchenMonitorViewModel"].map((x) => ItemsKitchenMonitorModel.fromJson(x))),
+        pointOfSalesModel: json["PointOfSales"] == null ? [] : List<PointOfSalesModel>.from(json["PointOfSales"].map((x) => PointOfSalesModel.fromJson(x))),
+        paymentCompanyModel: json["PaymentCompany"] == null ? [] : List<PaymentCompanyModel>.from(json["PaymentCompany"].map((x) => PaymentCompanyModel.fromJson(x))),
+        deliveryCompanyModel: json["DeliveryCompanys"] == null ? [] : List<DeliveryCompanyModel>.from(json["DeliveryCompanys"].map((x) => DeliveryCompanyModel.fromJson(x))),
+        deliveryCompanyItemPriceModel: json["DeliveryCoItemPrices"] == null ? [] : List<DeliveryCompanyItemPriceModel>.from(json["DeliveryCoItemPrices"].map((x) => DeliveryCompanyItemPriceModel.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -145,5 +141,10 @@ class AllDataModel {
         "SubItemsForceQuestions": List<dynamic>.from(subItemsForceQuestions.map((x) => x.toJson())),
         "ComboItemsForceQuestion": List<dynamic>.from(comboItemsForceQuestion.map((x) => x.toJson())),
         "ItemsPrintersViewModel": List<dynamic>.from(itemsPrintersModel.map((x) => x.toJson())),
+        "ItemsKitchenMonitorViewModel": List<dynamic>.from(itemsKitchenMonitorModel.map((x) => x.toJson())),
+        "PointOfSales": List<dynamic>.from(pointOfSalesModel.map((x) => x.toJson())),
+        "PaymentCompany": List<dynamic>.from(paymentCompanyModel.map((x) => x.toJson())),
+        "DeliveryCompanys": List<dynamic>.from(deliveryCompanyModel.map((x) => x.toJson())),
+        "DeliveryCoItemPrices": List<dynamic>.from(deliveryCompanyItemPriceModel.map((x) => x.toJson())),
       };
 }

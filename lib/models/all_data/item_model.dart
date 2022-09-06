@@ -4,6 +4,9 @@
 
 import 'dart:convert';
 
+import 'package:restaurant_system/models/all_data/category_model.dart';
+import 'package:restaurant_system/models/all_data/family_model.dart';
+
 List<ItemModel> itemModelFromJson(String str) => List<ItemModel>.from(json.decode(str).map((x) => ItemModel.fromJson(x)));
 
 String itemModelToJson(List<ItemModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
@@ -16,7 +19,8 @@ class ItemModel {
     required this.menuName,
     required this.family,
     required this.price,
-    required this.taxType,
+    required this.inMealPrice,
+    required this.taxTypeId,
     required this.taxPercent,
     required this.secondaryName,
     required this.kitchenAlias,
@@ -29,17 +33,19 @@ class ItemModel {
     required this.discountAvailable,
     required this.pointAvailable,
     required this.openPrice,
+    required this.sortOrder,
     required this.showInMenu,
     required this.itemPicture,
   });
 
   int id;
   String itemBarcode;
-  Category category;
+  CategoryModel category;
   String menuName;
-  Family family;
+  FamilyModel family;
   double price;
-  TaxType taxType;
+  double inMealPrice;
+  int taxTypeId;
   TaxPercent taxPercent;
   String secondaryName;
   String kitchenAlias;
@@ -52,18 +58,20 @@ class ItemModel {
   int discountAvailable;
   String pointAvailable;
   int openPrice;
+  int sortOrder;
   int showInMenu;
   String itemPicture;
 
   factory ItemModel.fromJson(Map<String, dynamic> json) => ItemModel(
         id: json["Id"] ?? 0,
         itemBarcode: json["ITEM_BARCODE"] ?? "",
-        category: json["Category"] == null ? Category.init() : Category.fromJson(json["Category"]),
+        category: CategoryModel.fromJson(json["Category"] ?? {}),
         menuName: json["MENU_NAME"] ?? "",
-        family: json["Family"] == null ? Family.init() : Family.fromJson(json["Family"]),
-        price: json["PRICE"] == null ? 0 : json["PRICE"].toDouble(),
-        taxType: json["TaxType"] == null ? TaxType.init() : TaxType.fromJson(json["TaxType"]),
-        taxPercent: json["TaxPerc"] == null ? TaxPercent.init() : TaxPercent.fromJson(json["TaxPerc"]),
+        family: FamilyModel.fromJson(json["Family"] ?? {}),
+        price: json["PRICE"]?.toDouble() ?? 0,
+        inMealPrice: json["InMealPrice"]?.toDouble() ?? 0,
+        taxTypeId: json["TaxTypeId"] ?? 0,
+        taxPercent: TaxPercent.fromJson(json["TaxPerc"] ?? {}),
         secondaryName: json["SECONDARY_NAME"] ?? "",
         kitchenAlias: json["KITCHEN_ALIAS"] ?? "",
         itemStatus: json["Item_STATUS"] ?? 0,
@@ -73,6 +81,7 @@ class ItemModel {
         discountAvailable: json["DISCOUNT_AVAILABLE"] ?? 0,
         pointAvailable: json["POINT_AVAILABLE"] ?? "",
         openPrice: json["OPEN_PRICE"] ?? 0,
+        sortOrder: json["SortOrder"] ?? 0,
         showInMenu: json["SHOW_IN_MENU"] ?? 0,
         itemPicture: json["ITEM_PICTURE"] ?? "",
         unit: json["Unit"],
@@ -86,7 +95,8 @@ class ItemModel {
         "MENU_NAME": menuName,
         "Family": family.toJson(),
         "PRICE": price,
-        "TaxType": taxType.toJson(),
+        "InMealPrice": inMealPrice,
+        "TaxTypeId": taxTypeId,
         "TaxPerc": taxPercent.toJson(),
         "SECONDARY_NAME": secondaryName,
         "KITCHEN_ALIAS": kitchenAlias,
@@ -97,85 +107,11 @@ class ItemModel {
         "DISCOUNT_AVAILABLE": discountAvailable,
         "POINT_AVAILABLE": pointAvailable,
         "OPEN_PRICE": openPrice,
+        "SortOrder": sortOrder,
         "SHOW_IN_MENU": showInMenu,
         "ITEM_PICTURE": itemPicture,
         "Unit": unit,
         "UnitId": unitId,
-      };
-}
-
-class Category {
-  Category({
-    required this.id,
-    required this.categoryName,
-  });
-
-  int id;
-  String categoryName;
-
-  factory Category.init() => Category(
-        id: 0,
-        categoryName: "",
-      );
-
-  factory Category.fromJson(Map<String, dynamic> json) => Category(
-        id: json["Id"],
-        categoryName: json["CategoryName"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "Id": id,
-        "CategoryName": categoryName,
-      };
-}
-
-class Family {
-  Family({
-    required this.id,
-    required this.familyName,
-  });
-
-  int id;
-  String familyName;
-
-  factory Family.init() => Family(
-        id: 0,
-        familyName: "",
-      );
-
-  factory Family.fromJson(Map<String, dynamic> json) => Family(
-        id: json["Id"],
-        familyName: json["FamilyName"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "Id": id,
-        "FamilyName": familyName,
-      };
-}
-
-class KitchenPrinter {
-  KitchenPrinter({
-    required this.id,
-    required this.printerName,
-  });
-
-  int id;
-  String printerName;
-
-  factory KitchenPrinter.init() => KitchenPrinter(
-        id: 0,
-        printerName: "",
-      );
-
-  factory KitchenPrinter.fromJson(Map<String, dynamic> json) => KitchenPrinter(
-        id: json["Id"],
-        printerName: json["PrinterName"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "Id": id,
-        "PrinterName": printerName,
       };
 }
 
@@ -188,43 +124,13 @@ class TaxPercent {
   int id;
   double percent;
 
-  factory TaxPercent.init() => TaxPercent(
-        id: 0,
-        percent: 0,
-      );
-
   factory TaxPercent.fromJson(Map<String, dynamic> json) => TaxPercent(
-        id: json["Id"],
-        percent: json["TaxPercent"] == null ? 0 : json["TaxPercent"].toDouble(),
+        id: json["Id"] ?? 0,
+        percent: json["TaxPercent"]?.toDouble() ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
         "Id": id,
         "TaxPercent": percent,
-      };
-}
-
-class TaxType {
-  TaxType({
-    required this.id,
-    required this.taxTypeName,
-  });
-
-  int id;
-  String taxTypeName;
-
-  factory TaxType.init() => TaxType(
-        id: 0,
-        taxTypeName: "",
-      );
-
-  factory TaxType.fromJson(Map<String, dynamic> json) => TaxType(
-        id: json["Id"],
-        taxTypeName: json["TaxTypeName"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "Id": id,
-        "TaxTypeName": taxTypeName,
       };
 }

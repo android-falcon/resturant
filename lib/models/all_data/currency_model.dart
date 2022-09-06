@@ -26,8 +26,8 @@ class CurrencyModel {
   factory CurrencyModel.fromJson(Map<String, dynamic> json) => CurrencyModel(
         id: json["Id"] ?? 0,
         currName: json["CurrName"] ?? "",
-        currVal: json["CurrVal"] == null ? 0 : json["CurrVal"].toDouble(),
-        currRate: json["CurrRate"] == null ? 1 : json["CurrRate"].toDouble(),
+        currVal: json["CurrVal"]?.toDouble() ?? 0,
+        currRate: json["CurrRate"]?.toDouble() ?? 1,
         currPic: json["CurrPic"] ?? "",
       );
 

@@ -21,13 +21,6 @@ class PrinterModel {
   String ipAddress;
   int cashNo;
 
-  factory PrinterModel.init() => PrinterModel(
-    id: 0,
-    printerName: "",
-    ipAddress: "",
-    cashNo: 0,
-  );
-
   factory PrinterModel.fromJson(Map<String, dynamic> json) => PrinterModel(
     id: json["Id"] ?? 0,
     printerName: json["PrinterName"] ?? "",

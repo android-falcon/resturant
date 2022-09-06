@@ -17,10 +17,10 @@ class PrintInvoice {
           printInvoiceImage(printer, invoice.invoice!);
           await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
           printer.disconnect();
-          await Future.delayed(const Duration(milliseconds: 100));
+          await Future.delayed(const Duration(milliseconds: 200));
         } catch (e) {
           printer.disconnect();
-          await Future.delayed(const Duration(milliseconds: 100));
+          await Future.delayed(const Duration(milliseconds: 200));
           log('cashPrinter catch ${e.toString()}');
         }
       } else {

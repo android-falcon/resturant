@@ -4,12 +4,12 @@
 
 import 'dart:convert';
 
-List<FamiliesModel> familiesModelFromJson(String str) => List<FamiliesModel>.from(json.decode(str).map((x) => FamiliesModel.fromJson(x)));
+List<FamilyModel> familyModelFromJson(String str) => List<FamilyModel>.from(json.decode(str).map((x) => FamilyModel.fromJson(x)));
 
-String familiesModelToJson(List<FamiliesModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String familyModelToJson(List<FamilyModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
-class FamiliesModel {
-  FamiliesModel({
+class FamilyModel {
+  FamilyModel({
     required this.id,
     required this.familyName,
     required this.familyPic,
@@ -19,13 +19,13 @@ class FamiliesModel {
   String familyName;
   String familyPic;
 
-  factory FamiliesModel.init() => FamiliesModel(
+  factory FamilyModel.init() => FamilyModel(
         id: 0,
         familyName: "",
         familyPic: "",
       );
 
-  factory FamiliesModel.fromJson(Map<String, dynamic> json) => FamiliesModel(
+  factory FamilyModel.fromJson(Map<String, dynamic> json) => FamilyModel(
         id: json["Id"] ?? 0,
         familyName: json["FamilyName"] ?? "",
         familyPic: json["FamilyPic"] ?? "",

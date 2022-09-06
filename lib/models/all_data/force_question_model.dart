@@ -19,12 +19,6 @@ class ForceQuestionModel {
   String qText;
   int isMultible;
 
-  factory ForceQuestionModel.init() => ForceQuestionModel(
-        id: 0,
-        qText: "",
-        isMultible: 0,
-      );
-
   factory ForceQuestionModel.fromJson(Map<String, dynamic> json) => ForceQuestionModel(
         id: json["Id"] ?? 0,
         qText: json["QText"] ?? "",

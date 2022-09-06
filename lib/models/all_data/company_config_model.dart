@@ -18,6 +18,7 @@ class CompanyConfigModel {
     required  this.taxCalcMethod,
     required  this.servicePerc,
     required  this.serviceTaxPerc,
+    required  this.useVoidReason,
   });
 
   String companyName;
@@ -28,6 +29,7 @@ class CompanyConfigModel {
   int taxCalcMethod;
   double servicePerc;
   double serviceTaxPerc;
+  bool useVoidReason;
 
   factory CompanyConfigModel.fromJson(Map<String, dynamic> json) => CompanyConfigModel(
     companyName: json["CompanyName"] ?? "",
@@ -38,6 +40,7 @@ class CompanyConfigModel {
     taxCalcMethod: json["TaxCalcMethod"] ?? 0,
     servicePerc: json["ServicePerc"] == null ? 0 : json["ServicePerc"].toDouble(),
     serviceTaxPerc: json["ServiceTaxPerc"] == null ? 0 : json["ServiceTaxPerc"].toDouble(),
+    useVoidReason: json["UseVoidReason"] ?? false,
   );
 
   Map<String, dynamic> toJson() => {
@@ -49,5 +52,6 @@ class CompanyConfigModel {
     "TaxCalcMethod": taxCalcMethod,
     "ServicePerc": servicePerc,
     "ServiceTaxPerc": serviceTaxPerc,
+    "UseVoidReason": useVoidReason,
   };
 }

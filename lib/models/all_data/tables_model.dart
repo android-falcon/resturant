@@ -34,10 +34,10 @@ class TablesModel {
         tableNo: json["TableNo"] ?? 0,
         floorNo: json["FloorNo"] ?? 0,
         isOpened: json["IsOpened"] ?? 0,
-        height: json["Height"] == null ? 0 : json["Height"].toDouble(),
-        width: json["Width"] == null ? 0 : json["Width"].toDouble(),
-        marginLeft: json["MarginLeft"] == null ? 0 : json["MarginLeft"].toDouble(),
-        marginTop: json["MarginTop"] == null ? 0 : json["MarginTop"].toDouble(),
+        height: json["Height"]?.toDouble() ?? 0,
+        width: json["Width"]?.toDouble() ?? 0,
+        marginLeft: json["MarginLeft"]?.toDouble() ?? 0,
+        marginTop: json["MarginTop"]?.toDouble() ?? 0,
       );
 
   Map<String, dynamic> toJson() => {

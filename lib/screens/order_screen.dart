@@ -547,7 +547,7 @@ class _OrderScreenState extends State<OrderScreen> {
     List<CartItemModel> answersSubItem = [];
     int i = 0;
     while (i < questionsSubItems.length) {
-      var indexSubItemsForceQuestions = allDataModel.subItemsForceQuestions.indexWhere((element) => element.id == questionsSubItems[i].subItemsForceQuestionId && element.items.isNotEmpty);
+      var indexSubItemsForceQuestions = allDataModel.subItemsForceQuestions.indexWhere((element) => element.subItemsForceQuestion.id == questionsSubItems[i].subItemsForceQuestionId && element.items.isNotEmpty);
       if (indexSubItemsForceQuestions == -1) {
         i++;
       } else {
@@ -565,7 +565,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 8.h),
                     child: Text(
-                      '(${allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].id}) - ${allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].qText}',
+                      '(${allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].subItemsForceQuestion.id}) - ${allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].subItemsForceQuestion.qText}',
                       style: kStyleTextTitle,
                     ),
                   ),
@@ -600,7 +600,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                           orderType: widget.type,
                                           id: e.id,
                                           categoryId: e.category.id,
-                                          taxType: e.taxType.id,
+                                          taxType: e.taxTypeId,
                                           taxPercent: e.taxPercent.percent,
                                           name: e.menuName,
                                           qty: parentQty,
@@ -1199,7 +1199,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                               orderType: widget.type,
                                               id: e.id,
                                               categoryId: e.category.id,
-                                              taxType: e.taxType.id,
+                                              taxType: e.taxTypeId,
                                               taxPercent: e.taxPercent.percent,
                                               name: e.menuName,
                                               qty: 1,
