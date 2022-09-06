@@ -19,6 +19,7 @@ class ItemModel {
     required this.menuName,
     required this.family,
     required this.price,
+    this.companyPrice = 0,
     required this.inMealPrice,
     required this.taxTypeId,
     required this.taxPercent,
@@ -44,6 +45,7 @@ class ItemModel {
   String menuName;
   FamilyModel family;
   double price;
+  double companyPrice;
   double inMealPrice;
   int taxTypeId;
   TaxPercent taxPercent;

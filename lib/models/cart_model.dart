@@ -30,6 +30,8 @@ class CartModel {
     this.point = 0,
     this.tableNo = 0,
     this.note = '',
+    this.payCompanyId = 0,
+    this.deliveryCompanyId = 0,
   });
 
   OrderType orderType;
@@ -57,6 +59,8 @@ class CartModel {
   double point;
   int tableNo;
   String note;
+  int payCompanyId;
+  int deliveryCompanyId;
 
   factory CartModel.init({required OrderType orderType}) => CartModel(
         orderType: orderType,
@@ -101,6 +105,8 @@ class CartModel {
         point: json['point'] == null ? 0 : json['point'].toDouble(),
         tableNo: json['tableNo'] ?? 0,
         note: json['note'] ?? '',
+        payCompanyId: json['payCompanyId'] ?? 0,
+        deliveryCompanyId: json['deliveryCompanyId'] ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
@@ -128,6 +134,8 @@ class CartModel {
         'point': point,
         'tableNo': tableNo,
         'note': note,
+        'payCompanyId': payCompanyId,
+        'deliveryCompanyId': deliveryCompanyId,
       };
 
   Map<String, dynamic> toInvoice() => {
@@ -160,6 +168,8 @@ class CartModel {
         "SaleInvNo": 0,
         "Card1Name": creditCardType,
         "Card1Code": creditCardNumber,
+        "PayCompanyId": payCompanyId,
+        "DeliveryCompanyId": deliveryCompanyId,
       };
 
 // Map<String, dynamic> toKitchen(String kitchenId) => {

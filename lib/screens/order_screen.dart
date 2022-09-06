@@ -272,6 +272,69 @@ class _OrderScreenState extends State<OrderScreen> {
     return _priceChange == null ? priceChange : double.parse(_priceChange);
   }
 
+  Future<void> _showDeliveryCompanyDialog() async {
+    await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Text(
+              'Delivery Company'.tr,
+              style: kStyleTextTitle,
+            ),
+            const Divider(thickness: 2),
+            StaggeredGrid.count(
+              crossAxisCount: 3,
+              children: [
+                CustomButton(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Text(
+                    'No Delivery Company'.tr,
+                    style: kStyleTextDefault,
+                  ),
+                  backgroundColor: ColorsApp.backgroundDialog,
+                  onPressed: () {
+                    _cartModel.deliveryCompanyId = 0;
+                    Get.back();
+                  },
+                ),
+                ...allDataModel.deliveryCompanyModel
+                    .map((e) => CustomButton(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Text(
+                            e.coName,
+                            style: kStyleTextDefault,
+                          ),
+                          backgroundColor: ColorsApp.backgroundDialog,
+                          onPressed: () {
+                            _cartModel.deliveryCompanyId = e.id;
+                            Get.back();
+                          },
+                        ))
+                    .toList()
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(child: Container()),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Exit'.tr),
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                ),
+                Expanded(child: Container()),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
   Future<List<CartItemModifierModel>> _showModifierDialog({required List<ItemWithModifireModel> modifiersItem, required List<CategoryWithModifireModel> modifiersCategory, required List<CartItemModifierModel> addedModifiers}) async {
     int _selectedModifierId = 0;
     List<CartItemModifierModel> modifiers = [];
@@ -886,6 +949,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: Text('Cancel'.tr),
                       backgroundColor: ColorsApp.primaryColor,
                       onPressed: () {
+                        _selectedVoidReasonId = null;
                         Get.back();
                       },
                     ),
@@ -1006,7 +1070,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 child: Row(
                   children: [
                     IconButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (_isShowItem) {
                           maxHeightItem = 0;
                           _isShowItem = false;
@@ -1019,12 +1083,20 @@ class _OrderScreenState extends State<OrderScreen> {
                               }
                             });
                           } else {
-                            _showVoidReasonDialog().then((value) {
-                              if (value != null) {
-                                RestApi.saveVoidAllItems(items: _cartModel.items, reason: value.reasonName);
-                                Get.back();
-                              }
-                            });
+                            if (allDataModel.companyConfig[0].useVoidReason) {
+                              _showVoidReasonDialog().then((value) {
+                                if (value != null) {
+                                  RestApi.saveVoidAllItems(items: _cartModel.items, reason: value.reasonName);
+                                  Get.back();
+                                }
+                              });
+                            } else {
+                              _showExitOrderScreenDialog().then((value) {
+                                if (value) {
+                                  RestApi.saveVoidAllItems(items: _cartModel.items, reason: '');
+                                }
+                              });
+                            }
                           }
                         }
                       },
@@ -1060,6 +1132,45 @@ class _OrderScreenState extends State<OrderScreen> {
                       width: 1,
                       thickness: 2,
                     ),
+                    if (widget.type == OrderType.takeAway)
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            if (_cartModel.items.isNotEmpty) {
+                              Fluttertoast.showToast(msg: 'The cart must be emptied, in order to be able to change the delivery company'.tr);
+                            } else {
+                              await _showDeliveryCompanyDialog();
+                              if (_cartModel.deliveryCompanyId == 0) {
+                                for (var element in allDataModel.items) {
+                                  element.companyPrice = 0;
+                                }
+                              } else {
+                                for (var element in allDataModel.items) {
+                                  var indexDeliveryCompanyItemPrice = allDataModel.deliveryCompanyItemPriceModel.indexWhere((elementDeliveryCompany) => elementDeliveryCompany.itemId == element.id && elementDeliveryCompany.deliveryCoId == _cartModel.deliveryCompanyId);
+                                  if (indexDeliveryCompanyItemPrice != -1) {
+                                    element.companyPrice = allDataModel.deliveryCompanyItemPriceModel[indexDeliveryCompanyItemPrice].price;
+                                  } else {
+                                    element.companyPrice = element.price;
+                                  }
+                                }
+                              }
+                              setState(() {});
+                            }
+                          },
+                          child: Text(
+                            allDataModel.deliveryCompanyModel.firstWhereOrNull((element) => element.id == _cartModel.deliveryCompanyId)?.coName ?? 'Delivery Company',
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: kStyleTextDefault,
+                          ),
+                        ),
+                      ),
+                    if (widget.type == OrderType.takeAway)
+                      const VerticalDivider(
+                        width: 1,
+                        thickness: 2,
+                      ),
                     if (widget.type == OrderType.dineIn)
                       Expanded(
                         child: Text(
@@ -1070,10 +1181,11 @@ class _OrderScreenState extends State<OrderScreen> {
                           style: kStyleTextDefault,
                         ),
                       ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
+                    if (widget.type == OrderType.dineIn)
+                      const VerticalDivider(
+                        width: 1,
+                        thickness: 2,
+                      ),
                     if (widget.type == OrderType.dineIn)
                       Expanded(
                         child: Text(
@@ -1084,10 +1196,11 @@ class _OrderScreenState extends State<OrderScreen> {
                           style: kStyleTextDefault,
                         ),
                       ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
+                    if (widget.type == OrderType.dineIn)
+                      const VerticalDivider(
+                        width: 1,
+                        thickness: 2,
+                      ),
                     Expanded(
                       child: Text(
                         DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose),
@@ -1203,15 +1316,16 @@ class _OrderScreenState extends State<OrderScreen> {
                                               taxPercent: e.taxPercent.percent,
                                               name: e.menuName,
                                               qty: 1,
-                                              price: e.price,
-                                              priceChange: e.price,
-                                              total: e.price,
+                                              price: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
+                                              priceChange: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
+                                              total: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
                                               tax: 0,
                                               discountAvailable: e.discountAvailable == 1,
                                               openPrice: e.openPrice == 1,
                                               rowSerial: _cartModel.items.length + 1,
                                             ));
                                             int indexAddedItem = _cartModel.items.length - 1;
+                                            log('anan ${questionsSubItems.length}');
                                             if (questionsSubItems.isNotEmpty) {
                                               var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid, parentQty: 1);
                                               if (cartSubItems.isNotEmpty) {
@@ -1271,7 +1385,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                           style: kStyleTextDefault,
                                                         ),
                                                         Text(
-                                                          e.price.toStringAsFixed(2),
+                                                          _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(2) : e.companyPrice.toStringAsFixed(2),
                                                           style: kStyleTextTitle,
                                                         ),
                                                       ],
@@ -1852,7 +1966,15 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: InkWell(
                         onTap: () async {
                           if (_indexItemSelect != -1) {
-                            VoidReasonModel? result = await _showVoidReasonDialog();
+                            VoidReasonModel? result;
+                            if (allDataModel.companyConfig[0].useVoidReason) {
+                              result = await _showVoidReasonDialog();
+                            } else {
+                              var areYouSure = await showAreYouSureDialog(title: 'Void'.tr);
+                              if (areYouSure) {
+                                result = VoidReasonModel.fromJson({});
+                              }
+                            }
                             if (result != null) {
                               RestApi.saveVoidItem(item: _cartModel.items[_indexItemSelect], reason: result.reasonName);
                               _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
@@ -1892,7 +2014,17 @@ class _OrderScreenState extends State<OrderScreen> {
                     Expanded(
                       child: InkWell(
                         onTap: () async {
-                          VoidReasonModel? result = await _showVoidReasonDialog();
+                          VoidReasonModel? result;
+                          if (allDataModel.companyConfig[0].useVoidReason) {
+                            result = await _showVoidReasonDialog();
+                          } else {
+                            var areYouSure = await showAreYouSureDialog(
+                              title: 'Void All'.tr,
+                            );
+                            if (areYouSure) {
+                              result = VoidReasonModel.fromJson({});
+                            }
+                          }
                           if (result != null) {
                             RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
                             _indexItemSelect = -1;

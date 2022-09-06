@@ -155,4 +155,9 @@ const Map<String, String> en = {
   'Employee Name': 'Employee Name',
   'User': 'User',
   'Phone': 'Phone',
+  'No Delivery Company': 'No Delivery Company',
+  'Delivery Company': 'Delivery Company',
+  'The cart must be emptied, in order to be able to change the delivery company': 'The cart must be emptied, in order to be able to change the delivery company',
+  'Payment Company': 'Payment Company',
+  'Please select a payment company': 'Please select a payment company',
 };

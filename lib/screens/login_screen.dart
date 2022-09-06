@@ -11,7 +11,6 @@ import 'package:restaurant_system/screens/network_log_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
-import 'package:restaurant_system/socket/kitchen_socket_client.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/validation.dart';
@@ -98,6 +97,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               }
                               if(allDataModel.companyConfig.isEmpty){
                                 allDataModel.companyConfig.add(CompanyConfigModel.fromJson({}));
+                              }
+                              var indexPointOfSales = allDataModel.pointOfSalesModel.indexWhere((element) => element.posNo == mySharedPreferences.posNo);
+                              if (indexPointOfSales != -1) {
+                                mySharedPreferences.orderNo = allDataModel.pointOfSalesModel[indexPointOfSales].orderNo;
                               }
                               Get.to(() => const HomeScreen());
                             } else {

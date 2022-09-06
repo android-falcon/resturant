@@ -13,6 +13,7 @@ import 'package:restaurant_system/models/print_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/printer/print_invoice.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
+import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
@@ -67,6 +68,7 @@ class _PayScreenState extends State<PayScreen> {
     }
     CreditCardType creditCardType = CreditCardType.unknown;
     CreditCardType selectedCreditCard = CreditCardType.visa;
+    int? selectedPaymentCompany;
     TextEditingController _controllerSelected = controllerReceived;
     var result = await Get.dialog(
       CustomDialog(
@@ -151,6 +153,17 @@ class _PayScreenState extends State<PayScreen> {
                                   ),
                                 ],
                               ),
+                              CustomDropDown(
+                                isExpanded: true,
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                hint: 'Payment Company'.tr,
+                                items: allDataModel.paymentCompanyModel.map((e) => DropdownMenuItem(child: Text(e.coName), value: e.id)).toList(),
+                                selectItem: selectedPaymentCompany,
+                                onChanged: (value) {
+                                  selectedPaymentCompany = value as int;
+                                  setState(() {});
+                                },
+                              ),
                               CustomTextField(
                                 controller: controllerCreditCard,
                                 label: Text('Card Number'.tr),
@@ -194,7 +207,11 @@ class _PayScreenState extends State<PayScreen> {
                         },
                         onSubmit: () {
                           if (_keyForm.currentState!.validate()) {
-                            Get.back(result: controllerReceived!.text);
+                            if (selectedPaymentCompany == null) {
+                              Fluttertoast.showToast(msg: 'Please select a payment company'.tr);
+                            } else {
+                              Get.back(result: controllerReceived!.text);
+                            }
                           }
                         },
                       ),
@@ -250,6 +267,7 @@ class _PayScreenState extends State<PayScreen> {
       "received": _received,
       "credit_card": controllerCreditCard?.text ?? "",
       "credit_card_type": selectedCreditCard.name,
+      'payment_company': selectedPaymentCompany
     };
   }
 
@@ -1004,6 +1022,7 @@ class _PayScreenState extends State<PayScreen> {
                                             widget.cart.credit = result['received'];
                                             widget.cart.creditCardNumber = result['credit_card'];
                                             widget.cart.creditCardType = result['credit_card_type'];
+                                            widget.cart.payCompanyId = result['payment_company'];
                                             calculateRemaining();
                                           },
                                         ),

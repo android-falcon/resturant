@@ -150,8 +150,10 @@ class RestApi {
       final response = await restDio.get(ApiUrl.GET_DATA);
       _networkLog(response);
       if (response.statusCode == 200) {
-        mySharedPreferences.allData = jsonEncode(response.data);
         allDataModel = AllDataModel.fromJson(response.data);
+        allDataModel.items.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        allDataModel.categories.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+        mySharedPreferences.allData = jsonEncode(allDataModel.toJson());
       } else {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       }
