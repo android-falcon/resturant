@@ -207,7 +207,7 @@ class _PayScreenState extends State<PayScreen> {
                         },
                         onSubmit: () {
                           if (_keyForm.currentState!.validate()) {
-                            if (selectedPaymentCompany == null) {
+                            if (controllerCreditCard != null && selectedPaymentCompany == null) {
                               Fluttertoast.showToast(msg: 'Please select a payment company'.tr);
                             } else {
                               Get.back(result: controllerReceived!.text);

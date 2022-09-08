@@ -12,6 +12,7 @@ import 'package:restaurant_system/models/all_data/category_with_modifire_model.d
 import 'package:restaurant_system/models/all_data/combo_items_force_question_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
+import 'package:restaurant_system/models/all_data/modifier_model.dart';
 import 'package:restaurant_system/models/all_data/void_reason_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
@@ -510,12 +511,13 @@ class _OrderScreenState extends State<OrderScreen> {
                                 allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name,
                                 style: kStyleForceQuestion,
                               ),
-                              value: answersModifire[i].modifiers.any((element) => element == allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name),
+                              value: answersModifire[i].modifiers.any((element) => element == CartItemModifierModel(id: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].id, name: '', modifier: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name)),
                               onChanged: (value) {
+                                var _modifire = allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire];
                                 if (value!) {
-                                  answersModifire[i].modifiers.add(allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name);
+                                  answersModifire[i].modifiers.add(CartItemModifierModel(id: _modifire.id, name: '', modifier: _modifire.name));
                                 } else {
-                                  answersModifire[i].modifiers.remove(allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name);
+                                  answersModifire[i].modifiers.remove(CartItemModifierModel(id: _modifire.id, name: '', modifier: _modifire.name));
                                 }
                                 log('modifiers : ${answersModifire[i].modifiers}');
                                 setState(() {});
@@ -527,13 +529,13 @@ class _OrderScreenState extends State<OrderScreen> {
                                 allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name,
                                 style: kStyleForceQuestion,
                               ),
-                              value: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name,
+                              value: CartItemModifierModel(id: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].id, name: '', modifier: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name) ,
                               groupValue: answersModifire[i].modifiers.isEmpty ? '' : answersModifire[i].modifiers.first,
                               onChanged: (value) {
                                 if (answersModifire[i].modifiers.isEmpty) {
-                                  answersModifire[i].modifiers.add(value as String);
+                                  answersModifire[i].modifiers.add(value as CartItemModifierModel);
                                 } else {
-                                  answersModifire[i].modifiers[0] = value as String;
+                                  answersModifire[i].modifiers[0] = value as CartItemModifierModel;
                                 }
                                 log('modifiers : ${answersModifire[i].modifiers}');
                                 setState(() {});
@@ -667,9 +669,9 @@ class _OrderScreenState extends State<OrderScreen> {
                                           taxPercent: e.taxPercent.percent,
                                           name: e.menuName,
                                           qty: parentQty,
-                                          price: e.price,
-                                          priceChange: e.price,
-                                          total: e.price * parentQty,
+                                          price: e.inMealPrice,
+                                          priceChange: e.inMealPrice,
+                                          total: e.inMealPrice * parentQty,
                                           tax: 0,
                                           discountAvailable: e.discountAvailable == 1,
                                           openPrice: e.openPrice == 1,
@@ -1076,7 +1078,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           _isShowItem = false;
                           setState(() {});
                         } else {
-                          if (_cartModel.items.isEmpty) {
+                          if (widget.type == OrderType.dineIn || _cartModel.items.isEmpty) {
                             _showExitOrderScreenDialog().then((value) {
                               if (value) {
                                 Get.back();
@@ -1328,6 +1330,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                             log('anan ${questionsSubItems.length}');
                                             if (questionsSubItems.isNotEmpty) {
                                               var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid, parentQty: 1);
+                                              _cartModel.items[indexAddedItem].isCombo = true;
                                               if (cartSubItems.isNotEmpty) {
                                                 _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
                                                 _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
@@ -1572,7 +1575,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                   children: [
                                                                     Expanded(
                                                                       child: Text(
-                                                                        '• ${_cartModel.items[index].questions[indexQuestions].question.trim()}?',
+                                                                        '• ${_cartModel.items[index].questions[indexQuestions].question.trim()}',
                                                                         style: kStyleDataTableModifiers,
                                                                       ),
                                                                     ),
@@ -1588,7 +1591,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                         children: [
                                                                           Expanded(
                                                                             child: Text(
-                                                                              '   * ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
+                                                                              '   * ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
                                                                               style: kStyleDataTableModifiers,
                                                                             ),
                                                                           ),
@@ -2014,24 +2017,28 @@ class _OrderScreenState extends State<OrderScreen> {
                     Expanded(
                       child: InkWell(
                         onTap: () async {
-                          VoidReasonModel? result;
-                          if (allDataModel.companyConfig[0].useVoidReason) {
-                            result = await _showVoidReasonDialog();
+                          if (_cartModel.items.isEmpty) {
+                            Fluttertoast.showToast(msg: 'There must be items'.tr);
                           } else {
-                            var areYouSure = await showAreYouSureDialog(
-                              title: 'Void All'.tr,
-                            );
-                            if (areYouSure) {
-                              result = VoidReasonModel.fromJson({});
+                            VoidReasonModel? result;
+                            if (allDataModel.companyConfig[0].useVoidReason) {
+                              result = await _showVoidReasonDialog();
+                            } else {
+                              var areYouSure = await showAreYouSureDialog(
+                                title: 'Void All'.tr,
+                              );
+                              if (areYouSure) {
+                                result = VoidReasonModel.fromJson({});
+                              }
                             }
-                          }
-                          if (result != null) {
-                            RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
-                            _indexItemSelect = -1;
-                            _cartModel.items = [];
-                            _cartModel.deliveryCharge = 0;
-                            _cartModel.discount = 0;
-                            _calculateOrder();
+                            if (result != null) {
+                              RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
+                              _indexItemSelect = -1;
+                              _cartModel.items = [];
+                              _cartModel.deliveryCharge = 0;
+                              _cartModel.discount = 0;
+                              _calculateOrder();
+                            }
                           }
                         },
                         child: SizedBox(

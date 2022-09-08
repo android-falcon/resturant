@@ -226,6 +226,7 @@ class CartItemModel {
     this.questions = const [],
     this.parentUuid = '',
     this.note = '',
+    this.isCombo = false,
   });
 
   String uuid;
@@ -251,6 +252,7 @@ class CartItemModel {
   bool openPrice;
   int rowSerial;
   String note;
+  bool isCombo;
   List<CartItemModifierModel> modifiers;
   List<CartItemQuestionModel> questions;
 
@@ -278,6 +280,7 @@ class CartItemModel {
         openPrice: json['openPrice'],
         rowSerial: json['rowSerial'],
         note: json['note'],
+        isCombo: json['isCombo'],
         modifiers: List<CartItemModifierModel>.from(json['modifiers'].map((e) => CartItemModifierModel.fromJson(e))),
         questions: List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
       );
@@ -306,6 +309,7 @@ class CartItemModel {
         "openPrice": openPrice,
         "rowSerial": rowSerial,
         "note": note,
+        "isCombo": isCombo,
         "modifiers": List<dynamic>.from(modifiers.map((e) => e.toJson())),
         "questions": List<dynamic>.from(questions.map((e) => e.toJson())),
       };
@@ -325,7 +329,8 @@ class CartItemModel {
         "Price": priceChange, // السعر بعد تعديل الي بنحسب في الفتورة
         "OrgPrice": price, // السعر الايتم الفعلي
         "InvDisc": discount, // قيمة الخصم من الخصم الكلي ل هذا اليتم فقط
-        "ItemDisc": totalLineDiscount, // قيمة الخصم في linedicount
+        "ItemDiscPerc": 0, //
+        "LineDisc": totalLineDiscount, // قيمة الخصم في linedicount
         "ServiceVal": service, //  قيمة سيرفس للايتم بناء على سعر الايتم ل مجموع الفتورة -- بنوزعها على الفتورة
         "ServiceTax": serviceTax, // قيمة ضريبة سيرفس للايتم بناء على سعر الايتم ل مجموع الفتورة  -- بنوزعها على الفتورة
         "ItemTaxKind": taxType, // TaxType/Id
@@ -334,6 +339,8 @@ class CartItemModel {
         "NetTotal": total, // المجموع النهائي للايتم مع الضريبة وسيرفس وضريبة السيرفس
         "ReturnedQty": 0, //
         "ItemRemark": note,
+        "IsCombo": isCombo ? 1 : 0,
+        "IsSubItem": parentUuid != "" ? 1 : 0,
       };
 }
 
@@ -366,6 +373,19 @@ class CartItemModifierModel extends Equatable {
         "Modifier": modifier,
       };
 
+  Map<String, dynamic> toInvoice({required int itemId, required int rowSerial, required OrderType orderType}) => {
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "InvType": orderType.index, // 0 - Take away , 1 - Dine In
+        "InvKind": 0, // 0 - Pay , 1 - Return
+        "InvNo": mySharedPreferences.inVocNo, // الرقم الي بعد منو VocNo
+        "PosNo": mySharedPreferences.posNo, // PosNo
+        "CashNo": mySharedPreferences.cashNo, // CashNo
+        "InvDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "RowSerial": rowSerial, // رقم الايتم بناء على ليست في شاشة index + 1
+        "ItemId": itemId,
+        "ModifireId": id
+      };
+
   @override
   // TODO: implement props
   List<Object?> get props => [id, name, modifier];
@@ -380,7 +400,7 @@ class CartItemQuestionModel extends Equatable {
 
   int id;
   String question;
-  List<String> modifiers;
+  List<CartItemModifierModel> modifiers;
 
   factory CartItemQuestionModel.init() => CartItemQuestionModel(
         id: 0,
@@ -391,13 +411,13 @@ class CartItemQuestionModel extends Equatable {
   factory CartItemQuestionModel.fromJson(Map<String, dynamic> json) => CartItemQuestionModel(
         id: json["Id"] ?? 0,
         question: json["Name"] ?? "",
-        modifiers: json["Modifier"] == null ? [] : List<String>.from(json["Modifier"].map((e) => e)),
+        modifiers: json["Modifier"] == null ? [] : List<CartItemModifierModel>.from(json["Modifier"].map((e) => CartItemModifierModel.fromJson(e))),
       );
 
   Map<String, dynamic> toJson() => {
         "Id": id,
         "Name": question,
-        "Modifier": modifiers,
+        "Modifier": List<dynamic>.from(modifiers.map((e) => e.toJson())).toList(),
       };
 
   @override

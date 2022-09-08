@@ -217,9 +217,24 @@ class RestApi {
 
   static Future<void> invoice(CartModel cart) async {
     try {
+      List<Map<String, dynamic>> modifiers = [];
+      for (var item in cart.items) {
+        int rowSerial = 0;
+        modifiers.addAll(item.modifiers.map((e) {
+          rowSerial++;
+          return e.toInvoice(itemId: item.id, rowSerial: rowSerial, orderType: item.orderType);
+        }));
+        for (var question in item.questions) {
+          modifiers.addAll(question.modifiers.map((e) {
+            rowSerial++;
+            return e.toInvoice(itemId: item.id, rowSerial: rowSerial, orderType: item.orderType);
+          }));
+        }
+      }
       var body = jsonEncode({
         "InvoiceMaster": cart.toInvoice(),
         "InvoiceDetails": List<dynamic>.from(cart.items.map((e) => e.toInvoice())).toList(),
+        "InvoiceModifires": modifiers,
       });
       await NetworkTable.insert(NetworkTableModel(
         id: 0,
@@ -405,6 +420,7 @@ class RestApi {
   static Future<void> posDailyClose({required DateTime closeDate}) async {
     try {
       showLoadingDialog();
+      closeDate = DateFormat('yyyy-MM-dd').parse(DateFormat('yyyy-MM-dd').format(closeDate));
       var body = jsonEncode({
         "CoYear": mySharedPreferences.dailyClose.year,
         "PosNo": mySharedPreferences.posNo,
