@@ -25,4 +25,6 @@ class ApiUrl{
   static String SAVE_VOID_ITEMS = "/api/postData/SaveVoidItems";
   // ignore: non_constant_identifier_names
   static String SAVE_VOID_ALL_ITEMS = "/api/postData/SaveVoidAllItems";
+  // ignore: non_constant_identifier_names
+  static String RESET_POS_ORDER_NO = "/api/postData/ResetPOSOrderNo ";
 }

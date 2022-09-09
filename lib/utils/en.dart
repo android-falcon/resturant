@@ -161,4 +161,10 @@ const Map<String, String> en = {
   'Payment Company': 'Payment Company',
   'Please select a payment company': 'Please select a payment company',
   'There must be items': 'There must be items',
+  'This question is mandatory': 'This question is mandatory',
+  'Name': 'Name',
+  'Park': 'Park',
+  'Add to Park': 'Add to Park',
+  'Please add items to complete an park': 'Please add items to complete an park',
+  'The cart must be emptied, in order to be able to get park': 'The cart must be emptied, in order to be able to get park',
 };

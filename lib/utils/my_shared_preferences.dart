@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:restaurant_system/models/all_data/employee_model.dart';
+import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -72,6 +73,13 @@ class MySharedPreferences {
   }
 
 
+  List<CartModel> get park => List<CartModel>.from(jsonDecode(_sharedPreferences.getString(keyPark) ?? "[]").map((e) => CartModel.fromJson(e)));
+
+  set park(List<CartModel> value) {
+    _sharedPreferences.setString(keyPark, jsonEncode(List<dynamic>.from(value.map((e) => e.toJson()))));
+  }
+
+
   DateTime get dailyClose => DateTime.parse(_sharedPreferences.getString(keyDailyClose) ?? "0000-00-00T00:00:00.000");
 
   set dailyClose(DateTime value) {
@@ -132,6 +140,7 @@ const String keyIsGMS = "key_is_gms";
 const String keyEmployee = "key_employee";
 const String keyAllData = "key_all_data";
 const String keyDineIn = "key_dine_in";
+const String keyPark = "key_park";
 const String keyDailyClose = "key_daily_close";
 const String keyBaseUrl = "key_base_url";
 const String keyInVocNo = "key_in_voc_no";

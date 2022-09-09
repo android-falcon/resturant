@@ -114,6 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onTab: () async {
             var result = await showAreYouSureDialog(title: 'Rest Order No'.tr);
             if (result) {
+              RestApi.resetPOSOrderNo();
               mySharedPreferences.orderNo = 1;
             }
           },

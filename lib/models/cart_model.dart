@@ -3,7 +3,7 @@ import 'package:restaurant_system/utils/enum_discount_type.dart';
 import 'package:restaurant_system/utils/enum_order_type.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 
-class CartModel {
+class CartModel extends Equatable {
   CartModel({
     required this.orderType,
     required this.id,
@@ -32,6 +32,7 @@ class CartModel {
     this.note = '',
     this.payCompanyId = 0,
     this.deliveryCompanyId = 0,
+    this.parkName = '',
   });
 
   OrderType orderType;
@@ -61,6 +62,7 @@ class CartModel {
   String note;
   int payCompanyId;
   int deliveryCompanyId;
+  String parkName;
 
   factory CartModel.init({required OrderType orderType}) => CartModel(
         orderType: orderType,
@@ -85,7 +87,7 @@ class CartModel {
         id: json['id'],
         total: json['total'] == null ? 0 : json['total'].toDouble(),
         deliveryCharge: json['deliveryCharge'] == null ? 0 : json['deliveryCharge'].toDouble(),
-        totalLineDiscount: json['lineDiscount'] == null ? 0 : json['lineDiscount'].toDouble(),
+        totalLineDiscount: json['totalLineDiscount'] == null ? 0 : json['totalLineDiscount'].toDouble(),
         totalDiscount: json['totalDiscount'] == null ? 0 : json['totalDiscount'].toDouble(),
         discount: json['discount'] == null ? 0 : json['discount'].toDouble(),
         discountType: DiscountType.values[json['discountType']],
@@ -99,6 +101,7 @@ class CartModel {
         cash: json['cash'] == null ? 0 : json['cash'].toDouble(),
         credit: json['credit'] == null ? 0 : json['credit'].toDouble(),
         creditCardNumber: json['creditCardNumber'] ?? "",
+        creditCardType: json['creditCardType'] ?? "",
         cheque: json['cheque'] == null ? 0 : json['cheque'].toDouble(),
         coupon: json['coupon'] == null ? 0 : json['coupon'].toDouble(),
         gift: json['gift'] == null ? 0 : json['gift'].toDouble(),
@@ -107,6 +110,7 @@ class CartModel {
         note: json['note'] ?? '',
         payCompanyId: json['payCompanyId'] ?? 0,
         deliveryCompanyId: json['deliveryCompanyId'] ?? 0,
+        parkName: json['parkName'] ?? '',
       );
 
   Map<String, dynamic> toJson() => {
@@ -114,7 +118,7 @@ class CartModel {
         'id': id,
         'total': total,
         'deliveryCharge': deliveryCharge,
-        'lineDiscount': totalLineDiscount,
+        'totalLineDiscount': totalLineDiscount,
         'totalDiscount': totalDiscount,
         'discount': discount,
         'discountType': discountType.index,
@@ -128,6 +132,7 @@ class CartModel {
         'cash': cash,
         'credit': credit,
         'creditCardNumber': creditCardNumber,
+        'creditCardType': creditCardType,
         'cheque': cheque,
         'coupon': coupon,
         'gift': gift,
@@ -136,6 +141,7 @@ class CartModel {
         'note': note,
         'payCompanyId': payCompanyId,
         'deliveryCompanyId': deliveryCompanyId,
+        'parkName': parkName,
       };
 
   Map<String, dynamic> toInvoice() => {
@@ -172,6 +178,10 @@ class CartModel {
         "DeliveryCompanyId": deliveryCompanyId,
       };
 
+  @override
+  // TODO: implement props
+  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableNo, note, payCompanyId, deliveryCompanyId, parkName];
+
 // Map<String, dynamic> toKitchen(String kitchenId) => {
 //   'orderNo': mySharedPreferences.inVocNo,
 //   'tableNo': tableNo,
@@ -199,7 +209,7 @@ class CartModel {
 // }
 }
 
-class CartItemModel {
+class CartItemModel extends Equatable {
   CartItemModel({
     required this.uuid,
     required this.orderType,
@@ -259,7 +269,7 @@ class CartItemModel {
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
         orderType: OrderType.values[json['orderType']],
         id: json['id'],
-        uuid: json['randomId'],
+        uuid: json['uuid'],
         parentUuid: json['parentRandomId'],
         categoryId: json['categoryId'],
         taxType: json['taxType'],
@@ -288,7 +298,7 @@ class CartItemModel {
   Map<String, dynamic> toJson() => {
         "orderType": orderType.index,
         "id": id,
-        "randomId": uuid,
+        "uuid": uuid,
         "parentRandomId": parentUuid,
         "categoryId": categoryId,
         "taxType": taxType,
@@ -342,6 +352,10 @@ class CartItemModel {
         "IsCombo": isCombo ? 1 : 0,
         "IsSubItem": parentUuid != "" ? 1 : 0,
       };
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [uuid, parentUuid, orderType, id, categoryId, taxType, taxPercent, name, qty, price, priceChange, total, tax, lineDiscountType, lineDiscount, totalLineDiscount, discount, service, serviceTax, discountAvailable, openPrice, rowSerial, note, isCombo, modifiers, questions];
 }
 
 class CartItemModifierModel extends Equatable {
@@ -362,15 +376,15 @@ class CartItemModifierModel extends Equatable {
       );
 
   factory CartItemModifierModel.fromJson(Map<String, dynamic> json) => CartItemModifierModel(
-        id: json["Id"] ?? 0,
-        name: json["Name"] ?? "",
-        modifier: json["Modifier"] ?? 0,
+        id: json["id"] ?? 0,
+        name: json["name"] ?? "",
+        modifier: json["modifier"] ?? "",
       );
 
   Map<String, dynamic> toJson() => {
-        "Id": id,
-        "Name": name,
-        "Modifier": modifier,
+        "id": id,
+        "name": name,
+        "modifier": modifier,
       };
 
   Map<String, dynamic> toInvoice({required int itemId, required int rowSerial, required OrderType orderType}) => {
@@ -409,15 +423,15 @@ class CartItemQuestionModel extends Equatable {
       );
 
   factory CartItemQuestionModel.fromJson(Map<String, dynamic> json) => CartItemQuestionModel(
-        id: json["Id"] ?? 0,
-        question: json["Name"] ?? "",
-        modifiers: json["Modifier"] == null ? [] : List<CartItemModifierModel>.from(json["Modifier"].map((e) => CartItemModifierModel.fromJson(e))),
+        id: json["id"] ?? 0,
+        question: json["question"] ?? "",
+        modifiers: json["modifiers"] == null ? [] : List<CartItemModifierModel>.from(json["modifiers"].map((e) => CartItemModifierModel.fromJson(e))),
       );
 
   Map<String, dynamic> toJson() => {
-        "Id": id,
-        "Name": question,
-        "Modifier": List<dynamic>.from(modifiers.map((e) => e.toJson())).toList(),
+        "id": id,
+        "question": question,
+        "modifiers": List<dynamic>.from(modifiers.map((e) => e.toJson())).toList(),
       };
 
   @override

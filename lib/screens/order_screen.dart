@@ -22,6 +22,7 @@ import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
+import 'package:restaurant_system/screens/widgets/intl_phone_number_input/src/utils/util.dart';
 import 'package:restaurant_system/screens/widgets/measure_size_widget.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
@@ -336,6 +337,135 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
+  Future<CartModel?> _showParkDialog() async {
+    CartModel? _parkCart;
+    await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Text(
+              'Park'.tr,
+              style: kStyleTextTitle,
+            ),
+            const Divider(thickness: 2),
+            StaggeredGrid.count(
+              crossAxisCount: 3,
+              children: [
+                ...mySharedPreferences.park
+                    .map((e) => Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.r),
+                            side: const BorderSide(width: 1),
+                          ),
+                          elevation: 0,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(5.r),
+                            onTap: () async {
+                              _parkCart = e;
+                              var park = mySharedPreferences.park;
+                              log('ananha ${park.length}');
+                              park.remove(e);
+                              log('ananha ${park.length}');
+                              mySharedPreferences.park = park;
+                              Get.back();
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                              child: Text(
+                                e.parkName,
+                                style: kStyleTextTitle,
+                              ),
+                            ),
+                          ),
+                        ))
+                    .toList()
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(child: Container()),
+                Expanded(
+                  child: CustomButton(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Exit'.tr),
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                ),
+                Expanded(child: Container()),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return _parkCart;
+  }
+
+  Future<String> _showAddParkDialog() async {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    TextEditingController _controllerPark = TextEditingController();
+    await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Form(
+          key: _keyForm,
+          child: Column(
+            children: [
+              Text(
+                'Add to Park'.tr,
+                style: kStyleTextTitle,
+              ),
+              const Divider(thickness: 2),
+              SizedBox(height: 20.h),
+              CustomTextField(
+                controller: _controllerPark,
+                label: Text('Name'.tr),
+                fillColor: Colors.white,
+                validator: (value) {
+                  return Validation.isRequired(value);
+                },
+              ),
+              SizedBox(height: 20.h),
+              Row(
+                children: [
+                  Expanded(child: Container()),
+                  Expanded(
+                    child: CustomButton(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('Save'.tr),
+                      backgroundColor: ColorsApp.green,
+                      onPressed: () {
+                        if (_keyForm.currentState!.validate()) {
+                          Get.back();
+                        }
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomButton(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('Exit'.tr),
+                      backgroundColor: ColorsApp.red,
+                      onPressed: () {
+                        _controllerPark.text = '';
+                        Get.back();
+                      },
+                    ),
+                  ),
+                  Expanded(child: Container()),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return _controllerPark.text;
+  }
+
   Future<List<CartItemModifierModel>> _showModifierDialog({required List<ItemWithModifireModel> modifiersItem, required List<CategoryWithModifireModel> modifiersCategory, required List<CartItemModifierModel> addedModifiers}) async {
     int _selectedModifierId = 0;
     List<CartItemModifierModel> modifiers = [];
@@ -465,12 +595,12 @@ class _OrderScreenState extends State<OrderScreen> {
     return _modifiers ?? [];
   }
 
-  Future<List<CartItemQuestionModel>> _showForceQuestionDialog({required List<ItemWithQuestionsModel> questionsItem}) async {
+  Future<List<CartItemQuestionModel>?> _showForceQuestionDialog({required List<ItemWithQuestionsModel> questionsItem}) async {
     List<CartItemQuestionModel> answersModifire = List<CartItemQuestionModel>.from(questionsItem.map((e) => CartItemQuestionModel(id: e.forceQuestionId, question: e.qtext, modifiers: [])));
-
+    bool isCancel = false;
     int i = 0;
     while (i < answersModifire.length) {
-      var modifireForceQuestions = allDataModel.modifireForceQuestions.indexWhere((element) => element.forceQuestion.id == answersModifire[i].id && element.modifires.isNotEmpty);
+      var modifireForceQuestions = allDataModel.modifireForceQuestions.indexWhere((element) => element.forceQuestion.id == answersModifire[i].id && element.modifires.isNotEmpty && element.modifires.any((modifiresElement) => modifiresElement.active == 1));
       if (modifireForceQuestions == -1) {
         i++;
       } else {
@@ -512,16 +642,18 @@ class _OrderScreenState extends State<OrderScreen> {
                                 style: kStyleForceQuestion,
                               ),
                               value: answersModifire[i].modifiers.any((element) => element == CartItemModifierModel(id: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].id, name: '', modifier: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name)),
-                              onChanged: (value) {
-                                var _modifire = allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire];
-                                if (value!) {
-                                  answersModifire[i].modifiers.add(CartItemModifierModel(id: _modifire.id, name: '', modifier: _modifire.name));
-                                } else {
-                                  answersModifire[i].modifiers.remove(CartItemModifierModel(id: _modifire.id, name: '', modifier: _modifire.name));
-                                }
-                                log('modifiers : ${answersModifire[i].modifiers}');
-                                setState(() {});
-                              },
+                              onChanged: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].active == 0
+                                  ? null
+                                  : (value) {
+                                      var _modifire = allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire];
+                                      if (value!) {
+                                        answersModifire[i].modifiers.add(CartItemModifierModel(id: _modifire.id, name: '', modifier: _modifire.name));
+                                      } else {
+                                        answersModifire[i].modifiers.remove(CartItemModifierModel(id: _modifire.id, name: '', modifier: _modifire.name));
+                                      }
+                                      log('modifiers : ${answersModifire[i].modifiers}');
+                                      setState(() {});
+                                    },
                             );
                           } else {
                             return RadioListTile(
@@ -529,17 +661,19 @@ class _OrderScreenState extends State<OrderScreen> {
                                 allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name,
                                 style: kStyleForceQuestion,
                               ),
-                              value: CartItemModifierModel(id: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].id, name: '', modifier: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name) ,
+                              value: CartItemModifierModel(id: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].id, name: '', modifier: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name),
                               groupValue: answersModifire[i].modifiers.isEmpty ? '' : answersModifire[i].modifiers.first,
-                              onChanged: (value) {
-                                if (answersModifire[i].modifiers.isEmpty) {
-                                  answersModifire[i].modifiers.add(value as CartItemModifierModel);
-                                } else {
-                                  answersModifire[i].modifiers[0] = value as CartItemModifierModel;
-                                }
-                                log('modifiers : ${answersModifire[i].modifiers}');
-                                setState(() {});
-                              },
+                              onChanged: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].active == 0
+                                  ? null
+                                  : (value) {
+                                      if (answersModifire[i].modifiers.isEmpty) {
+                                        answersModifire[i].modifiers.add(value as CartItemModifierModel);
+                                      } else {
+                                        answersModifire[i].modifiers[0] = value as CartItemModifierModel;
+                                      }
+                                      log('modifiers : ${answersModifire[i].modifiers}');
+                                      setState(() {});
+                                    },
                             );
                           }
                         },
@@ -593,6 +727,18 @@ class _OrderScreenState extends State<OrderScreen> {
                             },
                           ),
                         ),
+                      Expanded(
+                        child: CustomButton(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text('Cancel'.tr),
+                          backgroundColor: ColorsApp.primaryColor,
+                          onPressed: () {
+                            i = answersModifire.length;
+                            isCancel = true;
+                            Get.back();
+                          },
+                        ),
+                      ),
                       Expanded(child: Container()),
                     ],
                   ),
@@ -604,13 +750,18 @@ class _OrderScreenState extends State<OrderScreen> {
         );
       }
     }
-    answersModifire.removeWhere((element) => element.modifiers.isEmpty);
-    return answersModifire;
+    if (isCancel) {
+      return null;
+    } else {
+      answersModifire.removeWhere((element) => element.modifiers.isEmpty);
+      return answersModifire;
+    }
   }
 
-  Future<List<CartItemModel>> _showQuestionSubItemDialog({required List<ComboItemsForceQuestionModel> questionsSubItems, required String parentRandomId, required int parentQty}) async {
+  Future<List<CartItemModel>?> _showQuestionSubItemDialog({required List<ComboItemsForceQuestionModel> questionsSubItems, required String parentRandomId}) async {
     List<CartItemModel> answersSubItem = [];
     int i = 0;
+    bool isCancel = false;
     while (i < questionsSubItems.length) {
       var indexSubItemsForceQuestions = allDataModel.subItemsForceQuestions.indexWhere((element) => element.subItemsForceQuestion.id == questionsSubItems[i].subItemsForceQuestionId && element.items.isNotEmpty);
       if (indexSubItemsForceQuestions == -1) {
@@ -658,7 +809,9 @@ class _OrderScreenState extends State<OrderScreen> {
                                       if (indexSubItem != -1) {
                                         answersSubItem.removeAt(indexSubItem);
                                       } else {
-                                        answersSubItem.removeWhere((elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id));
+                                        if (allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].subItemsForceQuestion.isMultible == 0) {
+                                          answersSubItem.removeWhere((elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id));
+                                        }
                                         answersSubItem.add(CartItemModel(
                                           uuid: const Uuid().v1(),
                                           parentUuid: parentRandomId,
@@ -668,10 +821,10 @@ class _OrderScreenState extends State<OrderScreen> {
                                           taxType: e.taxTypeId,
                                           taxPercent: e.taxPercent.percent,
                                           name: e.menuName,
-                                          qty: parentQty,
+                                          qty: 1,
                                           price: e.inMealPrice,
                                           priceChange: e.inMealPrice,
-                                          total: e.inMealPrice * parentQty,
+                                          total: e.inMealPrice,
                                           tax: 0,
                                           discountAvailable: e.discountAvailable == 1,
                                           openPrice: e.openPrice == 1,
@@ -713,7 +866,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                   style: kStyleTextDefault,
                                                 ),
                                                 Text(
-                                                  e.price.toStringAsFixed(2),
+                                                  e.inMealPrice.toStringAsFixed(2),
                                                   style: kStyleTextTitle,
                                                 ),
                                               ],
@@ -750,8 +903,17 @@ class _OrderScreenState extends State<OrderScreen> {
                             child: Text('Next'.tr),
                             backgroundColor: ColorsApp.primaryColor,
                             onPressed: () {
-                              i++;
-                              Get.back();
+                              if (allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].subItemsForceQuestion.isMandatory == 1) {
+                                if (answersSubItem.any((elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id))) {
+                                  i++;
+                                  Get.back();
+                                } else {
+                                  Fluttertoast.showToast(msg: 'This question is mandatory'.tr);
+                                }
+                              } else {
+                                i++;
+                                Get.back();
+                              }
                             },
                           ),
                         ),
@@ -762,11 +924,32 @@ class _OrderScreenState extends State<OrderScreen> {
                             child: Text('Save'.tr),
                             backgroundColor: ColorsApp.primaryColor,
                             onPressed: () {
-                              i++;
-                              Get.back();
+                              if (allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].subItemsForceQuestion.isMandatory == 1) {
+                                if (answersSubItem.any((elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id))) {
+                                  i++;
+                                  Get.back();
+                                } else {
+                                  Fluttertoast.showToast(msg: 'This question is mandatory'.tr);
+                                }
+                              } else {
+                                i++;
+                                Get.back();
+                              }
                             },
                           ),
                         ),
+                      Expanded(
+                        child: CustomButton(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text('Cancel'.tr),
+                          backgroundColor: ColorsApp.primaryColor,
+                          onPressed: () {
+                            i = questionsSubItems.length;
+                            isCancel = true;
+                            Get.back();
+                          },
+                        ),
+                      ),
                       Expanded(child: Container()),
                     ],
                   ),
@@ -778,7 +961,7 @@ class _OrderScreenState extends State<OrderScreen> {
         );
       }
     }
-    return answersSubItem;
+    return isCancel ? null : answersSubItem;
   }
 
   Future<int> _showQtyDialog({TextEditingController? controller, int? maxQty, int minQty = 0, required int rQty}) async {
@@ -1173,6 +1356,34 @@ class _OrderScreenState extends State<OrderScreen> {
                         width: 1,
                         thickness: 2,
                       ),
+                    if (widget.type == OrderType.takeAway)
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            if (_cartModel.items.isNotEmpty) {
+                              Fluttertoast.showToast(msg: 'The cart must be emptied, in order to be able to get park'.tr);
+                            } else {
+                              var result = await _showParkDialog();
+                              if (result != null) {
+                                _cartModel = result;
+                                _calculateOrder();
+                              }
+                            }
+                          },
+                          child: Text(
+                            'Park'.tr,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: kStyleTextDefault,
+                          ),
+                        ),
+                      ),
+                    if (widget.type == OrderType.takeAway)
+                      const VerticalDivider(
+                        width: 1,
+                        thickness: 2,
+                      ),
                     if (widget.type == OrderType.dineIn)
                       Expanded(
                         child: Text(
@@ -1327,20 +1538,27 @@ class _OrderScreenState extends State<OrderScreen> {
                                               rowSerial: _cartModel.items.length + 1,
                                             ));
                                             int indexAddedItem = _cartModel.items.length - 1;
-                                            log('anan ${questionsSubItems.length}');
                                             if (questionsSubItems.isNotEmpty) {
-                                              var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid, parentQty: 1);
-                                              _cartModel.items[indexAddedItem].isCombo = true;
-                                              if (cartSubItems.isNotEmpty) {
-                                                _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
-                                                _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
-                                                _cartModel.items[indexAddedItem].openPrice = false;
-                                                _cartModel.items.addAll(cartSubItems);
+                                              var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid);
+                                              if (cartSubItems == null) {
+                                                _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
+                                              } else {
+                                                _cartModel.items[indexAddedItem].isCombo = true;
+                                                if (cartSubItems.isNotEmpty) {
+                                                  _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
+                                                  _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
+                                                  _cartModel.items[indexAddedItem].openPrice = false;
+                                                  _cartModel.items.addAll(cartSubItems);
+                                                }
                                               }
                                             }
-                                            if (questionsItem.isNotEmpty) {
+                                            if (questionsItem.isNotEmpty && indexAddedItem < _cartModel.items.length) {
                                               var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
-                                              _cartModel.items.last.questions = questions;
+                                              if (questions == null) {
+                                                _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
+                                              } else {
+                                                _cartModel.items[indexAddedItem].questions = questions;
+                                              }
                                             }
                                           }
                                           _calculateOrder();
@@ -1506,7 +1724,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         itemCount: _cartModel.items.length,
                                         shrinkWrap: true,
                                         physics: const NeverScrollableScrollPhysics(),
-                                        separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
+                                        separatorBuilder: (context, index) => _cartModel.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
                                         itemBuilder: (context, index) {
                                           if (_cartModel.items[index].parentUuid.isNotEmpty) {
                                             return Container();
@@ -1575,7 +1793,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                   children: [
                                                                     Expanded(
                                                                       child: Text(
-                                                                        '• ${_cartModel.items[index].questions[indexQuestions].question.trim()}',
+                                                                        _cartModel.items[index].questions[indexQuestions].question.trim(),
                                                                         style: kStyleDataTableModifiers,
                                                                       ),
                                                                     ),
@@ -1591,7 +1809,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                         children: [
                                                                           Expanded(
                                                                             child: Text(
-                                                                              '   * ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
+                                                                              '* ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
                                                                               style: kStyleDataTableModifiers,
                                                                             ),
                                                                           ),
@@ -1611,7 +1829,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                               children: [
                                                                 Expanded(
                                                                   child: Text(
-                                                                    '• ${_cartModel.items[index].modifiers[indexModifiers].name} * ${_cartModel.items[index].modifiers[indexModifiers].modifier}',
+                                                                    '${_cartModel.items[index].modifiers[indexModifiers].name}\n* ${_cartModel.items[index].modifiers[indexModifiers].modifier}',
                                                                     style: kStyleDataTableModifiers,
                                                                   ),
                                                                 ),
@@ -1627,14 +1845,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                 return Row(
                                                                   children: [
                                                                     Expanded(
-                                                                      child: Text(
-                                                                        '• ',
-                                                                        style: kStyleDataTableModifiers,
-                                                                        textAlign: TextAlign.center,
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      flex: 3,
+                                                                      flex: 4,
                                                                       child: Text(
                                                                         subItem[indexSubItem].name,
                                                                         style: kStyleDataTableModifiers,
@@ -1819,6 +2030,33 @@ class _OrderScreenState extends State<OrderScreen> {
                                         Get.to(() => PayScreen(cart: _cartModel));
                                       } else {
                                         Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              if (widget.type == OrderType.takeAway)
+                                Expanded(
+                                  child: CustomButton(
+                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                    child: Text(
+                                      'Park'.tr,
+                                      style: kStyleTextButton,
+                                    ),
+                                    fixed: true,
+                                    backgroundColor: ColorsApp.blue,
+                                    onPressed: () async {
+                                      if (_cartModel.items.isNotEmpty) {
+                                        var result = await _showAddParkDialog();
+                                        if (result.isNotEmpty) {
+                                          _cartModel.parkName = result;
+                                          var park = mySharedPreferences.park;
+                                          park.add(_cartModel);
+                                          mySharedPreferences.park = park;
+                                          _cartModel = CartModel.init(orderType: OrderType.takeAway);
+                                          _calculateOrder();
+                                        }
+                                      } else {
+                                        Fluttertoast.showToast(msg: 'Please add items to complete an park'.tr);
                                       }
                                     },
                                   ),

@@ -650,4 +650,44 @@ class RestApi {
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
   }
+
+  static Future<void> resetPOSOrderNo() async {
+    try {
+      var queryParameters = {
+        "PosNo": mySharedPreferences.posNo,
+      };
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'RESET_POS_ORDER_NO',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.RESET_POS_ORDER_NO,
+        method: 'POST',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryLastRow();
+      final response = await restDio.post(ApiUrl.RESET_POS_ORDER_NO, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
 }
