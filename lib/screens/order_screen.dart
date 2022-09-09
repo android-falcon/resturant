@@ -363,9 +363,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             onTap: () async {
                               _parkCart = e;
                               var park = mySharedPreferences.park;
-                              log('ananha ${park.length}');
                               park.remove(e);
-                              log('ananha ${park.length}');
                               mySharedPreferences.park = park;
                               Get.back();
                             },
@@ -2072,8 +2070,13 @@ class _OrderScreenState extends State<OrderScreen> {
                                     fixed: true,
                                     backgroundColor: ColorsApp.red,
                                     onPressed: () {
-                                      _saveDineIn();
-                                      Get.back();
+                                      if(_cartModel.items.isEmpty){
+                                        Fluttertoast.showToast(msg: 'Please add items'.tr);
+                                      } else {
+                                        _saveDineIn();
+                                        Get.back();
+                                      }
+
                                     },
                                   ),
                                 ),

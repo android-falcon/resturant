@@ -167,4 +167,5 @@ const Map<String, String> en = {
   'Add to Park': 'Add to Park',
   'Please add items to complete an park': 'Please add items to complete an park',
   'The cart must be emptied, in order to be able to get park': 'The cart must be emptied, in order to be able to get park',
+  'Please add items': 'Please add items',
 };
