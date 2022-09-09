@@ -24,6 +24,7 @@ class EmployeeModel {
     required this.isActive,
     required this.isKitchenUser,
     required this.deviceIp,
+    required this.devicePort,
   });
 
   int id;
@@ -39,6 +40,7 @@ class EmployeeModel {
   bool isActive;
   bool isKitchenUser;
   String deviceIp;
+  int devicePort;
 
   factory EmployeeModel.fromJson(Map<String, dynamic> json) => EmployeeModel(
         id: json["Id"] ?? 0,
@@ -54,6 +56,7 @@ class EmployeeModel {
         isActive: json["IsActive"] ?? false,
         isKitchenUser: json["IsKitchenUser"] ?? false,
         deviceIp: json["DeviceIp"] ?? "",
+        devicePort: json["DevicePort"] ?? 3000,
       );
 
   Map<String, dynamic> toJson() => {
@@ -70,5 +73,6 @@ class EmployeeModel {
         "IsActive": isActive,
         "IsKitchenUser": isKitchenUser,
         "DeviceIp": deviceIp,
+        "DevicePort": devicePort,
       };
 }

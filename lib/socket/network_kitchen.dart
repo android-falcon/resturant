@@ -7,34 +7,21 @@
  */
 
 import 'dart:io';
-import 'package:esc_pos_utils/esc_pos_utils.dart';
 
 class NetworkKitchen {
-  NetworkKitchen(this._paperSize, this._profile, {int spaceBetweenRows = 5}) {
-    _generator = Generator(paperSize, profile, spaceBetweenRows: spaceBetweenRows);
-  }
-
-  final PaperSize _paperSize;
-  final CapabilityProfile _profile;
   String? _host;
   int? _port;
-  late Generator _generator;
   late Socket _socket;
 
   int? get port => _port;
 
   String? get host => _host;
 
-  PaperSize get paperSize => _paperSize;
-
-  CapabilityProfile get profile => _profile;
-
-  Future<KitchenResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5)}) async {
+  Future<KitchenResult> connect(String host, {int port = 3000, Duration timeout = const Duration(seconds: 5)}) async {
     _host = host;
     _port = port;
     try {
       _socket = await Socket.connect(host, port, timeout: timeout);
-      _socket.add(_generator.reset());
       return Future<KitchenResult>.value(KitchenResult.success);
     } catch (e) {
       return Future<KitchenResult>.value(KitchenResult.timeout);
@@ -47,6 +34,10 @@ class NetworkKitchen {
     if (delayMs != null) {
       await Future.delayed(Duration(milliseconds: delayMs), () => null);
     }
+  }
+
+  void sendData(List<int> data) {
+    _socket.add(data);
   }
 }
 

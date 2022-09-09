@@ -18,6 +18,7 @@ import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
+import 'package:restaurant_system/socket/kitchen_invoice.dart';
 import 'package:restaurant_system/socket/kitchen_socket_client.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
@@ -263,12 +264,7 @@ class _PayScreenState extends State<PayScreen> {
       );
       _received = balance;
     }
-    return {
-      "received": _received,
-      "credit_card": controllerCreditCard?.text ?? "",
-      "credit_card_type": selectedCreditCard.name,
-      'payment_company': selectedPaymentCompany
-    };
+    return {"received": _received, "credit_card": controllerCreditCard?.text ?? "", "credit_card_type": selectedCreditCard.name, 'payment_company': selectedPaymentCompany};
   }
 
   Future<void> _showPrintDialog() async {
@@ -297,8 +293,6 @@ class _PayScreenState extends State<PayScreen> {
       });
       invoices.removeWhere((element) => element.invoice == null);
       PrintInvoice.init(invoices: invoices);
-      // KitchenSocketClient.init();
-      log('ananan ${invoices.length}');
     });
 
     await Get.dialog(
@@ -1292,8 +1286,11 @@ class _PayScreenState extends State<PayScreen> {
                                                 widget.cart.items[i].rowSerial = i + 1;
                                               }
                                               RestApi.invoice(widget.cart);
+                                              KitchenInvoice.init(orderNo: mySharedPreferences.orderNo, cart: widget.cart);
+
                                               mySharedPreferences.inVocNo++;
                                               mySharedPreferences.orderNo++;
+
                                               _showPrintDialog().then((value) {
                                                 Get.offAll(HomeScreen());
                                               });
