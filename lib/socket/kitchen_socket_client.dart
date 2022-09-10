@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
-import 'package:restaurant_system/models/cart_model.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class KitchenSocketClient {
@@ -13,46 +12,34 @@ class KitchenSocketClient {
     this.port = 3000,
   });
 
-  Future<void> connect() async {
+  Future<void> connect({required String data}) async {
     socket = IO.io(
       'http://$host:$port',
-      IO.OptionBuilder().setTransports(['websocket']).enableForceNewConnection().enableForceNew().disableAutoConnect().enableReconnection().build(),
+      IO.OptionBuilder().setTransports(['websocket']).enableForceNewConnection().disableAutoConnect().disableReconnection().build(),
     );
     _socketLog('IO');
     socket.connect();
-    socket.onConnect((_) => _socketLog('Connect', _.toString()));
+    socket.onConnect((_) async {
+      _socketLog('Connect', _.toString());
+      socket.emitWithBinary('new_order', utf8.encode(data));
+      // socket.emit('new_order', data);
+
+    });
     socket.onConnectError((_) => _socketLog('ConnectError', _.toString()));
     socket.onDisconnect((_) => _socketLog('Disconnect', _.toString()));
-    socket.on('new_order', (_) => _socketLog('FromServer(new_order)', _.toString()));
-  }
-
-  Future<void> disconnect() async {
-    socket.dispose();
-  }
-
-  sendOrder({required int orderNo, required CartModel cart}) {
-    if (socket.connected) {
-      socket.emit(
-          'new_order',
-          jsonEncode({
-            'orderNo': orderNo,
-            'tableNo': cart.tableNo,
-            'sectionNo': 0,
-            'orderType': cart.orderType.index,
-            'items': cart.items
-                .map((e) => {
-                      'itemName': e.name,
-                      'qty': e.qty,
-                      'note': e.note,
-                    })
-                .toList(),
-          }));
-    } else {
+    socket.on('new_order', (_) {
+      _socketLog('FromServer(new_order)', _.toString());
+      socket.disconnect();
       socket.dispose();
-      connect();
+    });
+  }
+
+  Future<void> disconnect({int? delayMs}) async {
+    socket.dispose();
+    if (delayMs != null) {
+      await Future.delayed(Duration(milliseconds: delayMs), () => null);
     }
   }
-
   _socketLog(String type, [String message = '']) {
     String trace = '════════════════════════════════════════ \n'
         '╔╣ Socket [$type] info ==> \n'

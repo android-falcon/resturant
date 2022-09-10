@@ -27,14 +27,14 @@ class KitchenMonitorModel extends Equatable {
     id: json["Id"] ?? 0,
     name: json["Name"] ?? "",
     ipAddress: json["IpAddress"] ?? "",
-    port: json["Port"] ?? 3000,
+    port: json["PortNo"] ?? 3000,
   );
 
   Map<String, dynamic> toJson() => {
     "Id": id,
     "Name": name,
     "IpAddress": ipAddress,
-    "Port": port,
+    "PortNo": port,
   };
 
   @override
