@@ -28,9 +28,13 @@ class KitchenInvoice {
           'orderType': cart.orderType.index,
           'items': cart.items
               .map((e) => {
+                    'uuid': e.uuid,
+                    'parentUuid': e.parentUuid,
                     'itemName': e.name,
                     'qty': e.qty,
                     'note': e.note,
+                    'modifiers': List<dynamic>.from(e.modifiers.map((e) => e.toJson())),
+                    'questions': List<dynamic>.from(e.questions.map((e) => e.toJson())),
                   })
               .toList(),
         });
