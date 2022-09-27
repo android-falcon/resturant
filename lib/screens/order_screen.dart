@@ -12,7 +12,6 @@ import 'package:restaurant_system/models/all_data/category_with_modifire_model.d
 import 'package:restaurant_system/models/all_data/combo_items_force_question_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
-import 'package:restaurant_system/models/all_data/modifier_model.dart';
 import 'package:restaurant_system/models/all_data/void_reason_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
@@ -22,7 +21,6 @@ import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
-import 'package:restaurant_system/screens/widgets/intl_phone_number_input/src/utils/util.dart';
 import 'package:restaurant_system/screens/widgets/measure_size_widget.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
@@ -1543,8 +1541,9 @@ class _OrderScreenState extends State<OrderScreen> {
                                               } else {
                                                 _cartModel.items[indexAddedItem].isCombo = true;
                                                 if (cartSubItems.isNotEmpty) {
-                                                  _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
-                                                  _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
+
+                                                  // _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
+                                                  // _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
                                                   _cartModel.items[indexAddedItem].openPrice = false;
                                                   _cartModel.items.addAll(cartSubItems);
                                                 }
@@ -1769,7 +1768,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                           ),
                                                           Expanded(
                                                             child: Text(
-                                                              _cartModel.items[index].total.toStringAsFixed(2),
+                                                              (_cartModel.items[index].priceChange * _cartModel.items[index].qty).toStringAsFixed(2),
                                                               style: kStyleDataTable,
                                                               textAlign: TextAlign.center,
                                                             ),
@@ -1861,7 +1860,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                     ),
                                                                     Expanded(
                                                                       child: Text(
-                                                                        subItem[indexSubItem].total.toStringAsFixed(2),
+                                                                        (subItem[indexSubItem].priceChange * subItem[indexSubItem].qty).toStringAsFixed(2),
                                                                         style: kStyleDataTableModifiers,
                                                                         textAlign: TextAlign.center,
                                                                       ),

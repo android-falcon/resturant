@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restaurant_system/models/all_data/item_model.dart';
 import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
@@ -103,8 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 textCancel: 'Cancel'.tr,
                 textConfirm: 'Confirm'.tr,
                 confirmTextColor: Colors.white,
-                onConfirm: () {
-                  RestApi.posDailyClose(closeDate: mySharedPreferences.dailyClose.add(const Duration(days: 1)));
+                onConfirm: () async {
+                  await RestApi.posDailyClose(closeDate: mySharedPreferences.dailyClose.add(const Duration(days: 1)));
+                  setState(() {});
                 },
               );
             },
@@ -117,6 +119,12 @@ class _HomeScreenState extends State<HomeScreen> {
               RestApi.resetPOSOrderNo();
               mySharedPreferences.orderNo = 1;
             }
+          },
+        ),
+        HomeMenu(
+          name: 'Refresh Data'.tr,
+          onTab: () async {
+            RestApi.getData();
           },
         ),
         HomeMenu(
@@ -706,7 +714,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       (e) => DataRow(
                         cells: [
                           DataCell(Text('${e.itemId}')),
-                          // DataCell(Text('${e.name}')),
+                          DataCell(Text(allDataModel.items.firstWhere((element) => element.id == e.itemId, orElse: () => ItemModel.fromJson({})).menuName)),
                           DataCell(Text('${e.qty}')),
                           DataCell(
                             Text('${e.returnedQty}'),
@@ -716,14 +724,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               setState(() {});
                             },
                           ),
-                          DataCell(Text('${(e.netTotal / e.qty) * e.returnedQty}')),
+                          DataCell(Text((e.netTotal * e.returnedQty).toStringAsFixed(3))),
                         ],
                       ),
                     )
                     .toList(),
                 columns: [
                   DataColumn(label: Text('Serial'.tr)),
-                  // DataColumn(label: Text('Item'.tr)),
+                  DataColumn(label: Text('Item'.tr)),
                   DataColumn(label: Text('Qty'.tr)),
                   DataColumn(label: Text('R.Qty'.tr)),
                   DataColumn(label: Text('R.Total'.tr)),
@@ -767,7 +775,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         //   style: kStyleTextDefault,
                         // ),
                         Text(
-                          (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + ((element.netTotal / element.qty) * element.returnedQty))).toStringAsFixed(3),
+                          (_refundModel.fold(0.0, (previousValue, element) => (previousValue as double) + (element.netTotal  * element.returnedQty))).toStringAsFixed(3),
                           style: kStyleTextDefault,
                         ),
                       ],
@@ -803,10 +811,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: kStyleTextButton,
                     ),
                     onPressed: () async {
-                      if (_refundModel.isNotEmpty && _refundModel.any((element) => element.returnedQty > 0)) {
-                        RestApi.refundInvoice(invNo: int.parse(_controllerVoucherNumber.text), refundModel: _refundModel);
-                        Get.back();
+                      var result = await showAreYouSureDialog(title: 'Refund'.tr);
+                      if(result){
+                        if (_refundModel.isNotEmpty && _refundModel.any((element) => element.returnedQty > 0)) {
+                          RestApi.refundInvoice(invNo: int.parse(_controllerVoucherNumber.text), refundModel: _refundModel);
+                          Get.back();
+                        }
                       }
+
                     },
                   ),
                 ),

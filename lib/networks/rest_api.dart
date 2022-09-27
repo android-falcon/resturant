@@ -454,6 +454,7 @@ class RestApi {
       }
       hideLoadingDialog();
       Get.back();
+      Fluttertoast.showToast(msg: 'Successfully'.tr, timeInSecForIosWeb: 3);
       if (networkModel != null) {
         networkModel.statusCode = response.statusCode!;
         networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
