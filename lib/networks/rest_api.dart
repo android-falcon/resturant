@@ -10,7 +10,8 @@ import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/api_url.dart';
-import 'package:restaurant_system/utils/enum_order_type.dart';
+import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
+import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/utils.dart';
@@ -130,6 +131,9 @@ class RestApi {
   static Future<void> getData() async {
     try {
       showLoadingDialog();
+      var queryParameters = {
+        'PosNo': mySharedPreferences.posNo,
+      };
       await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'GET_DATA',
@@ -137,7 +141,7 @@ class RestApi {
         baseUrl: restDio.options.baseUrl,
         path: ApiUrl.GET_DATA,
         method: 'GET',
-        params: '',
+        params: jsonEncode(queryParameters),
         body: '',
         headers: '',
         countRequest: 1,
@@ -147,7 +151,7 @@ class RestApi {
         uploadedAt: DateTime.now().toIso8601String(),
       ));
       var networkModel = await NetworkTable.queryLastRow();
-      final response = await restDio.get(ApiUrl.GET_DATA);
+      final response = await restDio.get(ApiUrl.GET_DATA, queryParameters: queryParameters);
       _networkLog(response);
       if (response.statusCode == 200) {
         allDataModel = AllDataModel.fromJson(response.data);
@@ -215,7 +219,7 @@ class RestApi {
     }
   }
 
-  static Future<void> invoice(CartModel cart) async {
+  static Future<void> invoice({required CartModel cart, required InvoiceKind invoiceKind}) async {
     try {
       List<Map<String, dynamic>> modifiers = [];
       for (var item in cart.items) {
@@ -232,8 +236,8 @@ class RestApi {
         }
       }
       var body = jsonEncode({
-        "InvoiceMaster": cart.toInvoice(),
-        "InvoiceDetails": List<dynamic>.from(cart.items.map((e) => e.toInvoice())).toList(),
+        "InvoiceMaster": invoiceKind == InvoiceKind.invoicePay ? cart.toInvoice() : cart.toReturnInvoice(),
+        "InvoiceDetails": List<dynamic>.from(cart.items.map((e) => invoiceKind == InvoiceKind.invoicePay ? e.toInvoice() : e.toReturnInvoice())).toList(),
         "InvoiceModifires": modifiers,
       });
       await NetworkTable.insert(NetworkTableModel(
@@ -271,7 +275,7 @@ class RestApi {
     }
   }
 
-  static Future<List<RefundModel>> getRefundInvoice({required int invNo}) async {
+  static Future<CartModel?> getRefundInvoice({required int invNo}) async {
     try {
       showLoadingDialog();
       var queryParameters = {
@@ -305,32 +309,32 @@ class RestApi {
         await NetworkTable.update(networkModel);
       }
       if (response.statusCode == 200) {
-        List<RefundModel> refundModel = List<RefundModel>.from(response.data.map((e) => RefundModel.fromJson(e)));
+        CartModel refundModel = CartModel.fromJsonRefund(response.data);
         hideLoadingDialog();
         return refundModel;
       } else {
         hideLoadingDialog();
-        return [];
+        return null;
       }
     } on dio.DioError catch (e) {
       hideLoadingDialog();
       _traceError(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
-      return [];
+      return null;
     } catch (e) {
       hideLoadingDialog();
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
-      return [];
+      return null;
     }
   }
 
-  static Future<void> refundInvoice({required List<RefundModel> refundModel, required int invNo}) async {
+  static Future<void> returnInvoiceQty({required CartModel refundModel, required int invNo}) async {
     try {
       var queryParameters = {
         'orgInvNo': invNo,
       };
-      var body = jsonEncode(List<dynamic>.from(refundModel.map((e) => e.toReturnInvoice())));
+      var body = jsonEncode(List<dynamic>.from(refundModel.items.map((e) => e.toReturnInvoiceQty())));
       await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'INVOICE_RETURNED_QTY',
@@ -447,11 +451,9 @@ class RestApi {
       final response = await restDio.post(ApiUrl.POS_DAILY_CLOSE, data: body);
       _networkLog(response);
       mySharedPreferences.dailyClose = closeDate;
-      var indexPosClose = allDataModel.posClose.indexWhere((element) => element.posNo == mySharedPreferences.posNo);
-      if (indexPosClose != -1) {
-        allDataModel.posClose[indexPosClose].closeDate = closeDate;
-        mySharedPreferences.allData = jsonEncode(allDataModel.toJson());
-      }
+      allDataModel.posClose = closeDate;
+      mySharedPreferences.allData = jsonEncode(allDataModel.toJson());
+
       hideLoadingDialog();
       Get.back();
       Fluttertoast.showToast(msg: 'Successfully'.tr, timeInSecForIosWeb: 3);

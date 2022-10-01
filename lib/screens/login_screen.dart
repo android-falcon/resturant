@@ -89,13 +89,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             var indexEmployee = allDataModel.employees.indexWhere((element) => element.username == _controllerUsername.text && element.password == _controllerPassword.text && !element.isKitchenUser);
                             if (indexEmployee != -1) {
                               mySharedPreferences.employee = allDataModel.employees[indexEmployee];
-                              var indexPosClose = allDataModel.posClose.indexWhere((element) => element.posNo == mySharedPreferences.posNo);
-                              if (indexPosClose != -1) {
-                                mySharedPreferences.dailyClose = allDataModel.posClose[indexPosClose].closeDate;
-                              } else {
-                                mySharedPreferences.dailyClose = DateTime.parse('0000-00-00T00:00:00.000');
-                              }
-                              if(allDataModel.companyConfig.isEmpty){
+                              mySharedPreferences.dailyClose = allDataModel.posClose;
+                              if (allDataModel.companyConfig.isEmpty) {
                                 allDataModel.companyConfig.add(CompanyConfigModel.fromJson({}));
                               }
                               var indexPointOfSales = allDataModel.pointOfSalesModel.indexWhere((element) => element.posNo == mySharedPreferences.posNo);

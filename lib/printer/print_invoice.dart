@@ -11,7 +11,7 @@ class PrintInvoice {
     final profile = await CapabilityProfile.load(); //name: 'TP806L'
     for (var invoice in invoices) {
       final printer = NetworkPrinter(PaperSize.mm80, profile);
-      final cashPosPrintResult = await printer.connect(invoice.ipAddress, port: 9100); // invoice.ipAddress
+      final cashPosPrintResult = await printer.connect(invoice.ipAddress, port: invoice.port); // invoice.ipAddress
       if (cashPosPrintResult == PosPrintResult.success) {
         try {
           printInvoiceImage(printer, invoice.invoice!);
@@ -21,10 +21,10 @@ class PrintInvoice {
         } catch (e) {
           printer.disconnect();
           await Future.delayed(const Duration(milliseconds: 200));
-          log('cashPrinter catch ${e.toString()}');
+          log('cashPrinter catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
         }
       } else {
-        log('cashPrinter catch ${cashPosPrintResult.msg} ${invoice.ipAddress}');
+        log('cashPrinter catch ${cashPosPrintResult.msg} || ${invoice.ipAddress}:${invoice.port}');
       }
     }
   }

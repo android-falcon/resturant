@@ -1,5 +1,5 @@
 import 'package:restaurant_system/models/cart_model.dart';
-import 'package:restaurant_system/utils/enum_order_type.dart';
+import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 
 class DineInModel {
   DineInModel({

@@ -23,7 +23,8 @@ import 'package:restaurant_system/socket/kitchen_socket_client.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/credit_card_type_detector.dart';
-import 'package:restaurant_system/utils/enum_order_type.dart';
+import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
+import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
@@ -273,12 +274,12 @@ class _PayScreenState extends State<PayScreen> {
 
     for (var printer in allDataModel.printers) {
       if (printer.cashNo == mySharedPreferences.cashNo) {
-        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress, screenshotController: ScreenshotController(), items: []));
+        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress,port: printer.port, screenshotController: ScreenshotController(), items: []));
       }
       var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
       List<CartItemModel> cartItems = widget.cart.items.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
       if (cartItems.isNotEmpty) {
-        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress, screenshotController: ScreenshotController(), items: cartItems));
+        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress,port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
       }
     }
     Future.delayed(const Duration(milliseconds: 100)).then((value) async {
@@ -297,7 +298,7 @@ class _PayScreenState extends State<PayScreen> {
 
     await Get.dialog(
       CustomDialog(
-        width: 100,
+        width: 150.w,
         builder: (context, setState, constraints) => Column(
           children: [
             Row(
@@ -325,7 +326,7 @@ class _PayScreenState extends State<PayScreen> {
             Screenshot(
               controller: _screenshotControllerCash,
               child: SizedBox(
-                width: 215,
+                width: 215.w,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -719,7 +720,7 @@ class _PayScreenState extends State<PayScreen> {
                           SizedBox(height: 15.h),
                           Image.asset(
                             'assets/images/welcome.png',
-                            height: 60.h,
+                            height: 80.h,
                           ),
                         ],
                       ),
@@ -746,7 +747,7 @@ class _PayScreenState extends State<PayScreen> {
                     : Screenshot(
                         controller: invoices[index].screenshotController,
                         child: SizedBox(
-                          width: 215,
+                          width: 215.w,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1285,7 +1286,7 @@ class _PayScreenState extends State<PayScreen> {
                                               for (int i = 0; i < widget.cart.items.length; i++) {
                                                 widget.cart.items[i].rowSerial = i + 1;
                                               }
-                                              RestApi.invoice(widget.cart);
+                                              RestApi.invoice(cart: widget.cart, invoiceKind: InvoiceKind.invoicePay);
                                               KitchenInvoice.init(orderNo: mySharedPreferences.orderNo, cart: widget.cart);
 
                                               mySharedPreferences.inVocNo++;

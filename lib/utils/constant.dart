@@ -11,8 +11,8 @@ final kStyleTextButton = TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp,
 final kStyleTextTable = TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, color: Colors.black);
 final kStyleButtonPayment = TextStyle(fontWeight: FontWeight.bold, fontSize: 17.sp);
 final kStyleForceQuestion = TextStyle(fontWeight: FontWeight.bold, fontSize: 17.sp);
-const kStyleLargePrinter = TextStyle(fontWeight: FontWeight.bold, fontSize: 20);
-const kStyleTitlePrinter = TextStyle(fontWeight: FontWeight.bold, fontSize: 12);
-const kStyleDataPrinter = TextStyle(fontSize: 10);
+final kStyleLargePrinter = TextStyle(fontWeight: FontWeight.bold, fontSize: 34.sp);
+final kStyleTitlePrinter = TextStyle(fontWeight: FontWeight.bold, fontSize: 27.sp);
+final kStyleDataPrinter = TextStyle(fontSize: 23.sp);
 
 const placeholderImage = 'assets/images/logo.png';

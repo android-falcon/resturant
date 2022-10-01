@@ -170,4 +170,5 @@ const Map<String, String> en = {
   'Please add items': 'Please add items',
   'Successfully': 'Successfully',
   'Refresh Data': 'Refresh Data',
+  'Return Total': 'Return Total',
 };

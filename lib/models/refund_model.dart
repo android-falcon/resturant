@@ -4,6 +4,10 @@
 
 import 'dart:convert';
 
+import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
+import 'package:restaurant_system/utils/enums/enum_order_type.dart';
+import 'package:restaurant_system/utils/my_shared_preferences.dart';
+
 List<RefundModel> refundModelFromJson(String str) => List<RefundModel>.from(json.decode(str).map((x) => RefundModel.fromJson(x)));
 
 String refundModelToJson(List<RefundModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
@@ -11,7 +15,7 @@ String refundModelToJson(List<RefundModel> data) => json.encode(List<dynamic>.fr
 class RefundModel {
   RefundModel({
     required this.coYear,
-    required this.invType,
+    required this.orderType,
     required this.invKind,
     required this.invNo,
     required this.posNo,
@@ -19,23 +23,26 @@ class RefundModel {
     required this.storeNo,
     required this.invDate,
     required this.rowSerial,
-    required this.itemId,
+    required this.isCombo,
+    required this.note,
+    required this.id,
     required this.qty,
+    required this.priceChange,
     required this.price,
-    required this.orgPrice,
-    required this.invDisc,
+    required this.discount,
     required this.itemDiscPerc,
-    required this.serviceVal,
+    required this.service,
     required this.serviceTax,
-    required this.itemTaxKind,
-    required this.itemTaxPerc,
-    required this.itemTaxVal,
-    required this.netTotal,
+    required this.taxType,
+    required this.taxPercent,
+    required this.tax,
+    required this.totalLineDiscount,
+    required this.total,
     required this.returnedQty,
   });
 
   int coYear;
-  int invType;
+  OrderType orderType;
   int invKind;
   int invNo;
   int posNo;
@@ -43,23 +50,26 @@ class RefundModel {
   int storeNo;
   DateTime invDate;
   int rowSerial;
-  int itemId;
+  bool isCombo;
+  String note;
+  int id;
   int qty;
+  double priceChange;
   double price;
-  double orgPrice;
-  double invDisc;
+  double discount;
   double itemDiscPerc;
-  double serviceVal;
+  double service;
   double serviceTax;
-  int itemTaxKind;
-  double itemTaxPerc;
-  double itemTaxVal;
-  double netTotal;
+  int taxType;
+  double taxPercent;
+  double tax;
+  double totalLineDiscount;
+  double total;
   int returnedQty;
 
   factory RefundModel.fromJson(Map<String, dynamic> json) => RefundModel(
         coYear: json["CoYear"] ?? 0,
-        invType: json["InvType"] ?? 0,
+        orderType: OrderType.values.firstWhere((element) => element.index == (json["InvType"] ?? 0)),
         invKind: json["InvKind"] ?? 0,
         invNo: json["InvNo"] ?? 0,
         posNo: json["PosNo"] ?? 0,
@@ -67,18 +77,21 @@ class RefundModel {
         storeNo: json["StoreNo"] ?? 0,
         invDate: DateTime.parse(json["InvDate"]),
         rowSerial: json["RowSerial"] ?? 0,
-        itemId: json["ItemId"] ?? 0,
+        isCombo: (json["IsCombo"] ?? 0) == 1 ? true : false,
+        note: json["ItemRemark"] ?? "",
+        id: json["ItemId"] ?? 0,
         qty: json["Qty"]?.toInt() ?? 0,
-        price: json["Price"]?.toDouble() ?? 0,
-        orgPrice: json["OrgPrice"]?.toDouble() ?? 0,
-        invDisc: json["InvDisc"]?.toDouble() ?? 0,
+        priceChange: json["Price"]?.toDouble() ?? 0,
+        price: json["OrgPrice"]?.toDouble() ?? 0,
+        discount: json["InvDisc"]?.toDouble() ?? 0,
         itemDiscPerc: json["ItemDiscPerc"]?.toDouble() ?? 0,
-        serviceVal: json["ServiceVal"]?.toDouble() ?? 0,
+        service: json["ServiceVal"]?.toDouble() ?? 0,
         serviceTax: json["ServiceTax"]?.toDouble() ?? 0,
-        itemTaxKind: json["ItemTaxKind"],
-        itemTaxPerc: json["ItemTaxPerc"]?.toDouble() ?? 0,
-        itemTaxVal: json["ItemTaxVal"]?.toDouble() ?? 0,
-        netTotal: json["NetTotal"]?.toDouble() ?? 0,
+        taxType: json["ItemTaxKind"] ?? 0,
+        taxPercent: json["ItemTaxPerc"]?.toDouble() ?? 0,
+        tax: json["ItemTaxVal"]?.toDouble() ?? 0,
+        totalLineDiscount: json["LineDisc"]?.toDouble() ?? 0,
+        total: json["NetTotal"]?.toDouble() ?? 0,
         returnedQty: json["ReturnedQty"]?.toInt() ?? 0,
       );
 
@@ -89,13 +102,42 @@ class RefundModel {
         "PosNo": posNo,
         "CashNo": cashNo,
         "RowSerial": rowSerial,
-        "Id": itemId,
+        "Id": id,
         "RQty": returnedQty,
+      };
+
+  Map<String, dynamic> toInvoice() => {
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "InvType": orderType.index, // 0 - Take away , 1 - Dine In
+        "InvKind": InvoiceKind.invoiceReturn.index, // 0 - Pay , 1 - Return
+        "InvNo": invNo, // الرقم الي بعد منو VocNo
+        "PosNo": posNo, // PosNo
+        "CashNo": cashNo, // CashNo
+        "StoreNo": storeNo, // StoreNo
+        "InvDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "RowSerial": rowSerial, // رقم الايتم بناء على ليست في شاشة index + 1
+        "ItemId": id,
+        "Qty": qty,
+        "Price": priceChange, // السعر بعد تعديل الي بنحسب في الفتورة
+        "OrgPrice": price, // السعر الايتم الفعلي
+        "InvDisc": discount, // قيمة الخصم من الخصم الكلي ل هذا اليتم فقط
+        "ItemDiscPerc": 0, //
+        "LineDisc": totalLineDiscount, // قيمة الخصم في linedicount
+        "ServiceVal": service, //  قيمة سيرفس للايتم بناء على سعر الايتم ل مجموع الفتورة -- بنوزعها على الفتورة
+        "ServiceTax": serviceTax, // قيمة ضريبة سيرفس للايتم بناء على سعر الايتم ل مجموع الفتورة  -- بنوزعها على الفتورة
+        "ItemTaxKind": taxType, // TaxType/Id
+        "ItemTaxPerc": taxPercent, // TaxPerc/TaxPercent
+        "ItemTaxVal": tax, // قيمة ضريبة الايتم بدون ضريبة السيرفس
+        "NetTotal": total, // المجموع النهائي للايتم مع الضريبة وسيرفس وضريبة السيرفس
+        "ReturnedQty": 0, //
+        "ItemRemark": note,
+        "IsCombo": isCombo ? 1 : 0,
+        "IsSubItem": 0,
       };
 
   Map<String, dynamic> toJson() => {
         "CoYear": coYear,
-        "InvType": invType,
+        "InvType": orderType,
         "InvKind": invKind,
         "InvNo": invNo,
         "PosNo": posNo,
@@ -103,18 +145,21 @@ class RefundModel {
         "StoreNo": storeNo,
         "InvDate": invDate.toIso8601String(),
         "RowSerial": rowSerial,
-        "ItemId": itemId,
+        "IsCombo": isCombo,
+        "ItemRemark": note,
+        "ItemId": id,
         "Qty": qty,
-        "Price": price,
-        "OrgPrice": orgPrice,
-        "InvDisc": invDisc,
+        "Price": priceChange,
+        "OrgPrice": price,
+        "InvDisc": discount,
         "ItemDiscPerc": itemDiscPerc,
-        "ServiceVal": serviceVal,
+        "ServiceVal": service,
         "ServiceTax": serviceTax,
-        "ItemTaxKind": itemTaxKind,
-        "ItemTaxPerc": itemTaxPerc,
-        "ItemTaxVal": itemTaxVal,
-        "NetTotal": netTotal,
+        "ItemTaxKind": taxType,
+        "ItemTaxPerc": taxPercent,
+        "ItemTaxVal": tax,
+        "LineDisc": totalLineDiscount,
+        "NetTotal": total,
         "ReturnedQty": returnedQty,
       };
 }

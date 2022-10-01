@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:restaurant_system/utils/enum_discount_type.dart';
+import 'package:restaurant_system/utils/enums/enum_discount_type.dart';
 import 'package:restaurant_system/utils/utils.dart';
 
 class Validation {

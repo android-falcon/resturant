@@ -66,7 +66,7 @@ class AllDataModel {
   DateTime serverTime;
   List<CompanyConfigModel> companyConfig;
   List<ImagePathModel> imagePaths;
-  List<PosCloseModel> posClose;
+  DateTime posClose;
   List<ItemModel> items;
   List<CategoryModel> categories;
   List<FamilyModel> families;
@@ -94,7 +94,7 @@ class AllDataModel {
         serverTime: json["serverDate"] == null ? DateTime.now() : DateFormat('M/dd/yyyy h:mm:ss a').parse(json["serverDate"]),
         companyConfig: json["CompanyConfig"] == null ? [] : List<CompanyConfigModel>.from(json["CompanyConfig"].map((x) => CompanyConfigModel.fromJson(x))),
         imagePaths: json["ImagePaths"] == null ? [] : List<ImagePathModel>.from(json["ImagePaths"].map((x) => ImagePathModel.fromJson(x))),
-        posClose: json["PosClose"] == null ? [] : List<PosCloseModel>.from(json["PosClose"].map((x) => PosCloseModel.fromJson(x))),
+        posClose: DateTime.parse(json["PosClose"] ?? DateTime.now().toIso8601String()),
         items: json["Items"] == null ? [] : List<ItemModel>.from(json["Items"].map((x) => ItemModel.fromJson(x))),
         categories: json["Categories"] == null ? [] : List<CategoryModel>.from(json["Categories"].map((x) => CategoryModel.fromJson(x))),
         families: json["Families"] == null ? [] : List<FamilyModel>.from(json["Families"].map((x) => FamilyModel.fromJson(x))),
@@ -123,7 +123,7 @@ class AllDataModel {
         "serverDate": DateFormat('M/dd/yyyy h:mm:ss a').format(serverTime),
         "CompanyConfig": List<dynamic>.from(companyConfig.map((x) => x.toJson())),
         "ImagePaths": List<dynamic>.from(imagePaths.map((x) => x.toJson())),
-        "PosClose": List<dynamic>.from(posClose.map((x) => x.toJson())),
+        "PosClose": posClose.toIso8601String(),
         "Items": List<dynamic>.from(items.map((x) => x.toJson())),
         "Categories": List<dynamic>.from(categories.map((x) => x.toJson())),
         "Families": List<dynamic>.from(families.map((x) => x.toJson())),

@@ -24,8 +24,8 @@ import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/screens/widgets/measure_size_widget.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
-import 'package:restaurant_system/utils/enum_discount_type.dart';
-import 'package:restaurant_system/utils/enum_order_type.dart';
+import 'package:restaurant_system/utils/enums/enum_discount_type.dart';
+import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
@@ -1161,63 +1161,6 @@ class _OrderScreenState extends State<OrderScreen> {
     return _selectedVoidReasonId == null ? null : allDataModel.voidReason.firstWhere((element) => element.id == _selectedVoidReasonId);
   }
 
-  _calculateOrder() {
-    if (allDataModel.companyConfig.first.taxCalcMethod == 0) {
-      // خاضع
-      for (var element in _cartModel.items) {
-        element.total = element.priceChange * element.qty;
-        element.totalLineDiscount = (element.lineDiscountType == DiscountType.percentage ? element.priceChange * (element.lineDiscount / 100) : element.lineDiscount) * element.qty;
-      }
-      _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + item.total);
-      _cartModel.totalLineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + item.totalLineDiscount);
-      _cartModel.totalDiscount = _cartModel.discountType == DiscountType.percentage ? (_cartModel.total - _cartModel.totalLineDiscount) * (_cartModel.discount / 100) : _cartModel.discount;
-      _cartModel.service = widget.type == OrderType.takeAway ? 0 : _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
-      _cartModel.serviceTax = widget.type == OrderType.takeAway ? 0 : _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
-      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? (item.total - item.totalLineDiscount) : 0));
-      for (var element in _cartModel.items) {
-        if (element.discountAvailable) {
-          element.discount = _cartModel.totalDiscount * ((element.total - element.totalLineDiscount) / totalDiscountAvailableItem);
-        } else {
-          element.discount = 0;
-        }
-        element.tax = element.taxType == 2 ? 0 : (element.total - element.totalLineDiscount - element.discount) * (element.taxPercent / 100);
-        element.service = _cartModel.service * (element.total / _cartModel.total);
-        element.serviceTax = element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
-      }
-      _cartModel.subTotal = _cartModel.total - _cartModel.totalDiscount - _cartModel.totalLineDiscount;
-      _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + item.tax);
-      _cartModel.tax = _cartModel.itemsTax + _cartModel.serviceTax;
-      _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
-    } else {
-      // شامل
-      for (var element in _cartModel.items) {
-        element.total = (element.priceChange / (1 + (element.taxPercent / 100))) * element.qty;
-        element.totalLineDiscount = (element.lineDiscountType == DiscountType.percentage ? element.total * (element.lineDiscount / 100) : element.lineDiscount) * element.qty;
-      }
-      _cartModel.total = _cartModel.items.fold(0.0, (sum, item) => sum + item.total);
-      _cartModel.totalLineDiscount = _cartModel.items.fold(0.0, (sum, item) => sum + item.totalLineDiscount);
-      _cartModel.totalDiscount = _cartModel.discountType == DiscountType.percentage ? (_cartModel.total - _cartModel.totalLineDiscount) * (_cartModel.discount / 100) : _cartModel.discount;
-      _cartModel.service = widget.type == OrderType.takeAway ? 0 : _cartModel.total * (allDataModel.companyConfig.first.servicePerc / 100);
-      _cartModel.serviceTax = widget.type == OrderType.takeAway ? 0 : _cartModel.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
-      double totalDiscountAvailableItem = _cartModel.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? (item.total - item.totalLineDiscount) : 0));
-      for (var element in _cartModel.items) {
-        if (element.discountAvailable) {
-          element.discount = _cartModel.totalDiscount * ((element.total - element.totalLineDiscount) / totalDiscountAvailableItem);
-        } else {
-          element.discount = 0;
-        }
-        element.tax = element.taxType == 2 ? 0 : (element.total - element.totalLineDiscount - element.discount) * (element.taxPercent / 100);
-        element.service = _cartModel.service * (element.total / _cartModel.total);
-        element.serviceTax = element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
-      }
-      _cartModel.subTotal = _cartModel.total - _cartModel.totalDiscount - _cartModel.totalLineDiscount;
-      _cartModel.itemsTax = _cartModel.items.fold(0.0, (sum, item) => sum + item.tax);
-      _cartModel.tax = _cartModel.itemsTax + _cartModel.serviceTax;
-      _cartModel.amountDue = _cartModel.subTotal + _cartModel.deliveryCharge + _cartModel.service + _cartModel.tax;
-    }
-    setState(() {});
-  }
-
   _saveDineIn() {
     if (!dineInSaved[indexTable].isOpen) {
       RestApi.openTable(dineInSaved[indexTable].tableId);
@@ -1362,7 +1305,8 @@ class _OrderScreenState extends State<OrderScreen> {
                               var result = await _showParkDialog();
                               if (result != null) {
                                 _cartModel = result;
-                                _calculateOrder();
+                                _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                setState(() {});
                               }
                             }
                           },
@@ -1541,7 +1485,6 @@ class _OrderScreenState extends State<OrderScreen> {
                                               } else {
                                                 _cartModel.items[indexAddedItem].isCombo = true;
                                                 if (cartSubItems.isNotEmpty) {
-
                                                   // _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
                                                   // _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
                                                   _cartModel.items[indexAddedItem].openPrice = false;
@@ -1558,7 +1501,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                               }
                                             }
                                           }
-                                          _calculateOrder();
+                                          _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
                                           setState(() {});
                                         },
                                         child: SizedBox(
@@ -2050,7 +1993,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                           park.add(_cartModel);
                                           mySharedPreferences.park = park;
                                           _cartModel = CartModel.init(orderType: OrderType.takeAway);
-                                          _calculateOrder();
+                                          _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                          setState(() {});
                                         }
                                       } else {
                                         Fluttertoast.showToast(msg: 'Please add items to complete an park'.tr);
@@ -2069,13 +2013,12 @@ class _OrderScreenState extends State<OrderScreen> {
                                     fixed: true,
                                     backgroundColor: ColorsApp.red,
                                     onPressed: () {
-                                      if(_cartModel.items.isEmpty){
+                                      if (_cartModel.items.isEmpty) {
                                         Fluttertoast.showToast(msg: 'Please add items'.tr);
                                       } else {
                                         _saveDineIn();
                                         Get.back();
                                       }
-
                                     },
                                   ),
                                 ),
@@ -2138,7 +2081,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                 element.qty = _cartModel.items[_indexItemSelect].qty;
                               }
                             }
-                            _calculateOrder();
+                            _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                            setState(() {});
                           } else {
                             Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
                           }
@@ -2229,7 +2173,8 @@ class _OrderScreenState extends State<OrderScreen> {
                               } else if (_cartModel.items.every((element) => !element.discountAvailable)) {
                                 _cartModel.discount = 0;
                               }
-                              _calculateOrder();
+                              _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                              setState(() {});
                             }
                           } else {
                             Fluttertoast.showToast(msg: 'Please select the item you want to remove'.tr);
@@ -2277,7 +2222,8 @@ class _OrderScreenState extends State<OrderScreen> {
                               _cartModel.items = [];
                               _cartModel.deliveryCharge = 0;
                               _cartModel.discount = 0;
-                              _calculateOrder();
+                              _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                              setState(() {});
                             }
                           }
                         },
@@ -2305,7 +2251,8 @@ class _OrderScreenState extends State<OrderScreen> {
                         onTap: () async {
                           if (_cartModel.items.isNotEmpty) {
                             _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
-                            _calculateOrder();
+                            _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                            setState(() {});
                           } else {
                             Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
                           }
@@ -2341,7 +2288,8 @@ class _OrderScreenState extends State<OrderScreen> {
                               );
                               _cartModel.items[_indexItemSelect].lineDiscount = result['discount'];
                               _cartModel.items[_indexItemSelect].lineDiscountType = result['type'];
-                              _calculateOrder();
+                              _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                              setState(() {});
                             } else {
                               Fluttertoast.showToast(msg: 'Line discount is not available for this item'.tr);
                             }
@@ -2379,7 +2327,8 @@ class _OrderScreenState extends State<OrderScreen> {
                             );
                             _cartModel.discount = result['discount'];
                             _cartModel.discountType = result['type'];
-                            _calculateOrder();
+                            _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                            setState(() {});
                           } else {
                             Fluttertoast.showToast(msg: 'No items accept discount in order'.tr);
                           }
@@ -2432,7 +2381,8 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (_indexItemSelect != -1) {
                             if (_cartModel.items[_indexItemSelect].openPrice) {
                               _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
-                              _calculateOrder();
+                              _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                              setState(() {});
                             } else {
                               Fluttertoast.showToast(msg: 'Price change is not available for this item'.tr);
                             }

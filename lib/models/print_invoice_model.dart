@@ -5,12 +5,14 @@ import 'package:screenshot/screenshot.dart';
 class PrintInvoiceModel {
   PrintInvoiceModel({
     required this.ipAddress,
+    required this.port,
     required this.items,
     required this.screenshotController,
     this.invoice,
   });
 
   String ipAddress;
+  int port;
   List<CartItemModel> items;
   ScreenshotController screenshotController;
   Uint8List? invoice;

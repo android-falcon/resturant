@@ -1,6 +1,10 @@
 import 'package:equatable/equatable.dart';
-import 'package:restaurant_system/utils/enum_discount_type.dart';
-import 'package:restaurant_system/utils/enum_order_type.dart';
+import 'package:get/get.dart';
+import 'package:restaurant_system/models/refund_model.dart';
+import 'package:restaurant_system/utils/enums/enum_discount_type.dart';
+import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
+import 'package:restaurant_system/utils/enums/enum_order_type.dart';
+import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 
 class CartModel extends Equatable {
@@ -33,9 +37,20 @@ class CartModel extends Equatable {
     this.payCompanyId = 0,
     this.deliveryCompanyId = 0,
     this.parkName = '',
+    this.invNo = 0,
+    this.posNo = 0,
+    this.cashNo = 0,
+    this.storeNo = 0,
+    this.invDate = '',
+    this.returnedTotal = 0,
   });
 
   OrderType orderType;
+  int invNo;
+  int posNo;
+  int cashNo;
+  int storeNo;
+  String invDate;
   int id;
   double total;
   double deliveryCharge;
@@ -49,6 +64,7 @@ class CartModel extends Equatable {
   double itemsTax;
   double tax;
   double amountDue;
+  double returnedTotal;
   List<CartItemModel> items;
   double cash;
   double credit;
@@ -83,8 +99,8 @@ class CartModel extends Equatable {
       );
 
   factory CartModel.fromJson(Map<String, dynamic> json) => CartModel(
-        orderType: OrderType.values[json['orderType']],
-        id: json['id'],
+        orderType: OrderType.values[(json['orderType'] ?? 0)],
+        id: json['id'] ?? 0,
         total: json['total'] == null ? 0 : json['total'].toDouble(),
         deliveryCharge: json['deliveryCharge'] == null ? 0 : json['deliveryCharge'].toDouble(),
         totalLineDiscount: json['totalLineDiscount'] == null ? 0 : json['totalLineDiscount'].toDouble(),
@@ -111,6 +127,42 @@ class CartModel extends Equatable {
         payCompanyId: json['payCompanyId'] ?? 0,
         deliveryCompanyId: json['deliveryCompanyId'] ?? 0,
         parkName: json['parkName'] ?? '',
+      );
+
+  factory CartModel.fromJsonRefund(Map<String, dynamic> json) => CartModel(
+        orderType: OrderType.values[(json["InvoiceMaster"]?['InvType'] ?? 0)],
+        invNo: json["InvoiceMaster"]?["InvNo"] ?? 0,
+        posNo: json["InvoiceMaster"]?["PosNo"] ?? 0,
+        cashNo: json["InvoiceMaster"]?["CashNo"] ?? 0,
+        storeNo: json["InvoiceMaster"]?["StoreNo"] ?? 0,
+        invDate: json["InvoiceMaster"]?["InvDate"] ?? '0000-00-00T00:00:00',
+        id: 0,
+        total: 0,
+        deliveryCharge:  0,
+        totalLineDiscount: json["InvoiceMaster"]?['TotalItemDisc']?.toDouble() ?? 0,
+        totalDiscount: json["InvoiceMaster"]?['InvDisc']?.toDouble() ?? 0,
+        discount: 0,
+        discountType: DiscountType.value,
+        subTotal: 0,
+        service: json["InvoiceMaster"]?['TotalService']?.toDouble() ?? 0,
+        serviceTax: json["InvoiceMaster"]?['TotalServiceTax']?.toDouble() ?? 0,
+        itemsTax: json["InvoiceMaster"]?['TotalTax']?.toDouble() ?? 0,
+        tax: 0,
+        amountDue: json["InvoiceMaster"]?['InvNetTotal']?.toDouble() ?? 0,
+        items: json['InvoiceDetails'] == null ? [] : List<CartItemModel>.from(json['InvoiceDetails'].map((e) => CartItemModel.fromJsonReturn(e))),
+        cash: 0,
+        credit: 0,
+        creditCardNumber: "",
+        creditCardType: "",
+        cheque: 0,
+        coupon: 0,
+        gift: 0,
+        point: 0,
+        tableNo: 0,
+        note: '',
+        payCompanyId: 0,
+        deliveryCompanyId: 0,
+        parkName: '',
       );
 
   Map<String, dynamic> toJson() => {
@@ -147,7 +199,7 @@ class CartModel extends Equatable {
   Map<String, dynamic> toInvoice() => {
         "CoYear": mySharedPreferences.dailyClose.year,
         "InvType": orderType.index, // 0 - Take away , 1 - Dine In
-        "InvKind": 0, // 0 - Pay , 1 - Return
+        "InvKind": InvoiceKind.invoicePay.index, // 0 - Pay , 1 - Return
         "InvNo": mySharedPreferences.inVocNo, // الرقم الي بعد منو VocNo
         "PosNo": mySharedPreferences.posNo, // PosNo
         "CashNo": mySharedPreferences.cashNo, // CashNo
@@ -176,37 +228,47 @@ class CartModel extends Equatable {
         "Card1Code": creditCardNumber,
         "PayCompanyId": payCompanyId,
         "DeliveryCompanyId": deliveryCompanyId,
+        "InvFlag": 1,
+      };
+
+  Map<String, dynamic> toReturnInvoice() => {
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "InvType": orderType.index, // 0 - Take away , 1 - Dine In
+        "InvKind": InvoiceKind.invoiceReturn.index, // 0 - Pay , 1 - Return
+        "InvNo": invNo, // الرقم الي بعد منو VocNo
+        "PosNo": posNo, // PosNo
+        "CashNo": cashNo, // CashNo
+        "InvDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "TotalService": service, // مجموع سيرفس قبل الضريبة
+        "TotalServiceTax": serviceTax, // ضريبة السيرفس فقط
+        "TotalTax": itemsTax, // ضريبة بدو ضريبة السيرفس
+        "InvDisc": totalDiscount, // الخصم الكلي على الفتورة
+        "TotalItemDisc": totalLineDiscount, // مجموع discount line
+        "DeliveryCharge": deliveryCharge, // مجموع توصيل
+        "InvNetTotal": amountDue, // المجموع نهائي بعد كل اشي
+        "PayType": 0,
+        "CashVal": cash,
+        "CardsVal": 0,
+        "ChequeVal": 0,
+        "CouponVal": 0,
+        "GiftVal": 0,
+        "PointsVal": 0,
+        "UserId": 0,
+        "ShiftId": 0,
+        "WaiterId": 0,
+        "TableId": 0,
+        "NoOfSeats": 0,
+        "SaleInvNo": 0,
+        "Card1Name": '',
+        "Card1Code": '',
+        "PayCompanyId": 0,
+        "DeliveryCompanyId": 0,
+        "InvFlag": -1,
       };
 
   @override
   // TODO: implement props
   List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableNo, note, payCompanyId, deliveryCompanyId, parkName];
-
-// Map<String, dynamic> toKitchen(String kitchenId) => {
-//   'orderNo': mySharedPreferences.inVocNo,
-//   'tableNo': tableNo,
-//   'sectionNo': 0,
-//   'orderType': orderType.index,
-//   'items': items.where((element) => false)
-// };
-// {
-// 'orderNo': 1,
-// 'tableNo': 2,
-// 'sectionNo': 3,
-// 'orderType': 1,
-// 'items': [
-// {
-// 'itemName': 'Shawrma',
-// 'qty': 1,
-// 'note': 'ana',
-// },
-// {
-// 'itemName': 'Shawrma',
-// 'qty': 1,
-// 'note': 'ana',
-// },
-// ],
-// }
 }
 
 class CartItemModel extends Equatable {
@@ -237,11 +299,25 @@ class CartItemModel extends Equatable {
     this.parentUuid = '',
     this.note = '',
     this.isCombo = false,
+    this.invNo = 0,
+    this.posNo = 0,
+    this.cashNo = 0,
+    this.storeNo = 0,
+    this.returnedQty = 0,
+    this.returnedPrice = 0,
+    this.returnedTotal = 0,
   });
 
   String uuid;
   String parentUuid;
   OrderType orderType;
+  int invNo;
+  int posNo;
+  int cashNo;
+  int storeNo;
+  int returnedQty;
+  double returnedPrice;
+  double returnedTotal;
   int id;
   int categoryId;
   int taxType;
@@ -267,15 +343,15 @@ class CartItemModel extends Equatable {
   List<CartItemQuestionModel> questions;
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
-        orderType: OrderType.values[json['orderType']],
-        id: json['id'],
-        uuid: json['uuid'],
-        parentUuid: json['parentRandomId'],
-        categoryId: json['categoryId'],
-        taxType: json['taxType'],
+        orderType: OrderType.values[json['orderType'] ?? 0],
+        id: json['id'] ?? 0,
+        uuid: json['uuid'] ?? '',
+        parentUuid: json['parentUuid'] ?? '',
+        categoryId: json['categoryId'] ?? 0,
+        taxType: json['taxType'] ?? 0,
         taxPercent: json['taxPercent'] == null ? 0 : json['taxPercent'].toDouble(),
-        name: json['name'],
-        qty: json['qty'],
+        name: json['name'] ?? '',
+        qty: json['qty'] ?? 0,
         price: json['price'] == null ? 0 : json['price'].toDouble(),
         priceChange: json['priceChange'] == null ? 0 : json['priceChange'].toDouble(),
         total: json['total'] == null ? 0 : json['total'].toDouble(),
@@ -286,20 +362,48 @@ class CartItemModel extends Equatable {
         discount: json['discount'] == null ? 0 : json['discount'].toDouble(),
         service: json['service'] == null ? 0 : json['service'].toDouble(),
         serviceTax: json['serviceTax'] == null ? 0 : json['serviceTax'].toDouble(),
-        discountAvailable: json['discountAvailable'],
-        openPrice: json['openPrice'],
-        rowSerial: json['rowSerial'],
-        note: json['note'],
-        isCombo: json['isCombo'],
-        modifiers: List<CartItemModifierModel>.from(json['modifiers'].map((e) => CartItemModifierModel.fromJson(e))),
-        questions: List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
+        discountAvailable: json['discountAvailable'] ?? false,
+        openPrice: json['openPrice'] ?? false,
+        rowSerial: json['rowSerial'] ?? 0,
+        note: json['note'] ?? '',
+        isCombo: json['isCombo'] ?? false,
+        modifiers: json['modifiers'] == null ? [] : List<CartItemModifierModel>.from(json['modifiers'].map((e) => CartItemModifierModel.fromJson(e))),
+        questions: json['questions'] == null ? [] : List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
+      );
+
+  factory CartItemModel.fromJsonReturn(Map<String, dynamic> json) => CartItemModel(
+        orderType: OrderType.values[json['InvType'] ?? 0],
+        invNo: json["InvNo"] ?? 0,
+        posNo: json["PosNo"] ?? 0,
+        cashNo: json["CashNo"] ?? 0,
+        storeNo: json["StoreNo"] ?? 0,
+        rowSerial: json["RowSerial"] ?? 0,
+        isCombo: (json["IsCombo"] ?? 0) == 1 ? true : false,
+        note: json["ItemRemark"] ?? "",
+        id: json["ItemId"] ?? 0,
+        qty: json["Qty"]?.toInt() ?? 0,
+        priceChange: json["Price"]?.toDouble() ?? 0,
+        price: json["OrgPrice"]?.toDouble() ?? 0,
+        discount: json["InvDisc"]?.toDouble() ?? 0,
+        service: json["ServiceVal"]?.toDouble() ?? 0,
+        serviceTax: json["ServiceTax"]?.toDouble() ?? 0,
+        taxType: json["ItemTaxKind"] ?? 0,
+        taxPercent: json["ItemTaxPerc"]?.toDouble() ?? 0,
+        tax: json["ItemTaxVal"]?.toDouble() ?? 0,
+        totalLineDiscount: json["LineDisc"]?.toDouble() ?? 0,
+        total: json["NetTotal"]?.toDouble() ?? 0,
+        returnedQty: json["ReturnedQty"]?.toInt() ?? 0,
+        uuid: json["UUID"] ?? '',
+        parentUuid: json["ParentUUID"] ?? '',
+        categoryId: 0,
+        name: allDataModel.items.firstWhereOrNull((element) => element.id == (json["ItemId"] ?? 0))?.menuName ?? "",
       );
 
   Map<String, dynamic> toJson() => {
         "orderType": orderType.index,
         "id": id,
         "uuid": uuid,
-        "parentRandomId": parentUuid,
+        "parentUuid": parentUuid,
         "categoryId": categoryId,
         "taxType": taxType,
         "taxPercent": taxPercent,
@@ -327,7 +431,7 @@ class CartItemModel extends Equatable {
   Map<String, dynamic> toInvoice() => {
         "CoYear": mySharedPreferences.dailyClose.year,
         "InvType": orderType.index, // 0 - Take away , 1 - Dine In
-        "InvKind": 0, // 0 - Pay , 1 - Return
+        "InvKind": InvoiceKind.invoicePay.index, // 0 - Pay , 1 - Return
         "InvNo": mySharedPreferences.inVocNo, // الرقم الي بعد منو VocNo
         "PosNo": mySharedPreferences.posNo, // PosNo
         "CashNo": mySharedPreferences.cashNo, // CashNo
@@ -352,6 +456,47 @@ class CartItemModel extends Equatable {
         "IsCombo": isCombo ? 1 : 0,
         "IsSubItem": parentUuid != "" ? 1 : 0,
       };
+
+  Map<String, dynamic> toReturnInvoice() => {
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "InvType": orderType.index, // 0 - Take away , 1 - Dine In
+        "InvKind": InvoiceKind.invoiceReturn.index, // 0 - Pay , 1 - Return
+        "InvNo": invNo, // الرقم الي بعد منو VocNo
+        "PosNo": posNo, // PosNo
+        "CashNo": cashNo, // CashNo
+        "StoreNo": storeNo, // StoreNo
+        "InvDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "RowSerial": rowSerial, // رقم الايتم بناء على ليست في شاشة index + 1
+        "ItemId": id,
+        "Qty": qty,
+        "Price": priceChange, // السعر بعد تعديل الي بنحسب في الفتورة
+        "OrgPrice": price, // السعر الايتم الفعلي
+        "InvDisc": discount, // قيمة الخصم من الخصم الكلي ل هذا اليتم فقط
+        "ItemDiscPerc": 0, //
+        "LineDisc": totalLineDiscount, // قيمة الخصم في linedicount
+        "ServiceVal": service, //  قيمة سيرفس للايتم بناء على سعر الايتم ل مجموع الفتورة -- بنوزعها على الفتورة
+        "ServiceTax": serviceTax, // قيمة ضريبة سيرفس للايتم بناء على سعر الايتم ل مجموع الفتورة  -- بنوزعها على الفتورة
+        "ItemTaxKind": taxType, // TaxType/Id
+        "ItemTaxPerc": taxPercent, // TaxPerc/TaxPercent
+        "ItemTaxVal": tax, // قيمة ضريبة الايتم بدون ضريبة السيرفس
+        "NetTotal": total, // المجموع النهائي للايتم مع الضريبة وسيرفس وضريبة السيرفس
+        "ReturnedQty": 0, //
+        "ItemRemark": note,
+        "IsCombo": isCombo ? 1 : 0,
+        "IsSubItem": parentUuid != "" ? 1 : 0,
+      };
+
+
+  Map<String, dynamic> toReturnInvoiceQty() => {
+    "CoYear":  mySharedPreferences.dailyClose.year,
+    "InvKind": InvoiceKind.invoiceReturn.index,
+    "InvNo": invNo,
+    "PosNo": posNo,
+    "CashNo": cashNo,
+    "RowSerial": rowSerial,
+    "Id": id,
+    "RQty": returnedQty,
+  };
 
   @override
   // TODO: implement props
