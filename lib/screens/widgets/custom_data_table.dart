@@ -42,7 +42,7 @@ class CustomDataTable extends StatelessWidget {
             borderRadius: BorderRadius.circular(3.r),
           ),
           showCheckboxColumn: showCheckboxColumn,
-          dataRowHeight: dataRowHeight,
+          // dataRowHeight: dataRowHeight,
           headingRowHeight: headingRowHeight,
           columnSpacing: columnSpacing,
           sortAscending: sortAscending,

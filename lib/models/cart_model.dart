@@ -138,7 +138,7 @@ class CartModel extends Equatable {
         invDate: json["InvoiceMaster"]?["InvDate"] ?? '0000-00-00T00:00:00',
         id: 0,
         total: 0,
-        deliveryCharge:  0,
+        deliveryCharge: 0,
         totalLineDiscount: json["InvoiceMaster"]?['TotalItemDisc']?.toDouble() ?? 0,
         totalDiscount: json["InvoiceMaster"]?['InvDisc']?.toDouble() ?? 0,
         discount: 0,
@@ -455,6 +455,8 @@ class CartItemModel extends Equatable {
         "ItemRemark": note,
         "IsCombo": isCombo ? 1 : 0,
         "IsSubItem": parentUuid != "" ? 1 : 0,
+        "UUID": uuid,
+        "ParentUUID": parentUuid,
       };
 
   Map<String, dynamic> toReturnInvoice() => {
@@ -484,19 +486,20 @@ class CartItemModel extends Equatable {
         "ItemRemark": note,
         "IsCombo": isCombo ? 1 : 0,
         "IsSubItem": parentUuid != "" ? 1 : 0,
+        "UUID": uuid,
+        "ParentUUID": parentUuid,
       };
 
-
   Map<String, dynamic> toReturnInvoiceQty() => {
-    "CoYear":  mySharedPreferences.dailyClose.year,
-    "InvKind": InvoiceKind.invoiceReturn.index,
-    "InvNo": invNo,
-    "PosNo": posNo,
-    "CashNo": cashNo,
-    "RowSerial": rowSerial,
-    "Id": id,
-    "RQty": returnedQty,
-  };
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "InvKind": InvoiceKind.invoiceReturn.index,
+        "InvNo": invNo,
+        "PosNo": posNo,
+        "CashNo": cashNo,
+        "RowSerial": rowSerial,
+        "Id": id,
+        "RQty": returnedQty,
+      };
 
   @override
   // TODO: implement props

@@ -714,28 +714,47 @@ class _HomeScreenState extends State<HomeScreen> {
                 minWidth: constraints.minWidth,
                 rows: _refundModel == null
                     ? []
-                    : _refundModel!.items
-                        .map(
-                          (e) => DataRow(
+                    : _refundModel!.items.where((element) => element.parentUuid.isEmpty).map(
+                        (e) {
+                          var subItem = _refundModel!.items.where((element) => element.parentUuid == e.uuid).toList();
+                          return DataRow(
                             cells: [
                               DataCell(Text('${e.id}')),
-                              DataCell(Text(allDataModel.items.firstWhere((element) => element.id == e.id, orElse: () => ItemModel.fromJson({})).menuName)),
+                              DataCell(Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(e.name),
+                                  if (subItem.isNotEmpty)
+                                    ...subItem.map(
+                                      (e) => Text(
+                                        e.name,
+                                        style: kStyleDataTableModifiers,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                ],
+                              )),
                               DataCell(Text('${e.qty}')),
-                              DataCell(Text(e.returnedPrice.toStringAsFixed(2))),
+                              DataCell(Text((e.returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(2))),
                               DataCell(
                                 Text('${e.returnedQty}'),
                                 showEditIcon: true,
                                 onTap: () async {
                                   e.returnedQty = await _showQtyDialog(rQty: e.returnedQty, maxQty: e.qty);
+                                  for (var element in subItem) {
+                                    element.returnedQty = e.returnedQty;
+                                  }
                                   _refundModel = calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
                                   setState(() {});
                                 },
                               ),
-                              DataCell(Text(e.returnedTotal.toStringAsFixed(3))),
+                              DataCell(Text((e.returnedTotal + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal)).toStringAsFixed(3))),
                             ],
-                          ),
-                        )
-                        .toList(),
+                          );
+                        },
+                      ).toList(),
                 columns: [
                   DataColumn(label: Text('Serial'.tr)),
                   DataColumn(label: Text('Item'.tr)),
@@ -808,7 +827,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         : () async {
                             var result = await showAreYouSureDialog(title: 'Refund'.tr);
                             if (result) {
-                              if (_refundModel != null && _refundModel!.items.any((element) => element.returnedQty > 0)) {
+                              if (_refundModel!.items.any((element) => element.returnedQty > 0)) {
+                                _refundModel!.items.removeWhere((element) => element.returnedQty == 0);
                                 RestApi.invoice(cart: _refundModel!, invoiceKind: InvoiceKind.invoiceReturn);
                                 RestApi.returnInvoiceQty(invNo: int.parse(_controllerVoucherNumber.text), refundModel: _refundModel!);
                                 Get.back();
