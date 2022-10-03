@@ -345,8 +345,8 @@ class CartItemModel extends Equatable {
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
         orderType: OrderType.values[json['orderType'] ?? 0],
         id: json['id'] ?? 0,
-        uuid: json['uuid'] ?? '',
-        parentUuid: json['parentUuid'] ?? '',
+        uuid: json['UUID'] ?? '',
+        parentUuid: json['ParentUUID'] ?? '',
         categoryId: json['categoryId'] ?? 0,
         taxType: json['taxType'] ?? 0,
         taxPercent: json['taxPercent'] == null ? 0 : json['taxPercent'].toDouble(),

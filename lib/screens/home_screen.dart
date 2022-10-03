@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -708,63 +709,249 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 4.h),
-              child: CustomDataTable(
-                minWidth: constraints.minWidth,
-                rows: _refundModel == null
-                    ? []
-                    : _refundModel!.items.where((element) => element.parentUuid.isEmpty).map(
-                        (e) {
-                          var subItem = _refundModel!.items.where((element) => element.parentUuid == e.uuid).toList();
-                          return DataRow(
-                            cells: [
-                              DataCell(Text('${e.id}')),
-                              DataCell(Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(e.name),
-                                  if (subItem.isNotEmpty)
-                                    ...subItem.map(
-                                      (e) => Text(
-                                        e.name,
-                                        style: kStyleDataTableModifiers,
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 4.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(),
+                borderRadius: BorderRadius.circular(3.r),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Serial'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 5,
+                          child: Text(
+                            'Item'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Qty'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Price'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            'R.Qty'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'R.Total'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(color: Colors.black, height: 1),
+                  if (_refundModel != null)
+                    ListView.separated(
+                      itemCount: _refundModel!.items.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      separatorBuilder: (context, index) => _refundModel!.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
+                      itemBuilder: (context, index) {
+                        if (_refundModel!.items[index].parentUuid.isNotEmpty) {
+                          return Container();
+                        } else {
+                          var subItem = _refundModel!.items.where((element) => element.parentUuid.isNotEmpty && element.parentUuid == _refundModel!.items[index].uuid).toList();
+                          log('ananan ${subItem.length}');
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '${_refundModel!.items[index].id}',
+                                        style: kStyleDataTable,
                                         textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                ],
-                              )),
-                              DataCell(Text('${e.qty}')),
-                              DataCell(Text((e.returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(2))),
-                              DataCell(
-                                Text('${e.returnedQty}'),
-                                showEditIcon: true,
-                                onTap: () async {
-                                  e.returnedQty = await _showQtyDialog(rQty: e.returnedQty, maxQty: e.qty);
-                                  for (var element in subItem) {
-                                    element.returnedQty = e.returnedQty;
-                                  }
-                                  _refundModel = calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
-                                  setState(() {});
-                                },
+                                    Expanded(
+                                      flex: 5,
+                                      child: Text(
+                                        _refundModel!.items[index].name,
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        '${_refundModel!.items[index].qty}',
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        (_refundModel!.items[index].returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(2),
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: InkWell(
+                                        onTap: () async {
+                                          _refundModel!.items[index].returnedQty = await _showQtyDialog(rQty: _refundModel!.items[index].returnedQty, maxQty: _refundModel!.items[index].qty);
+                                          for (var element in subItem) {
+                                            element.returnedQty = _refundModel!.items[index].returnedQty;
+                                          }
+                                          _refundModel = calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
+                                          setState(() {});
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              '${_refundModel!.items[index].returnedQty}',
+                                              style: kStyleDataTable,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            const Icon(Icons.edit),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        (_refundModel!.items[index].returnedTotal + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal)).toStringAsFixed(3),
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              DataCell(Text((e.returnedTotal + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal)).toStringAsFixed(3))),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                child: Column(
+                                  children: [
+                                    if (subItem.isNotEmpty)
+                                      ListView.builder(
+                                        itemCount: subItem.length,
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        itemBuilder: (context, indexSubItem) {
+                                          return Row(
+                                            children: [
+                                              Expanded(child: Container()),
+                                              Expanded(
+                                                flex: 5,
+                                                child: Text(
+                                                  subItem[indexSubItem].name,
+                                                  style: kStyleDataTableModifiers,
+                                                  textAlign: TextAlign.center,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              Expanded(child: Container()),
+                                              Expanded(child: Container()),
+                                              Expanded(flex: 2, child: Container()),
+                                              Expanded(child: Container()),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              )
                             ],
                           );
-                        },
-                      ).toList(),
-                columns: [
-                  DataColumn(label: Text('Serial'.tr)),
-                  DataColumn(label: Text('Item'.tr)),
-                  DataColumn(label: Text('Qty'.tr)),
-                  DataColumn(label: Text('Price'.tr)),
-                  DataColumn(label: Text('R.Qty'.tr)),
-                  DataColumn(label: Text('R.Total'.tr)),
+                        }
+                      },
+                    ),
                 ],
               ),
             ),
+            // Padding(
+            //   padding: EdgeInsets.symmetric(vertical: 4.h),
+            //   child: CustomDataTable(
+            //     minWidth: constraints.minWidth,
+            //     rows: _refundModel == null
+            //         ? []
+            //         : _refundModel!.items.where((element) => element.parentUuid.isEmpty).map(
+            //             (e) {
+            //               var subItem = _refundModel!.items.where((element) => element.parentUuid == e.uuid).toList();
+            //               return DataRow(
+            //                 cells: [
+            //                   DataCell(Text('${e.id}')),
+            //                   DataCell(Column(
+            //                     mainAxisSize: MainAxisSize.min,
+            //                     children: [
+            //                       Text(e.name),
+            //                       if (subItem.isNotEmpty)
+            //                         ...subItem.map(
+            //                           (e) => Text(
+            //                             e.name,
+            //                             style: kStyleDataTableModifiers,
+            //                             textAlign: TextAlign.center,
+            //                             maxLines: 1,
+            //                             overflow: TextOverflow.ellipsis,
+            //                           ),
+            //                         ),
+            //                     ],
+            //                   )),
+            //                   DataCell(Text('${e.qty}')),
+            //                   DataCell(Text((e.returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(2))),
+            //                   DataCell(
+            //                     Text('${e.returnedQty}'),
+            //                     showEditIcon: true,
+            //                     onTap: () async {
+            //                       e.returnedQty = await _showQtyDialog(rQty: e.returnedQty, maxQty: e.qty);
+            //                       for (var element in subItem) {
+            //                         element.returnedQty = e.returnedQty;
+            //                       }
+            //                       _refundModel = calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
+            //                       setState(() {});
+            //                     },
+            //                   ),
+            //                   DataCell(Text((e.returnedTotal + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal)).toStringAsFixed(3))),
+            //                 ],
+            //               );
+            //             },
+            //           ).toList(),
+            //     columns: [
+            //       DataColumn(label: Text('Serial'.tr)),
+            //       DataColumn(label: Text('Item'.tr)),
+            //       DataColumn(label: Text('Qty'.tr)),
+            //       DataColumn(label: Text('Price'.tr)),
+            //       DataColumn(label: Text('R.Qty'.tr)),
+            //       DataColumn(label: Text('R.Total'.tr)),
+            //     ],
+            //   ),
+            // ),
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
