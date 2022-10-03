@@ -10,6 +10,7 @@ import 'package:restaurant_system/database/network_table.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/splash_screen.dart';
 import 'package:restaurant_system/utils/app_themes.dart';
+import 'package:restaurant_system/utils/enums/enum_device_type.dart';
 import 'package:restaurant_system/utils/my_http_overrides.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/translations.dart';
@@ -63,6 +64,7 @@ class _RestaurantSystemState extends State<RestaurantSystem> {
         }
       }
     });
+    getDeviceType();
   }
 
   @override

@@ -24,6 +24,7 @@ import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/screens/widgets/measure_size_widget.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/enums/enum_device_type.dart';
 import 'package:restaurant_system/utils/enums/enum_discount_type.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
@@ -962,7 +963,7 @@ class _OrderScreenState extends State<OrderScreen> {
 
   Future<int> _showQtyDialog({TextEditingController? controller, int? maxQty, int minQty = 0, required int rQty}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
-    controller ??= TextEditingController(text: '$rQty');
+    controller ??= TextEditingController(text: '0');
     var qty = await Get.dialog(
       CustomDialog(
         builder: (context, setState, constraints) => Column(
@@ -1436,7 +1437,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     Expanded(
                       child: SingleChildScrollView(
                         child: StaggeredGrid.count(
-                          crossAxisCount: _isShowItem ? 2 : 3,
+                          crossAxisCount: deviceType == DeviceType.phone ? _isShowItem ? 2 : 3 : _isShowItem ? 4 : 5,
                           children: _isShowItem
                               ? allDataModel.items
                                   .where((element) => element.category.id == _selectedCategoryId)
@@ -1522,14 +1523,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                                     height: 50.h,
                                                     width: 50.w,
                                                     fit: BoxFit.contain,
-                                                    placeholder: (context, url) => SizedBox(
-                                                      height: 50.h,
-                                                      width: 50.w,
-                                                    ),
-                                                    errorWidget: (context, url, error) => SizedBox(
-                                                      height: 50.h,
-                                                      width: 50.w,
-                                                    ),
+                                                    placeholder: (context, url) => Container(),
+                                                    errorWidget: (context, url, error) => Container(),
                                                   ),
                                                   Expanded(
                                                     child: Column(
