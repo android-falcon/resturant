@@ -23,6 +23,13 @@ class EmployeeModel {
     required this.justTimeCard,
     required this.isActive,
     required this.isKitchenUser,
+    required this.hasRefundPermission,
+    required this.hasCashInOutPermission,
+    required this.hasVoidPermission,
+    required this.hasVoidAllPermission,
+    required this.hasLineDiscPermission,
+    required this.hasDiscPermission,
+    required this.hasPriceChangePermission,
     required this.deviceIp,
     required this.devicePort,
   });
@@ -39,6 +46,13 @@ class EmployeeModel {
   bool justTimeCard;
   bool isActive;
   bool isKitchenUser;
+  bool hasRefundPermission;
+  bool hasCashInOutPermission;
+  bool hasVoidPermission;
+  bool hasVoidAllPermission;
+  bool hasLineDiscPermission;
+  bool hasDiscPermission;
+  bool hasPriceChangePermission;
   String deviceIp;
   int devicePort;
 
@@ -55,6 +69,13 @@ class EmployeeModel {
         justTimeCard: json["JustTimeCard"] ?? false,
         isActive: json["IsActive"] ?? false,
         isKitchenUser: json["IsKitchenUser"] ?? false,
+        hasRefundPermission: json["HasRefundPermission"] ?? false,
+        hasCashInOutPermission: json["HasCashInOutPermission"] ?? false,
+        hasVoidPermission: json["HasVoidPermission"] ?? false,
+        hasVoidAllPermission: json["HasVoidAllPermission"] ?? false,
+        hasLineDiscPermission: json["HasLineDiscPermission"] ?? false,
+        hasDiscPermission: json["HasDiscPermission"] ?? false,
+        hasPriceChangePermission: json["HasPriceChangePermission"] ?? false,
         deviceIp: json["DeviceIp"] ?? "",
         devicePort: json["DevicePort"] ?? 3000,
       );
@@ -72,6 +93,13 @@ class EmployeeModel {
         "JustTimeCard": justTimeCard,
         "IsActive": isActive,
         "IsKitchenUser": isKitchenUser,
+        "HasRefundPermission": hasRefundPermission,
+        "HasCashInOutPermission": hasCashInOutPermission,
+        "HasVoidPermission": hasVoidPermission,
+        "HasVoidAllPermission": hasVoidAllPermission,
+        "HasLineDiscPermission": hasLineDiscPermission,
+        "HasDiscPermission": hasDiscPermission,
+        "HasPriceChangePermission": hasPriceChangePermission,
         "DeviceIp": deviceIp,
         "DevicePort": devicePort,
       };

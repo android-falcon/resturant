@@ -160,4 +160,5 @@ const Map<String, String> ar = {
   'The cart must be emptied, in order to be able to change the delivery company': 'The cart must be emptied, in order to be able to change the delivery company',
   'Payment Company': 'Payment Company',
   'Please select a payment company': 'Please select a payment company',
+  'Do you want to finish the invoice?': 'Do you want to finish the invoice?',
 };

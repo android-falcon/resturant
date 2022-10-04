@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:path/path.dart';
 import 'package:restaurant_system/database/network_table.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
 
 class DatabaseHelper {
   static const _databaseName = "falcons.db";
@@ -23,8 +28,15 @@ class DatabaseHelper {
 
   // this opens the database (and creates it if it doesn't exist)
   _initDatabase() async {
-    String path = join(await getDatabasesPath(), _databaseName);
-    return await openDatabase(path, version: _databaseVersion, onCreate: _onCreate);
+    if(Platform.isWindows){
+      sqfliteFfiInit();
+      var databaseFactory = databaseFactoryFfi;
+      return await databaseFactory.openDatabase(inMemoryDatabasePath, options: OpenDatabaseOptions(version: _databaseVersion, onCreate: _onCreate));
+    } else {
+      String path = join(await getDatabasesPath(), _databaseName);
+      return await openDatabase(path, version: _databaseVersion, onCreate: _onCreate);
+    }
+
   }
 
   // SQL code to create the database table

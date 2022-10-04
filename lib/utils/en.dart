@@ -171,4 +171,5 @@ const Map<String, String> en = {
   'Successfully': 'Successfully',
   'Refresh Data': 'Refresh Data',
   'Return Total': 'Return Total',
+  'Do you want to finish the invoice?': 'Do you want to finish the invoice?',
 };

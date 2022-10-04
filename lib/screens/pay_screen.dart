@@ -13,6 +13,7 @@ import 'package:restaurant_system/models/print_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/printer/print_invoice.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
+import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -49,12 +50,93 @@ class _PayScreenState extends State<PayScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    SchedulerBinding.instance!.addPostFrameCallback((_) => calculateRemaining());
+    SchedulerBinding.instance.addPostFrameCallback((_) => _calculateRemaining());
   }
 
-  calculateRemaining() {
+  _calculateRemaining() {
     remaining = widget.cart.amountDue - (widget.cart.cash + widget.cart.credit + widget.cart.cheque + widget.cart.gift + widget.cart.coupon + widget.cart.point);
     setState(() {});
+  }
+
+  _finishInvoice() {
+    if (remaining == 0) {
+      for (int i = 0; i < widget.cart.items.length; i++) {
+        widget.cart.items[i].rowSerial = i + 1;
+      }
+      RestApi.invoice(cart: widget.cart, invoiceKind: InvoiceKind.invoicePay);
+      KitchenInvoice.init(orderNo: mySharedPreferences.orderNo, cart: widget.cart);
+
+      mySharedPreferences.inVocNo++;
+      mySharedPreferences.orderNo++;
+
+      _showPrintDialog().then((value) {
+        Get.offAll(HomeScreen());
+        Get.to(() => OrderScreen(type: widget.cart.orderType));
+      });
+      if (widget.tableId != null) {
+        RestApi.closeTable(widget.tableId!);
+        var indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId);
+        dineInSaved[indexTable].isOpen = false;
+        dineInSaved[indexTable].numberSeats = 0;
+        dineInSaved[indexTable].cart = CartModel.init(orderType: OrderType.dineIn);
+        mySharedPreferences.dineIn = dineInSaved;
+      }
+    } else {
+      Fluttertoast.showToast(msg: 'The remainder should be 0'.tr);
+    }
+  }
+
+  _showFinishDialog() {
+    Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 80.h),
+                child: Text(
+                  'Do you want to finish the invoice?'.tr,
+                  style: kStyleTextTitle.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CustomButton(
+                    fixed: true,
+                    padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 24.h),
+                    child: Text(
+                      'Close'.tr,
+                      style: kStyleButtonPayment,
+                    ),
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                  SizedBox(width: 25.w),
+                  CustomButton(
+                    fixed: true,
+                    padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 24.h),
+                    child: Text(
+                      'Finish'.tr,
+                      style: kStyleButtonPayment,
+                    ),
+                    onPressed: () {
+                      Get.back();
+                      _finishInvoice();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: true,
+    );
   }
 
   Future<Map<String, dynamic>> _showPayDialog({TextEditingController? controllerReceived, required double balance, required double received, bool enableReturnValue = false, TextEditingController? controllerCreditCard}) async {
@@ -90,9 +172,12 @@ class _PayScreenState extends State<PayScreen> {
                           onTap: () {
                             controllerReceived!.text = balance.toStringAsFixed(3);
                           },
-                          child: Text(
-                            '${'Balance'.tr} : ${balance.toStringAsFixed(3)}',
-                            style: kStyleTextTitle,
+                          child: Padding(
+                            padding: EdgeInsets.all(8.w),
+                            child: Text(
+                              '${'Balance'.tr} : ${balance.toStringAsFixed(3)}',
+                              style: kStyleTextTitle,
+                            ),
                           ),
                         ),
                         SizedBox(height: 8.h),
@@ -209,7 +294,7 @@ class _PayScreenState extends State<PayScreen> {
                         },
                         onSubmit: () {
                           if (_keyForm.currentState!.validate()) {
-                            if (controllerCreditCard != null && selectedPaymentCompany == null) {
+                            if (controllerCreditCard != null && selectedPaymentCompany == null && controllerReceived!.text != '0') {
                               Fluttertoast.showToast(msg: 'Please select a payment company'.tr);
                             } else {
                               Get.back(result: controllerReceived!.text);
@@ -228,7 +313,7 @@ class _PayScreenState extends State<PayScreen> {
       barrierDismissible: false,
     );
     double _received = result == null ? received : double.parse(result);
-    if ((_received - double.parse(balance.toStringAsFixed(3)) == 0)) {
+    if ((_received - double.parse(balance.toStringAsFixed(3))) == 0) {
       _received = balance;
     } else if (enableReturnValue && _received > balance) {
       await Get.dialog(
@@ -274,12 +359,12 @@ class _PayScreenState extends State<PayScreen> {
 
     for (var printer in allDataModel.printers) {
       if (printer.cashNo == mySharedPreferences.cashNo) {
-        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress,port: printer.port, screenshotController: ScreenshotController(), items: []));
+        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: []));
       }
       var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
       List<CartItemModel> cartItems = widget.cart.items.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
       if (cartItems.isNotEmpty) {
-        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress,port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
+        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
       }
     }
     Future.delayed(const Duration(milliseconds: 100)).then((value) async {
@@ -471,7 +556,7 @@ class _PayScreenState extends State<PayScreen> {
                                         ),
                                         Expanded(
                                           child: Text(
-                                            widget.cart.items[index].total.toStringAsFixed(2),
+                                            widget.cart.items[index].total.toStringAsFixed(3),
                                             style: kStyleDataPrinter,
                                             textAlign: TextAlign.center,
                                           ),
@@ -556,14 +641,14 @@ class _PayScreenState extends State<PayScreen> {
                                                   ),
                                                   Expanded(
                                                     child: Text(
-                                                      subItem[indexSubItem].priceChange.toStringAsFixed(2),
+                                                      subItem[indexSubItem].priceChange.toStringAsFixed(3),
                                                       style: kStyleDataPrinter,
                                                       textAlign: TextAlign.center,
                                                     ),
                                                   ),
                                                   Expanded(
                                                     child: Text(
-                                                      subItem[indexSubItem].total.toStringAsFixed(2),
+                                                      subItem[indexSubItem].total.toStringAsFixed(3),
                                                       style: kStyleDataPrinter,
                                                       textAlign: TextAlign.center,
                                                     ),
@@ -999,7 +1084,10 @@ class _PayScreenState extends State<PayScreen> {
                                           onPressed: () async {
                                             var result = await _showPayDialog(balance: remaining + widget.cart.cash, received: widget.cart.cash, enableReturnValue: true);
                                             widget.cart.cash = result['received'];
-                                            calculateRemaining();
+                                            _calculateRemaining();
+                                            if (remaining == 0) {
+                                              _showFinishDialog();
+                                            }
                                           },
                                         ),
                                       ),
@@ -1018,7 +1106,10 @@ class _PayScreenState extends State<PayScreen> {
                                             widget.cart.creditCardNumber = result['credit_card'];
                                             widget.cart.creditCardType = result['credit_card_type'];
                                             widget.cart.payCompanyId = result['payment_company'];
-                                            calculateRemaining();
+                                            _calculateRemaining();
+                                            if (remaining == 0) {
+                                              _showFinishDialog();
+                                            }
                                           },
                                         ),
                                       ),
@@ -1282,30 +1373,7 @@ class _PayScreenState extends State<PayScreen> {
                                           fixed: true,
                                           backgroundColor: ColorsApp.primaryColor,
                                           onPressed: () {
-                                            if (remaining == 0) {
-                                              for (int i = 0; i < widget.cart.items.length; i++) {
-                                                widget.cart.items[i].rowSerial = i + 1;
-                                              }
-                                              RestApi.invoice(cart: widget.cart, invoiceKind: InvoiceKind.invoicePay);
-                                              KitchenInvoice.init(orderNo: mySharedPreferences.orderNo, cart: widget.cart);
-
-                                              mySharedPreferences.inVocNo++;
-                                              mySharedPreferences.orderNo++;
-
-                                              _showPrintDialog().then((value) {
-                                                Get.offAll(HomeScreen());
-                                              });
-                                              if (widget.tableId != null) {
-                                                RestApi.closeTable(widget.tableId!);
-                                                var indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId);
-                                                dineInSaved[indexTable].isOpen = false;
-                                                dineInSaved[indexTable].numberSeats = 0;
-                                                dineInSaved[indexTable].cart = CartModel.init(orderType: OrderType.dineIn);
-                                                mySharedPreferences.dineIn = dineInSaved;
-                                              }
-                                            } else {
-                                              Fluttertoast.showToast(msg: 'The remainder should be 0'.tr);
-                                            }
+                                            _finishInvoice();
                                           },
                                         ),
                                       ),

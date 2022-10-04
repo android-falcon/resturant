@@ -11,12 +11,10 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/all_data/item_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
-import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/screens/table_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
-import 'package:restaurant_system/screens/widgets/custom_data_table.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
@@ -48,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    SchedulerBinding.instance!.addPostFrameCallback((timeStamp) {
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       _menu = <HomeMenu>[
         // HomeMenu(
         //   name: 'Time Card'.tr,
@@ -68,24 +66,27 @@ class _HomeScreenState extends State<HomeScreen> {
         //     _showInOutDialog(type: InOutType.cashOut);
         //   },
         // ),
-        HomeMenu(
-          name: 'Pay In'.tr,
-          onTab: () {
-            _showInOutDialog(type: InOutType.payIn);
-          },
-        ),
-        HomeMenu(
-          name: 'Pay Out'.tr,
-          onTab: () {
-            _showInOutDialog(type: InOutType.payOut);
-          },
-        ),
-        HomeMenu(
-          name: 'Refund'.tr,
-          onTab: () {
-            _showRefundDialog();
-          },
-        ),
+        if (mySharedPreferences.employee.hasCashInOutPermission)
+          HomeMenu(
+            name: 'Pay In'.tr,
+            onTab: () {
+              _showInOutDialog(type: InOutType.payIn);
+            },
+          ),
+        if (mySharedPreferences.employee.hasCashInOutPermission)
+          HomeMenu(
+            name: 'Pay Out'.tr,
+            onTab: () {
+              _showInOutDialog(type: InOutType.payOut);
+            },
+          ),
+        if (mySharedPreferences.employee.hasRefundPermission)
+          HomeMenu(
+            name: 'Refund'.tr,
+            onTab: () {
+              _showRefundDialog();
+            },
+          ),
         HomeMenu(
           name: 'Cash Drawer'.tr,
           onTab: () async {},
@@ -781,7 +782,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           return Container();
                         } else {
                           var subItem = _refundModel!.items.where((element) => element.parentUuid.isNotEmpty && element.parentUuid == _refundModel!.items[index].uuid).toList();
-                          log('ananan ${subItem.length}');
                           return Column(
                             children: [
                               Padding(
@@ -812,7 +812,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     Expanded(
                                       child: Text(
-                                        (_refundModel!.items[index].returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(2),
+                                        (_refundModel!.items[index].returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(3),
                                         style: kStyleDataTable,
                                         textAlign: TextAlign.center,
                                       ),
@@ -924,7 +924,7 @@ class _HomeScreenState extends State<HomeScreen> {
             //                     ],
             //                   )),
             //                   DataCell(Text('${e.qty}')),
-            //                   DataCell(Text((e.returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(2))),
+            //                   DataCell(Text((e.returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(3))),
             //                   DataCell(
             //                     Text('${e.returnedQty}'),
             //                     showEditIcon: true,
