@@ -2,8 +2,8 @@ import 'dart:typed_data';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:screenshot/screenshot.dart';
 
-class PrintInvoiceModel {
-  PrintInvoiceModel({
+class PrinterInvoiceModel {
+  PrinterInvoiceModel({
     required this.ipAddress,
     required this.port,
     required this.items,

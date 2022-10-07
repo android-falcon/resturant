@@ -17,6 +17,7 @@ class CustomTextField extends StatefulWidget {
   Widget? suffixIcon;
   bool enableInteractiveSelection;
   bool enabled;
+  bool readOnly;
   bool obscureText;
   bool isPass;
   Color? borderColor;
@@ -48,6 +49,7 @@ class CustomTextField extends StatefulWidget {
     this.contentPadding,
     this.enableInteractiveSelection = true,
     this.enabled = true,
+    this.readOnly = false,
     this.obscureText = false,
     this.isPass = false,
     this.textDirection,
@@ -146,6 +148,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
         ),
         enabled: widget.enabled,
+        readOnly: widget.readOnly,
         inputFormatters: widget.inputFormatters,
         obscureText: widget.obscureText,
         textDirection: widget.textDirection,

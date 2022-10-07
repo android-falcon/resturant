@@ -172,4 +172,9 @@ const Map<String, String> en = {
   'Refresh Data': 'Refresh Data',
   'Return Total': 'Return Total',
   'Do you want to finish the invoice?': 'Do you want to finish the invoice?',
+  'End Cash': 'End Cash',
+  'Total Cash': 'Total Cash',
+  'Total Credit Card': 'Total Credit Card',
+  'Total Credit': 'Total Credit',
+  'Reprint Invoice': 'Reprint Invoice',
 };

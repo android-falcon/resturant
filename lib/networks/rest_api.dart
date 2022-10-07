@@ -309,9 +309,64 @@ class RestApi {
         await NetworkTable.update(networkModel);
       }
       if (response.statusCode == 200) {
-        CartModel refundModel = CartModel.fromJsonRefund(response.data);
+        CartModel refundModel = CartModel.fromJsonServer(response.data);
         hideLoadingDialog();
         return refundModel;
+      } else {
+        hideLoadingDialog();
+        return null;
+      }
+    } on dio.DioError catch (e) {
+      hideLoadingDialog();
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return null;
+    } catch (e) {
+      hideLoadingDialog();
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return null;
+    }
+  }
+
+  static Future<CartModel?> getInvoice({required int invNo}) async {
+    try {
+      showLoadingDialog();
+      var queryParameters = {
+        "coYear": mySharedPreferences.dailyClose.year,
+        "PosNo": mySharedPreferences.posNo,
+        "CashNo": mySharedPreferences.cashNo,
+        "InvNo": invNo,
+      };
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'GET_INVOICE',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.GET_INVOICE,
+        method: 'GET',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryLastRow();
+      final response = await restDio.get(ApiUrl.GET_INVOICE, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      if (response.statusCode == 200) {
+        CartModel model = CartModel.fromJsonServer(response.data);
+        hideLoadingDialog();
+        return model;
       } else {
         hideLoadingDialog();
         return null;
@@ -690,6 +745,62 @@ class RestApi {
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
+
+  static Future<void> endCash({required double totalCash, required double totalCreditCard, required double totalCredit, required double netTotal}) async {
+    try {
+      showLoadingDialog();
+      var body = jsonEncode({
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "EndCashDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "PosNo": mySharedPreferences.posNo,
+        "CashNo": mySharedPreferences.cashNo,
+        "TotalCash": totalCash,
+        "TotalCreditCard": totalCreditCard,
+        "TotalCredit": totalCredit,
+        "NetTotal": netTotal,
+        "UserId": mySharedPreferences.employee.id,
+      });
+      await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'END_CASH',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.END_CASH,
+        method: 'POST',
+        params: '',
+        body: body,
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryLastRow();
+      final response = await restDio.post(ApiUrl.END_CASH, data: body);
+      _networkLog(response);
+
+      hideLoadingDialog();
+      Get.back();
+      Fluttertoast.showToast(msg: 'Successfully'.tr, timeInSecForIosWeb: 3);
+
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      hideLoadingDialog();
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    } catch (e) {
+      _traceCatch(e);
+      hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
   }

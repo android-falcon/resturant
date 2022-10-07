@@ -9,9 +9,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
-import 'package:restaurant_system/models/print_invoice_model.dart';
+import 'package:restaurant_system/models/printer_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
-import 'package:restaurant_system/printer/print_invoice.dart';
+import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
@@ -355,21 +355,21 @@ class _PayScreenState extends State<PayScreen> {
 
   Future<void> _showPrintDialog() async {
     ScreenshotController _screenshotControllerCash = ScreenshotController();
-    List<PrintInvoiceModel> invoices = [];
+    List<PrinterInvoiceModel> invoices = [];
 
     for (var printer in allDataModel.printers) {
       if (printer.cashNo == mySharedPreferences.cashNo) {
-        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: []));
+        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: []));
       }
       var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
       List<CartItemModel> cartItems = widget.cart.items.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
       if (cartItems.isNotEmpty) {
-        invoices.add(PrintInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
+        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
       }
     }
     Future.delayed(const Duration(milliseconds: 100)).then((value) async {
       var screenshotCash = await _screenshotControllerCash.capture(delay: const Duration(milliseconds: 10));
-      await Future.forEach(invoices, (PrintInvoiceModel element) async {
+      await Future.forEach(invoices, (PrinterInvoiceModel element) async {
         if (element.items.isEmpty) {
           element.invoice = screenshotCash;
         } else {
@@ -378,7 +378,7 @@ class _PayScreenState extends State<PayScreen> {
         }
       });
       invoices.removeWhere((element) => element.invoice == null);
-      PrintInvoice.init(invoices: invoices);
+      Printer.invoices(invoices: invoices);
     });
 
     await Get.dialog(
@@ -394,7 +394,7 @@ class _PayScreenState extends State<PayScreen> {
                   fixed: true,
                   child: Text('Print'.tr),
                   onPressed: () {
-                    PrintInvoice.init(invoices: invoices);
+                    Printer.invoices(invoices: invoices);
                   },
                 ),
                 SizedBox(width: 10.w),
