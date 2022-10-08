@@ -8,6 +8,7 @@ import 'package:restaurant_system/database/network_table.dart';
 import 'package:restaurant_system/models/all_data_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
+import 'package:restaurant_system/models/end_cash_model.dart';
 import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/api_url.dart';
 import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
@@ -134,7 +135,7 @@ class RestApi {
       var queryParameters = {
         'PosNo': mySharedPreferences.posNo,
       };
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'GET_DATA',
         status: 3,
@@ -150,7 +151,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.get(ApiUrl.GET_DATA, queryParameters: queryParameters);
       _networkLog(response);
       if (response.statusCode == 200) {
@@ -240,7 +241,7 @@ class RestApi {
         "InvoiceDetails": List<dynamic>.from(cart.items.map((e) => invoiceKind == InvoiceKind.invoicePay ? e.toInvoice() : e.toReturnInvoice())).toList(),
         "InvoiceModifires": modifiers,
       });
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'INVOICE',
         status: 1,
@@ -256,7 +257,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.INVOICE, data: body);
       _networkLog(response);
       if (networkModel != null) {
@@ -283,7 +284,7 @@ class RestApi {
         "CashNo": mySharedPreferences.cashNo,
         "InvNo": invNo,
       };
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'REFUND_INVOICE',
         status: 3,
@@ -299,7 +300,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.get(ApiUrl.REFUND_INVOICE, queryParameters: queryParameters);
       _networkLog(response);
       if (networkModel != null) {
@@ -338,7 +339,7 @@ class RestApi {
         "CashNo": mySharedPreferences.cashNo,
         "InvNo": invNo,
       };
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'GET_INVOICE',
         status: 3,
@@ -354,7 +355,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.get(ApiUrl.GET_INVOICE, queryParameters: queryParameters);
       _networkLog(response);
       if (networkModel != null) {
@@ -390,7 +391,7 @@ class RestApi {
         'orgInvNo': invNo,
       };
       var body = jsonEncode(List<dynamic>.from(refundModel.items.map((e) => e.toReturnInvoiceQty())));
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'INVOICE_RETURNED_QTY',
         status: 1,
@@ -406,7 +407,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.INVOICE_RETURNED_QTY, data: body, queryParameters: queryParameters);
       _networkLog(response);
       if (networkModel != null) {
@@ -441,7 +442,7 @@ class RestApi {
         "ShiftId": 0,
       });
       mySharedPreferences.payInOutNo++;
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'PAY_IN_OUT',
         status: 1,
@@ -457,7 +458,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.PAY_IN_OUT, data: body);
       _networkLog(response);
       if (networkModel != null) {
@@ -486,7 +487,7 @@ class RestApi {
         "UserId": mySharedPreferences.employee.id,
         "CloseDate": closeDate.toIso8601String(),
       });
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'POS_DAILY_CLOSE',
         status: 3,
@@ -502,7 +503,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.POS_DAILY_CLOSE, data: body);
       _networkLog(response);
       mySharedPreferences.dailyClose = closeDate;
@@ -535,7 +536,7 @@ class RestApi {
         'tblId': tableId,
       };
       mySharedPreferences.inVocNo++;
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'OPEN_TABLE',
         status: 1,
@@ -551,7 +552,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.OPEN_TABLE, queryParameters: queryParameters);
       _networkLog(response);
       if (networkModel != null) {
@@ -576,7 +577,7 @@ class RestApi {
         'tblId': tableId,
       };
       mySharedPreferences.inVocNo++;
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'CLOSE_TABLE',
         status: 1,
@@ -592,7 +593,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.CLOSE_TABLE, queryParameters: queryParameters);
       _networkLog(response);
       if (networkModel != null) {
@@ -624,7 +625,7 @@ class RestApi {
         "Qty": item.qty,
         "UserID": mySharedPreferences.employee.id,
       });
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'SAVE_VOID_ITEMS',
         status: 1,
@@ -640,7 +641,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.SAVE_VOID_ITEMS, data: body);
       _networkLog(response);
       if (networkModel != null) {
@@ -674,7 +675,7 @@ class RestApi {
                 "UserID": mySharedPreferences.employee.id,
               })
           .toList());
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'SAVE_VOID_ALL_ITEMS',
         status: 1,
@@ -690,7 +691,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.SAVE_VOID_ALL_ITEMS, data: body);
       _networkLog(response);
       if (networkModel != null) {
@@ -714,7 +715,7 @@ class RestApi {
       var queryParameters = {
         "PosNo": mySharedPreferences.posNo,
       };
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'RESET_POS_ORDER_NO',
         status: 1,
@@ -730,7 +731,7 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.RESET_POS_ORDER_NO, queryParameters: queryParameters);
       _networkLog(response);
       if (networkModel != null) {
@@ -749,7 +750,7 @@ class RestApi {
     }
   }
 
-  static Future<void> endCash({required double totalCash, required double totalCreditCard, required double totalCredit, required double netTotal}) async {
+  static Future<bool> endCash({required double totalCash, required double totalCreditCard, required double totalCredit, required double netTotal}) async {
     try {
       showLoadingDialog();
       var body = jsonEncode({
@@ -763,10 +764,10 @@ class RestApi {
         "NetTotal": netTotal,
         "UserId": mySharedPreferences.employee.id,
       });
-      await NetworkTable.insert(NetworkTableModel(
+      var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'END_CASH',
-        status: 1,
+        status: 3,
         baseUrl: restDio.options.baseUrl,
         path: ApiUrl.END_CASH,
         method: 'POST',
@@ -779,14 +780,9 @@ class RestApi {
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
       ));
-      var networkModel = await NetworkTable.queryLastRow();
+      var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.END_CASH, data: body);
       _networkLog(response);
-
-      hideLoadingDialog();
-      Get.back();
-      Fluttertoast.showToast(msg: 'Successfully'.tr, timeInSecForIosWeb: 3);
-
       if (networkModel != null) {
         networkModel.status = 2;
         networkModel.statusCode = response.statusCode!;
@@ -794,14 +790,79 @@ class RestApi {
         networkModel.uploadedAt = DateTime.now().toIso8601String();
         await NetworkTable.update(networkModel);
       }
+      hideLoadingDialog();
+      if(response.statusCode == 200){
+        Fluttertoast.showToast(msg: 'Successfully'.tr, timeInSecForIosWeb: 3);
+        return true;
+      } else {
+        return false;
+      }
     } on dio.DioError catch (e) {
       _traceError(e);
       hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
     } catch (e) {
       _traceCatch(e);
       hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
+    }
+  }
+
+  static Future<EndCashModel?> getEndCash() async {
+    try {
+      showLoadingDialog();
+      var queryParameters = {
+        "coYear": mySharedPreferences.dailyClose.year,
+        "PosNo": mySharedPreferences.posNo,
+        "CashNo": mySharedPreferences.cashNo,
+        "UserId": mySharedPreferences.employee.id,
+        "dayDate": mySharedPreferences.dailyClose.toIso8601String(),
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'GET_END_CASH',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.GET_END_CASH,
+        method: 'GET',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.get(ApiUrl.GET_END_CASH, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      hideLoadingDialog();
+      if (response.statusCode == 200) {
+        return EndCashModel.fromJson(response.data);
+      } else {
+        Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+        return null;
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      hideLoadingDialog();
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return null;
+    } catch (e) {
+      _traceCatch(e);
+      hideLoadingDialog();
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return null;
     }
   }
 }

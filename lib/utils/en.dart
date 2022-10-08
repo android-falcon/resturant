@@ -177,4 +177,7 @@ const Map<String, String> en = {
   'Total Credit Card': 'Total Credit Card',
   'Total Credit': 'Total Credit',
   'Reprint Invoice': 'Reprint Invoice',
+  'Input': 'Input',
+  'Actual Value': 'Actual Value',
+  'Different': 'Different',
 };

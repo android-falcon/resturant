@@ -31,4 +31,6 @@ class ApiUrl{
   static String RESET_POS_ORDER_NO = "/api/postData/ResetPOSOrderNo";
   // ignore: non_constant_identifier_names
   static String END_CASH = "/api/postData/EndCash";
+  // ignore: non_constant_identifier_names
+  static String GET_END_CASH = "/api/GetData/GetEndCash";
 }

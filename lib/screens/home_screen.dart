@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/all_data/item_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
+import 'package:restaurant_system/models/end_cash_model.dart';
 import 'package:restaurant_system/models/printer_image_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/printer/printer.dart';
@@ -85,8 +86,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         HomeMenu(
           name: 'End Cash'.tr,
-          onTab: () {
-            _showEndCashDialog();
+          onTab: () async {
+            EndCashModel? model = await RestApi.getEndCash();
+            if (model != null) {
+              _showEndCashDialog(endCash: model);
+            }
           },
         ),
         if (mySharedPreferences.employee.hasRefundPermission)
@@ -664,7 +668,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  _showEndCashDialog() {
+  _showEndCashDialog({required EndCashModel endCash}) async {
+    var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
+    PrinterImageModel? _printer;
+    if (indexPrinter != -1) {
+      _printer = PrinterImageModel(ipAddress: allDataModel.printers[indexPrinter].ipAddress, port: allDataModel.printers[indexPrinter].port);
+    }
+
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     TextEditingController _controllerTotalCash = TextEditingController(text: '0');
     TextEditingController _controllerTotalCreditCard = TextEditingController(text: '0');
@@ -672,7 +682,7 @@ class _HomeScreenState extends State<HomeScreen> {
     TextEditingController _controllerNetTotal = TextEditingController(text: '0');
     TextEditingController? _controllerSelectEdit = _controllerTotalCash;
 
-    Get.dialog(
+    var result = await Get.dialog(
       CustomDialog(
         gestureDetectorOnTap: () {
           _controllerSelectEdit = null;
@@ -800,12 +810,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           onSubmit: () async {
                             var result = await showAreYouSureDialog(title: 'Save'.tr);
                             if (result) {
-                              RestApi.endCash(
+                              var resultEndCash = await RestApi.endCash(
                                 totalCash: double.parse(_controllerTotalCash.text),
                                 totalCreditCard: double.parse(_controllerTotalCreditCard.text),
                                 totalCredit: double.parse(_controllerTotalCredit.text),
                                 netTotal: double.parse(_controllerNetTotal.text),
                               );
+                              if(resultEndCash){
+                                Get.back(result: true);
+                              }
                             }
                           },
                         ),
@@ -820,6 +833,177 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       barrierDismissible: false,
     );
+
+    if(result != null && result && _printer != null){
+      ScreenshotController _screenshotController = ScreenshotController();
+
+      Future.delayed(const Duration(milliseconds: 100)).then((value) async {
+        var screenshot = await _screenshotController.capture(delay: const Duration(milliseconds: 10));
+        _printer!.image = screenshot;
+        await Printer.payInOut(printerImageModel: _printer);
+      });
+
+      await Get.dialog(
+        CustomDialog(
+          width: 150.w,
+          builder: (context, setState, constraints) {
+            return Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CustomButton(
+                      fixed: true,
+                      child: Text('Print'.tr),
+                      onPressed: () async {
+                        await Printer.payInOut(printerImageModel: _printer!);
+                      },
+                    ),
+                    SizedBox(width: 10.w),
+                    CustomButton(
+                      fixed: true,
+                      child: Text('Close'.tr),
+                      onPressed: () {
+                        Get.back();
+                      },
+                    ),
+                  ],
+                ),
+                const Divider(thickness: 2),
+                Screenshot(
+                  controller: _screenshotController,
+                  child: SizedBox(
+                    width: 215.w,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                 'End Cash'.tr,
+                                style: kStyleLargePrinter,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        const Divider(color: Colors.black, thickness: 2),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Center(
+                                    child: Text(
+                                      'Total Cash'.tr,
+                                      style: kStyleTitlePrinter,
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '${'Input'.tr} : ${double.parse(_controllerTotalCash.text).toStringAsFixed(3)}',
+                                        style: kStyleDataPrinter,
+                                      ),
+                                      Text(
+                                        '${'Actual Value'.tr} : ${endCash.totalCash.toStringAsFixed(3)}',
+                                        style: kStyleDataPrinter,
+                                      ),
+                                    ],
+                                  ),
+                                  Center(
+                                    child: Text(
+                                      '${'Different'.tr} : ${double.parse(double.parse(_controllerTotalCash.text).toStringAsFixed(3)) - double.parse(endCash.totalCash.toStringAsFixed(3))}',
+                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 15),
+                                  const Divider(color: Colors.black, thickness: 2),
+                                  Center(
+                                    child: Text(
+                                      'Total Credit Card'.tr,
+                                      style: kStyleTitlePrinter,
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '${'Input'.tr} : ${double.parse(_controllerTotalCreditCard.text).toStringAsFixed(3)}',
+                                        style: kStyleDataPrinter,
+                                      ),
+                                      Text(
+                                        '${'Actual Value'.tr} : ${endCash.totalCreditCard.toStringAsFixed(3)}',
+                                        style: kStyleDataPrinter,
+                                      ),
+                                    ],
+                                  ),
+                                  Center(
+                                    child: Text(
+                                      '${'Different'.tr} : ${double.parse(double.parse(_controllerTotalCreditCard.text).toStringAsFixed(3)) - double.parse(endCash.totalCreditCard.toStringAsFixed(3))}',
+                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 15),
+                                  const Divider(color: Colors.black, thickness: 2),
+                                  Center(
+                                    child: Text(
+                                      'Net Total'.tr,
+                                      style: kStyleTitlePrinter,
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '${'Input'.tr} : ${double.parse(_controllerNetTotal.text).toStringAsFixed(3)}',
+                                        style: kStyleDataPrinter,
+                                      ),
+                                      Text(
+                                        '${'Actual Value'.tr} : ${endCash.netTotal.toStringAsFixed(3)}',
+                                        style: kStyleDataPrinter,
+                                      ),
+                                    ],
+                                  ),
+                                  Center(
+                                    child: Text(
+                                      '${'Different'.tr} : ${double.parse(double.parse(_controllerNetTotal.text).toStringAsFixed(3)) - double.parse(endCash.netTotal.toStringAsFixed(3))}',
+                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 15),
+                                  const Divider(color: Colors.black, thickness: 2),
+                                  Text(
+                                    '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
+                                    style: kStyleDataPrinter,
+                                  ),
+                                  Text(
+                                    '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
+                                    style: kStyleDataPrinter,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Divider(color: Colors.black, thickness: 2),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        barrierDismissible: false,
+      );
+    }
   }
 
   _showReprintInvoiceDialog() async {
