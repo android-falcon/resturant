@@ -315,7 +315,7 @@ class CartItemModel extends Equatable {
   int posNo;
   int cashNo;
   int storeNo;
-  int returnedQty;
+  double returnedQty;
   double returnedPrice;
   double returnedTotal;
   int id;
@@ -323,7 +323,7 @@ class CartItemModel extends Equatable {
   int taxType;
   double taxPercent;
   String name;
-  int qty;
+  double qty;
   double price;
   double priceChange;
   double total;

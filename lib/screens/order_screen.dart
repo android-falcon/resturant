@@ -961,7 +961,7 @@ class _OrderScreenState extends State<OrderScreen> {
     return isCancel ? null : answersSubItem;
   }
 
-  Future<int> _showQtyDialog({TextEditingController? controller, int? maxQty, int minQty = 0, required int rQty}) async {
+  Future<double> _showQtyDialog({TextEditingController? controller, double? maxQty, double minQty = 0, required double rQty}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     controller ??= TextEditingController(text: '0');
     var qty = await Get.dialog(
@@ -983,7 +983,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           fillColor: Colors.white,
                           maxLines: 1,
                           inputFormatters: [
-                            EnglishDigitsTextInputFormatter(decimal: false),
+                            EnglishDigitsTextInputFormatter(decimal: true),
                           ],
                           validator: (value) {
                             return Validation.qty(value, minQty, maxQty);
@@ -1022,7 +1022,7 @@ class _OrderScreenState extends State<OrderScreen> {
     if (qty == null) {
       return rQty;
     }
-    return int.parse(qty);
+    return double.parse(qty);
   }
 
   Future<String> _showNoteItemDialog({required String note}) async {
@@ -2078,7 +2078,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: InkWell(
                         onTap: () async {
                           if (_indexItemSelect != -1) {
-                            _cartModel.items[_indexItemSelect].qty = await _showQtyDialog(rQty: _cartModel.items[_indexItemSelect].qty, minQty: 1);
+                            _cartModel.items[_indexItemSelect].qty = await _showQtyDialog(rQty: _cartModel.items[_indexItemSelect].qty, minQty: 0);
                             for (var element in _cartModel.items) {
                               if (_cartModel.items[_indexItemSelect].uuid == element.parentUuid) {
                                 element.qty = _cartModel.items[_indexItemSelect].qty;

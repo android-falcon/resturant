@@ -919,7 +919,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   Center(
                                     child: Text(
-                                      '${'Different'.tr} : ${double.parse(double.parse(_controllerTotalCash.text).toStringAsFixed(3)) - double.parse(endCash.totalCash.toStringAsFixed(3))}',
+                                      '${'Different'.tr} : ${(double.parse(_controllerTotalCash.text) - double.parse(endCash.totalCash.toString())).toStringAsFixed(3)}',
                                       style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
                                     ),
                                   ),
@@ -2121,7 +2121,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<int> _showQtyDialog({TextEditingController? controller, int? maxQty, int minQty = 0, required int rQty}) async {
+  Future<double> _showQtyDialog({TextEditingController? controller, double? maxQty, double minQty = 0, required double rQty}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     controller ??= TextEditingController(text: '$rQty');
     var qty = await Get.dialog(
@@ -2143,7 +2143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           fillColor: Colors.white,
                           maxLines: 1,
                           inputFormatters: [
-                            EnglishDigitsTextInputFormatter(decimal: false),
+                            EnglishDigitsTextInputFormatter(decimal: true),
                           ],
                           validator: (value) {
                             return Validation.qty(value, minQty, maxQty);
@@ -2182,7 +2182,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (qty == null) {
       return rQty;
     }
-    return int.parse(qty);
+    return double.parse(qty);
   }
 
   @override
