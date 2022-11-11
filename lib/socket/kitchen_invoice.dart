@@ -23,7 +23,7 @@ class KitchenInvoice {
         final networkKitchen = KitchenSocketClient(kitchen.ipAddress, port: kitchen.port);
         var data = jsonEncode({
           'orderNo': orderNo,
-          'tableNo': cart.tableNo,
+          'tableNo': cart.tableId,
           'sectionNo': 0,
           'orderType': cart.orderType.index,
           'items': cart.items

@@ -530,16 +530,19 @@ class RestApi {
     }
   }
 
-  static Future<void> openTable(int tableId) async {
+  static Future<bool> openTable(int tableId) async {
     try {
       var queryParameters = {
         'tblId': tableId,
+        'UserId': mySharedPreferences.employee.id,
+        'PosNo': mySharedPreferences.posNo,
+        'CashNo': mySharedPreferences.cashNo,
+        'OpenDate': DateTime.now().toIso8601String(),
       };
-      mySharedPreferences.inVocNo++;
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'OPEN_TABLE',
-        status: 1,
+        status: 3,
         baseUrl: restDio.options.baseUrl,
         path: ApiUrl.OPEN_TABLE,
         method: 'POST',
@@ -562,25 +565,31 @@ class RestApi {
         networkModel.uploadedAt = DateTime.now().toIso8601String();
         await NetworkTable.update(networkModel);
       }
+      return true;
     } on dio.DioError catch (e) {
       _traceError(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
     } catch (e) {
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
     }
   }
 
-  static Future<void> closeTable(int tableId) async {
+  static Future<bool> closeTable(int tableId) async {
     try {
       var queryParameters = {
         'tblId': tableId,
+        'UserId': mySharedPreferences.employee.id,
+        'PosNo': mySharedPreferences.posNo,
+        'CashNo': mySharedPreferences.cashNo,
+        'CloseDate': DateTime.now().toIso8601String(),
       };
-      mySharedPreferences.inVocNo++;
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'CLOSE_TABLE',
-        status: 1,
+        status: 3,
         baseUrl: restDio.options.baseUrl,
         path: ApiUrl.CLOSE_TABLE,
         method: 'POST',
@@ -603,12 +612,170 @@ class RestApi {
         networkModel.uploadedAt = DateTime.now().toIso8601String();
         await NetworkTable.update(networkModel);
       }
+      return true;
     } on dio.DioError catch (e) {
       _traceError(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
     } catch (e) {
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
+    }
+  }
+
+  static Future<bool> moveTable(int oldTableId, int newTableId) async {
+    try {
+      var queryParameters = {
+        'OldTblId': oldTableId,
+        'NewTblId': newTableId,
+        'UserId': mySharedPreferences.employee.id,
+        'PosNo': mySharedPreferences.posNo,
+        'CashNo': mySharedPreferences.cashNo,
+        'MoveDate': DateTime.now().toIso8601String(),
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'MOVE_TABLE',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.MOVE_TABLE,
+        method: 'POST',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.post(ApiUrl.MOVE_TABLE, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      return true;
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
+    }
+  }
+
+  static Future<bool> mergeTable(int oldTableId, int newTableId) async {
+    try {
+      var queryParameters = {
+        'OldTblId': oldTableId,
+        'NewTblId': newTableId,
+        'UserId': mySharedPreferences.employee.id,
+        'PosNo': mySharedPreferences.posNo,
+        'CashNo': mySharedPreferences.cashNo,
+        'MergeDate': DateTime.now().toIso8601String(),
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'MERGE_TABLE',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.MERGE_TABLE,
+        method: 'POST',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.post(ApiUrl.MERGE_TABLE, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      return true;
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
+    }
+  }
+
+  static Future<bool> saveTableOrder({required CartModel cart}) async {
+    try {
+      List<Map<String, dynamic>> modifiers = [];
+      for (var item in cart.items) {
+        int rowSerial = 0;
+        modifiers.addAll(item.modifiers.map((e) {
+          rowSerial++;
+          return e.toInvoice(itemId: item.id, rowSerial: rowSerial, orderType: item.orderType);
+        }));
+        for (var question in item.questions) {
+          modifiers.addAll(question.modifiers.map((e) {
+            rowSerial++;
+            return e.toInvoice(itemId: item.id, rowSerial: rowSerial, orderType: item.orderType);
+          }));
+        }
+      }
+      var body = jsonEncode({
+        "TableOrderMaster": cart.toInvoice(),
+        "TableOrderDetails": List<dynamic>.from(cart.items.map((e) =>  e.toInvoice() )).toList(),
+        "TableOrderModifire": modifiers,
+      });
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'SAVE_TABLE_ORDER',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.SAVE_TABLE_ORDER,
+        method: 'POST',
+        params: '',
+        body: body,
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.post(ApiUrl.SAVE_TABLE_ORDER, data: body);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      return true;
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
+    } catch (e) {
+      _traceCatch(e);
+      // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
     }
   }
 
@@ -791,7 +958,7 @@ class RestApi {
         await NetworkTable.update(networkModel);
       }
       hideLoadingDialog();
-      if(response.statusCode == 200){
+      if (response.statusCode == 200) {
         Fluttertoast.showToast(msg: 'Successfully'.tr, timeInSecForIosWeb: 3);
         return true;
       } else {

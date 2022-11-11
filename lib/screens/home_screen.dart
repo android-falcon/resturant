@@ -1273,7 +1273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 if (_reprintModel!.orderType == OrderType.dineIn)
                                   Text(
-                                    '${'Table No'.tr} : ${_reprintModel!.tableNo}',
+                                    '${'Table No'.tr} : ${_reprintModel!.tableId}',
                                     style: kStyleDataPrinter,
                                     maxLines: 1,
                                   ),

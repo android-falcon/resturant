@@ -64,7 +64,7 @@ class _OrderScreenState extends State<OrderScreen> {
         _cartModel = dineInSaved[indexTable].cart;
       }
     } else {
-      _cartModel = CartModel.init(orderType: widget.type);
+      _cartModel = CartModel.init(orderType: widget.type, tableId: widget.tableId);
     }
   }
 
@@ -1162,14 +1162,22 @@ class _OrderScreenState extends State<OrderScreen> {
     return _selectedVoidReasonId == null ? null : allDataModel.voidReason.firstWhere((element) => element.id == _selectedVoidReasonId);
   }
 
-  _saveDineIn() {
+  _saveDineIn() async {
+    showLoadingDialog();
+    bool isOpened = false;
     if (!dineInSaved[indexTable].isOpen) {
-      RestApi.openTable(dineInSaved[indexTable].tableId);
-      dineInSaved[indexTable].isOpen = true;
+      isOpened = await RestApi.openTable(dineInSaved[indexTable].tableId);
+      if (isOpened) {
+        dineInSaved[indexTable].isOpen = true;
+      }
     }
-    dineInSaved[indexTable].cart = _cartModel;
-    dineInSaved[indexTable].numberSeats = widget.numberSeats!;
-    mySharedPreferences.dineIn = dineInSaved;
+    if (isOpened) {
+      dineInSaved[indexTable].cart = _cartModel;
+      dineInSaved[indexTable].numberSeats = widget.numberSeats!;
+      mySharedPreferences.dineIn = dineInSaved;
+      await RestApi.saveTableOrder(cart: dineInSaved[indexTable].cart);
+    }
+    hideLoadingDialog();
   }
 
   @override
@@ -2015,11 +2023,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                     ),
                                     fixed: true,
                                     backgroundColor: ColorsApp.red,
-                                    onPressed: () {
+                                    onPressed: () async {
                                       if (_cartModel.items.isEmpty) {
                                         Fluttertoast.showToast(msg: 'Please add items'.tr);
                                       } else {
-                                        _saveDineIn();
+                                        await _saveDineIn();
                                         Get.back();
                                       }
                                     },

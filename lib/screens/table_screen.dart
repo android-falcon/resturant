@@ -285,18 +285,21 @@ class _TableScreenState extends State<TableScreen> {
                 } else {
                   var result = await showAreYouSureDialog(title: 'Move'.tr);
                   if (result) {
-                    var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
-                    var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
-                    dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
-                    dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
-                    dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
-                    dineInSaved[indexTo].numberSeats = dineInSaved[indexFrom].numberSeats;
-                    dineInSaved[indexFrom].isOpen = false;
-                    dineInSaved[indexFrom].isReservation = false;
-                    dineInSaved[indexFrom].numberSeats = 0;
-                    dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
-                    mySharedPreferences.dineIn = dineInSaved;
-                    Get.back();
+                    var resultApi = await RestApi.moveTable(_selectFromTableId!, _selectToTableId!);
+                    if (resultApi) {
+                      var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
+                      var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
+                      dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
+                      dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
+                      dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
+                      dineInSaved[indexTo].numberSeats = dineInSaved[indexFrom].numberSeats;
+                      dineInSaved[indexFrom].isOpen = false;
+                      dineInSaved[indexFrom].isReservation = false;
+                      dineInSaved[indexFrom].numberSeats = 0;
+                      dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
+                      mySharedPreferences.dineIn = dineInSaved;
+                      Get.back();
+                    }
                   }
                 }
               },
@@ -516,16 +519,19 @@ class _TableScreenState extends State<TableScreen> {
                 } else {
                   var result = await showAreYouSureDialog(title: 'Marge'.tr);
                   if (result) {
-                    var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
-                    var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
-                    dineInSaved[indexTo].cart.items.addAll(dineInSaved[indexFrom].cart.items);
-                    dineInSaved[indexTo].numberSeats += dineInSaved[indexFrom].numberSeats;
-                    dineInSaved[indexFrom].isOpen = false;
-                    dineInSaved[indexFrom].isReservation = false;
-                    dineInSaved[indexFrom].numberSeats = 0;
-                    dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
-                    mySharedPreferences.dineIn = dineInSaved;
-                    Get.back();
+                    var resultApi = await RestApi.mergeTable(_selectFromTableId!, _selectToTableId!);
+                    if (resultApi) {
+                      var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
+                      var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
+                      dineInSaved[indexTo].cart.items.addAll(dineInSaved[indexFrom].cart.items);
+                      dineInSaved[indexTo].numberSeats += dineInSaved[indexFrom].numberSeats;
+                      dineInSaved[indexFrom].isOpen = false;
+                      dineInSaved[indexFrom].isReservation = false;
+                      dineInSaved[indexFrom].numberSeats = 0;
+                      dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
+                      mySharedPreferences.dineIn = dineInSaved;
+                      Get.back();
+                    }
                   }
                 }
               },

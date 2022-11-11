@@ -32,7 +32,7 @@ class CartModel extends Equatable {
     this.coupon = 0,
     this.gift = 0,
     this.point = 0,
-    this.tableNo = 0,
+    this.tableId = 0,
     this.note = '',
     this.payCompanyId = 0,
     this.deliveryCompanyId = 0,
@@ -74,13 +74,13 @@ class CartModel extends Equatable {
   double coupon;
   double gift;
   double point;
-  int tableNo;
+  int tableId;
   String note;
   int payCompanyId;
   int deliveryCompanyId;
   String parkName;
 
-  factory CartModel.init({required OrderType orderType}) => CartModel(
+  factory CartModel.init({required OrderType orderType, int? tableId}) => CartModel(
         orderType: orderType,
         id: 0,
         total: 0,
@@ -96,6 +96,7 @@ class CartModel extends Equatable {
         tax: 0,
         amountDue: 0,
         items: [],
+        tableId: tableId ?? 0,
       );
 
   factory CartModel.fromJson(Map<String, dynamic> json) => CartModel(
@@ -122,7 +123,7 @@ class CartModel extends Equatable {
         coupon: json['coupon'] == null ? 0 : json['coupon'].toDouble(),
         gift: json['gift'] == null ? 0 : json['gift'].toDouble(),
         point: json['point'] == null ? 0 : json['point'].toDouble(),
-        tableNo: json['tableNo'] ?? 0,
+        tableId: json['tableId'] ?? 0,
         note: json['note'] ?? '',
         payCompanyId: json['payCompanyId'] ?? 0,
         deliveryCompanyId: json['deliveryCompanyId'] ?? 0,
@@ -149,7 +150,7 @@ class CartModel extends Equatable {
         itemsTax: json["InvoiceMaster"]?['TotalTax']?.toDouble() ?? 0,
         tax: 0,
         amountDue: json["InvoiceMaster"]?['InvNetTotal']?.toDouble() ?? 0,
-        items: json['InvoiceDetails'] == null ? [] : List<CartItemModel>.from(json['InvoiceDetails'].map((e) => CartItemModel.fromJsonServer(json: json, e:e))),
+        items: json['InvoiceDetails'] == null ? [] : List<CartItemModel>.from(json['InvoiceDetails'].map((e) => CartItemModel.fromJsonServer(json: json, e: e))),
         cash: 0,
         credit: 0,
         creditCardNumber: "",
@@ -158,7 +159,7 @@ class CartModel extends Equatable {
         coupon: 0,
         gift: 0,
         point: 0,
-        tableNo: 0,
+        tableId: 0,
         note: '',
         payCompanyId: 0,
         deliveryCompanyId: 0,
@@ -189,7 +190,7 @@ class CartModel extends Equatable {
         'coupon': coupon,
         'gift': gift,
         'point': point,
-        'tableNo': tableNo,
+        'tableId': tableId,
         'note': note,
         'payCompanyId': payCompanyId,
         'deliveryCompanyId': deliveryCompanyId,
@@ -221,7 +222,7 @@ class CartModel extends Equatable {
         "UserId": orderType == OrderType.takeAway ? mySharedPreferences.employee.id : 0, // Take away - EmplyeId, Dine In -
         "ShiftId": 0, //
         "WaiterId": orderType == OrderType.takeAway ? mySharedPreferences.employee.id : 0, //Take away - EmplyeId, Dine In -
-        "TableId": 0, //
+        "TableId": tableId, //
         "NoOfSeats": 0, //
         "SaleInvNo": 0,
         "Card1Name": creditCardType,
@@ -268,7 +269,7 @@ class CartModel extends Equatable {
 
   @override
   // TODO: implement props
-  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableNo, note, payCompanyId, deliveryCompanyId, parkName];
+  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableId, note, payCompanyId, deliveryCompanyId, parkName];
 }
 
 class CartItemModel extends Equatable {
@@ -371,7 +372,7 @@ class CartItemModel extends Equatable {
         questions: json['questions'] == null ? [] : List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
       );
 
-  factory CartItemModel.fromJsonServer({required Map<String, dynamic> json,required Map<String, dynamic> e}) => CartItemModel(
+  factory CartItemModel.fromJsonServer({required Map<String, dynamic> json, required Map<String, dynamic> e}) => CartItemModel(
         orderType: OrderType.values[e['InvType'] ?? 0],
         invNo: e["InvNo"] ?? 0,
         posNo: e["PosNo"] ?? 0,

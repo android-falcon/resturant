@@ -14,6 +14,7 @@ import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
+import 'package:restaurant_system/screens/table_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -71,7 +72,12 @@ class _PayScreenState extends State<PayScreen> {
 
       _showPrintDialog().then((value) {
         Get.offAll(HomeScreen());
-        Get.to(() => OrderScreen(type: widget.cart.orderType));
+        if (widget.tableId != null) {
+          Get.to(() => TableScreen());
+        } else {
+          Get.to(() => OrderScreen(type: widget.cart.orderType));
+        }
+
       });
       if (widget.tableId != null) {
         RestApi.closeTable(widget.tableId!);
@@ -471,7 +477,7 @@ class _PayScreenState extends State<PayScreen> {
                             children: [
                               if (widget.cart.orderType == OrderType.dineIn)
                                 Text(
-                                  '${'Table No'.tr} : ${widget.cart.tableNo}',
+                                  '${'Table No'.tr} : ${widget.cart.tableId}',
                                   style: kStyleDataPrinter,
                                   maxLines: 1,
                                 ),
