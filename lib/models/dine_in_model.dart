@@ -8,7 +8,6 @@ class DineInModel {
     required this.tableId,
     required this.tableNo,
     required this.floorNo,
-    required this.numberSeats,
     required this.cart,
   });
 
@@ -17,7 +16,6 @@ class DineInModel {
   int tableId;
   int tableNo;
   int floorNo;
-  int numberSeats;
   CartModel cart;
 
   factory DineInModel.init() => DineInModel(
@@ -26,7 +24,6 @@ class DineInModel {
     tableId: 0,
     tableNo: 0,
     floorNo: 0,
-    numberSeats: 0,
     cart: CartModel.init(orderType: OrderType.dineIn),
   );
 
@@ -36,7 +33,6 @@ class DineInModel {
     tableId: json['tableId'] ?? 0,
     tableNo: json['tableNo'] ?? 0,
     floorNo: json['floorNo'] ?? 0,
-    numberSeats: json['numberSeats'] ?? 0,
     cart: json['cart'] == null ? CartModel.init(orderType: OrderType.dineIn) : CartModel.fromJson(json['cart']),
   );
 
@@ -46,7 +42,6 @@ class DineInModel {
     'tableId':tableId,
     'tableNo':tableNo,
     'floorNo':floorNo,
-    'numberSeats':numberSeats,
     'cart':cart.toJson(),
   };
 }

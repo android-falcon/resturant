@@ -66,11 +66,11 @@ class MySharedPreferences {
     _sharedPreferences.setString(keyAllData, value);
   }
 
-  List<DineInModel> get dineIn => List<DineInModel>.from(jsonDecode(_sharedPreferences.getString(keyDineIn) ?? "[]").map((e) => DineInModel.fromJson(e)));
-
-  set dineIn(List<DineInModel> value) {
-    _sharedPreferences.setString(keyDineIn, jsonEncode(List<dynamic>.from(value.map((e) => e.toJson()))));
-  }
+  // List<DineInModel> get dineIn => List<DineInModel>.from(jsonDecode(_sharedPreferences.getString(keyDineIn) ?? "[]").map((e) => DineInModel.fromJson(e)));
+  //
+  // set dineIn(List<DineInModel> value) {
+  //   _sharedPreferences.setString(keyDineIn, jsonEncode(List<dynamic>.from(value.map((e) => e.toJson()))));
+  // }
 
 
   List<CartModel> get park => List<CartModel>.from(jsonDecode(_sharedPreferences.getString(keyPark) ?? "[]").map((e) => CartModel.fromJson(e)));

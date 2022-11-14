@@ -36,10 +36,9 @@ import 'package:uuid/uuid.dart';
 
 class OrderScreen extends StatefulWidget {
   final OrderType type;
-  final int? tableId;
-  final int? numberSeats;
+  final DineInModel? dineIn;
 
-  const OrderScreen({Key? key, required this.type, this.tableId, this.numberSeats}) : super(key: key);
+  const OrderScreen({Key? key, required this.type, this.dineIn}) : super(key: key);
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -51,20 +50,15 @@ class _OrderScreenState extends State<OrderScreen> {
   late CartModel _cartModel;
   int _indexItemSelect = -1;
   double maxHeightItem = 0;
-  List<DineInModel> dineInSaved = [];
   int indexTable = -1;
 
   @override
   initState() {
     super.initState();
     if (widget.type == OrderType.dineIn) {
-      dineInSaved = mySharedPreferences.dineIn;
-      indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId!);
-      if (indexTable != -1) {
-        _cartModel = dineInSaved[indexTable].cart;
-      }
+      _cartModel = widget.dineIn!.cart;
     } else {
-      _cartModel = CartModel.init(orderType: widget.type, tableId: widget.tableId);
+      _cartModel = CartModel.init(orderType: widget.type);
     }
   }
 
@@ -1164,19 +1158,8 @@ class _OrderScreenState extends State<OrderScreen> {
 
   _saveDineIn() async {
     showLoadingDialog();
-    // bool isOpened = false;
-    // if (!dineInSaved[indexTable].isOpen) {
-    //   isOpened = await RestApi.openTable(dineInSaved[indexTable].tableId);
-    //   if (isOpened) {
-    //     dineInSaved[indexTable].isOpen = true;
-    //   }
-    // }
-    // if (isOpened) {
-    dineInSaved[indexTable].cart = _cartModel;
-    dineInSaved[indexTable].numberSeats = widget.numberSeats!;
-    mySharedPreferences.dineIn = dineInSaved;
-    await RestApi.saveTableOrder(cart: dineInSaved[indexTable].cart);
-    // }
+    widget.dineIn!.cart = _cartModel;
+    await RestApi.saveTableOrder(cart: widget.dineIn!.cart);
     hideLoadingDialog();
   }
 
@@ -1212,12 +1195,11 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (widget.type == OrderType.dineIn || _cartModel.items.isEmpty) {
                             _showExitOrderScreenDialog().then((value) async {
                               if (value) {
-                                if (_cartModel.items.isEmpty) {
-                                  var result = await RestApi.closeTable(widget.tableId!);
+                                if (widget.type == OrderType.dineIn && _cartModel.items.isEmpty) {
+                                  var result = await RestApi.closeTable(widget.dineIn!.tableId);
                                   if (result) {
-                                    dineInSaved[indexTable].cart = _cartModel;
-                                    dineInSaved[indexTable].isOpen = false;
-                                    mySharedPreferences.dineIn = dineInSaved;
+                                    widget.dineIn!.cart = _cartModel;
+                                    widget.dineIn!.isOpen = false;
                                     Get.back();
                                   }
                                 } else {
@@ -1346,7 +1328,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     if (widget.type == OrderType.dineIn)
                       Expanded(
                         child: Text(
-                          '${'Table'.tr} : ${dineInSaved[indexTable].tableNo}',
+                          '${'Table'.tr} : ${widget.dineIn!.tableNo}',
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -1436,7 +1418,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             height: 45.h,
                           ),
                           Text(
-                            '${widget.numberSeats}',
+                            '${widget.dineIn!.cart.totalSeats}',
                             textAlign: TextAlign.center,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -2039,6 +2021,28 @@ class _OrderScreenState extends State<OrderScreen> {
                                       } else {
                                         await _saveDineIn();
                                         Get.back();
+                                      }
+                                    },
+                                  ),
+                                ),
+                              if (widget.type == OrderType.dineIn)
+                                Expanded(
+                                  child: CustomButton(
+                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                    child: Text(
+                                      'Check Out'.tr,
+                                      style: kStyleTextButton,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    fixed: true,
+                                    backgroundColor: ColorsApp.green,
+                                    onPressed: () async {
+                                      if (_cartModel.items.isEmpty) {
+                                        Fluttertoast.showToast(msg: 'Please add items'.tr);
+                                      } else {
+                                        await _saveDineIn();
+                                        Get.to(() => PayScreen(cart: widget.dineIn!.cart, tableId: widget.dineIn!.tableId));
                                       }
                                     },
                                   ),

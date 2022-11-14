@@ -43,6 +43,9 @@ class CartModel extends Equatable {
     this.storeNo = 0,
     this.invDate = '',
     this.returnedTotal = 0,
+    this.totalSeats = 0,
+    this.seatsFemale = 0,
+    this.seatsMale = 0,
   });
 
   OrderType orderType;
@@ -78,6 +81,9 @@ class CartModel extends Equatable {
   String note;
   int payCompanyId;
   int deliveryCompanyId;
+  int totalSeats;
+  int seatsFemale;
+  int seatsMale;
   String parkName;
 
   factory CartModel.init({required OrderType orderType, int? tableId}) => CartModel(
@@ -134,6 +140,9 @@ class CartModel extends Equatable {
         storeNo: json['storeNo'] ?? 0,
         invDate: json['invDate'] ?? "",
         returnedTotal: json['returnedTotal'] ?? 0,
+        totalSeats: json['totalSeats'] ?? 0,
+        seatsFemale: json['seatsFemale'] ?? 0,
+        seatsMale: json['seatsMale'] ?? 0,
       );
 
   factory CartModel.fromJsonServer(Map<String, dynamic> json) => CartModel(
@@ -173,7 +182,7 @@ class CartModel extends Equatable {
       );
 
   Map<String, dynamic> toJson() => {
-        'orderType': orderType,
+        'orderType': orderType.index,
         'id': id,
         'total': total,
         'deliveryCharge': deliveryCharge,
@@ -207,6 +216,9 @@ class CartModel extends Equatable {
         'storeNo': storeNo,
         'invDate': invDate,
         'returnedTotal': returnedTotal,
+        'totalSeats': totalSeats,
+        'seatsFemale': seatsFemale,
+        'seatsMale': seatsMale,
       };
 
   Map<String, dynamic> toInvoice() => {
@@ -242,6 +254,27 @@ class CartModel extends Equatable {
         "PayCompanyId": payCompanyId,
         "DeliveryCompanyId": deliveryCompanyId,
         "InvFlag": 1,
+      };
+
+  Map<String, dynamic> toSaveTable() => {
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "PosNo": mySharedPreferences.posNo, // PosNo
+        "CashNo": mySharedPreferences.cashNo, // CashNo
+        "TotalService": service, // مجموع سيرفس قبل الضريبة
+        "TotalServiceTax": serviceTax, // ضريبة السيرفس فقط
+        "TotalTax": itemsTax, // ضريبة بدو ضريبة السيرفس
+        "TotalItemDisc": totalLineDiscount, // مجموع discount line
+        "UserId": orderType == OrderType.takeAway ? mySharedPreferences.employee.id : 0, // Take away - EmplyeId, Dine In -
+        "ShiftId": 0, //
+        "WaiterId": orderType == OrderType.takeAway ? mySharedPreferences.employee.id : 0, //Take away - EmplyeId, Dine In -
+        "TableId": tableId, //
+        "Id": 0,
+        "NoOfFemal": seatsFemale,
+        "NoOfMale": seatsMale,
+        "OrdDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "OrdDisc": totalDiscount,
+        "OrdNetTotal": amountDue,
+        "TotSeats": totalSeats,
       };
 
   Map<String, dynamic> toReturnInvoice() => {
@@ -358,8 +391,8 @@ class CartItemModel extends Equatable {
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
         orderType: OrderType.values[json['orderType'] ?? 0],
         id: json['id'] ?? 0,
-        uuid: json['UUID'] ?? '',
-        parentUuid: json['ParentUUID'] ?? '',
+        uuid: json['uuid'] ?? '',
+        parentUuid: json['parentUuid'] ?? '',
         categoryId: json['categoryId'] ?? 0,
         taxType: json['taxType'] ?? 0,
         taxPercent: json['taxPercent'] == null ? 0 : json['taxPercent'].toDouble(),
@@ -386,9 +419,9 @@ class CartItemModel extends Equatable {
         posNo: json['posNo'] ?? 0,
         cashNo: json['cashNo'] ?? 0,
         storeNo: json['storeNo'] ?? 0,
-        returnedQty: json['returnedQty'].toDouble() ?? 0,
-        returnedPrice: json['returnedPrice'].toDouble() ?? 0,
-        returnedTotal: json['returnedTotal'].toDouble() ?? 0,
+        returnedQty: json['returnedQty']?.toDouble() ?? 0,
+        returnedPrice: json['returnedPrice']?.toDouble() ?? 0,
+        returnedTotal: json['returnedTotal']?.toDouble() ?? 0,
       );
 
   factory CartItemModel.fromJsonServer({required Map<String, dynamic> json, required Map<String, dynamic> e}) => CartItemModel(
@@ -486,6 +519,36 @@ class CartItemModel extends Equatable {
         "ParentUUID": parentUuid,
       };
 
+  Map<String, dynamic> toSaveTable() => {
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "PosNo": mySharedPreferences.posNo, // PosNo
+        "CashNo": mySharedPreferences.cashNo, // CashNo
+        "StoreNo": mySharedPreferences.storeNo, // StoreNo
+        "RowSerial": rowSerial, // رقم الايتم بناء على ليست في شاشة index + 1
+        "ItemId": id,
+        "Qty": qty,
+        "Price": priceChange, // السعر بعد تعديل الي بنحسب في الفتورة
+        "OrgPrice": price, // السعر الايتم الفعلي
+        "ItemDiscPerc": 0, //
+        "LineDisc": totalLineDiscount, // قيمة الخصم في linedicount
+        "ServiceVal": service, //  قيمة سيرفس للايتم بناء على سعر الايتم ل مجموع الفتورة -- بنوزعها على الفتورة
+        "ServiceTax": serviceTax, // قيمة ضريبة سيرفس للايتم بناء على سعر الايتم ل مجموع الفتورة  -- بنوزعها على الفتورة
+        "ItemTaxKind": taxType, // TaxType/Id
+        "ItemTaxPerc": taxPercent, // TaxPerc/TaxPercent
+        "ItemTaxVal": tax, // قيمة ضريبة الايتم بدون ضريبة السيرفس
+        "NetTotal": total, // المجموع النهائي للايتم مع الضريبة وسيرفس وضريبة السيرفس
+        "ItemRemark": note,
+        "IsCombo": isCombo ? 1 : 0,
+        "IsSubItem": parentUuid != "" ? 1 : 0,
+        "UUID": uuid,
+        "ParentUUID": parentUuid,
+        "ComboRowNo": 0,
+        "Id": 0,
+        "OrdDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "OrdDisc": discount,
+        "OrderId": 0,
+      };
+
   Map<String, dynamic> toReturnInvoice() => {
         "CoYear": mySharedPreferences.dailyClose.year,
         "InvType": orderType.index, // 0 - Take away , 1 - Dine In
@@ -570,6 +633,18 @@ class CartItemModifierModel extends Equatable {
         "PosNo": mySharedPreferences.posNo, // PosNo
         "CashNo": mySharedPreferences.cashNo, // CashNo
         "InvDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "RowSerial": rowSerial, // رقم الايتم بناء على ليست في شاشة index + 1
+        "ItemId": itemId,
+        "ModifireId": id
+      };
+
+  Map<String, dynamic> toSaveTable({required int itemId, required int rowSerial}) => {
+        "Id": 0,
+        "OrderId": 0,
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "PosNo": mySharedPreferences.posNo, // PosNo
+        "CashNo": mySharedPreferences.cashNo, // CashNo
+        "OrdDate": mySharedPreferences.dailyClose.toIso8601String(), // CashNo
         "RowSerial": rowSerial, // رقم الايتم بناء على ليست في شاشة index + 1
         "ItemId": itemId,
         "ModifireId": id

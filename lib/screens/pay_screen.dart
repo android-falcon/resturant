@@ -45,7 +45,6 @@ class PayScreen extends StatefulWidget {
 
 class _PayScreenState extends State<PayScreen> {
   double remaining = 0;
-  List<DineInModel> dineInSaved = mySharedPreferences.dineIn;
 
   @override
   void initState() {
@@ -81,11 +80,6 @@ class _PayScreenState extends State<PayScreen> {
       });
       if (widget.tableId != null) {
         RestApi.closeTable(widget.tableId!);
-        var indexTable = dineInSaved.indexWhere((element) => element.tableId == widget.tableId);
-        dineInSaved[indexTable].isOpen = false;
-        dineInSaved[indexTable].numberSeats = 0;
-        dineInSaved[indexTable].cart = CartModel.init(orderType: OrderType.dineIn);
-        mySharedPreferences.dineIn = dineInSaved;
       }
     } else {
       Fluttertoast.showToast(msg: 'The remainder should be 0'.tr);

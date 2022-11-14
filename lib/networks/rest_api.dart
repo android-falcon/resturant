@@ -163,40 +163,40 @@ class RestApi {
       } else {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       }
-      if (allDataModel.tables.isNotEmpty) {
-        var dineIn = List<DineInModel>.from(
-          allDataModel.tables.map(
-            (e) => DineInModel(
-              isOpen: e.isOpened == 1,
-              isReservation: false,
-              tableId: e.id,
-              tableNo: e.tableNo,
-              floorNo: e.floorNo,
-              numberSeats: 0,
-              cart: CartModel.init(orderType: OrderType.dineIn),
-            ),
-          ),
-        );
-        if (mySharedPreferences.dineIn.isEmpty) {
-          mySharedPreferences.dineIn = dineIn;
-        } else {
-          var dineInSaved = mySharedPreferences.dineIn;
-          dineInSaved.removeWhere((elementSaved) => dineIn.every((element) => elementSaved.tableId != element.tableId));
-          for (var element in dineIn) {
-            var dineInSavedIndex = dineInSaved.indexWhere((elementSaved) => elementSaved.tableId == element.tableId);
-            if (dineInSavedIndex == -1) {
-              dineInSaved.add(element);
-            } else {
-              dineInSaved[dineInSavedIndex].isOpen == element.isOpen;
-              dineInSaved[dineInSavedIndex].floorNo == element.floorNo;
-              dineInSaved[dineInSavedIndex].tableNo == element.tableNo;
-            }
-          }
-          mySharedPreferences.dineIn = dineInSaved;
-        }
-      } else {
-        mySharedPreferences.dineIn = [];
-      }
+      // if (allDataModel.tables.isNotEmpty) {
+      //   var dineIn = List<DineInModel>.from(
+      //     allDataModel.tables.map(
+      //       (e) => DineInModel(
+      //         isOpen: e.isOpened == 1,
+      //         isReservation: false,
+      //         tableId: e.id,
+      //         tableNo: e.tableNo,
+      //         floorNo: e.floorNo,
+      //         numberSeats: 0,
+      //         cart: CartModel.init(orderType: OrderType.dineIn),
+      //       ),
+      //     ),
+      //   );
+      //   if (mySharedPreferences.dineIn.isEmpty) {
+      //     mySharedPreferences.dineIn = dineIn;
+      //   } else {
+      //     var dineInSaved = mySharedPreferences.dineIn;
+      //     dineInSaved.removeWhere((elementSaved) => dineIn.every((element) => elementSaved.tableId != element.tableId));
+      //     for (var element in dineIn) {
+      //       var dineInSavedIndex = dineInSaved.indexWhere((elementSaved) => elementSaved.tableId == element.tableId);
+      //       if (dineInSavedIndex == -1) {
+      //         dineInSaved.add(element);
+      //       } else {
+      //         dineInSaved[dineInSavedIndex].isOpen == element.isOpen;
+      //         dineInSaved[dineInSavedIndex].floorNo == element.floorNo;
+      //         dineInSaved[dineInSavedIndex].tableNo == element.tableNo;
+      //       }
+      //     }
+      //     mySharedPreferences.dineIn = dineInSaved;
+      //   }
+      // } else {
+      //   mySharedPreferences.dineIn = [];
+      // }
       hideLoadingDialog();
       if (networkModel != null) {
         networkModel.statusCode = response.statusCode!;
@@ -771,18 +771,18 @@ class RestApi {
         int rowSerial = 0;
         modifiers.addAll(item.modifiers.map((e) {
           rowSerial++;
-          return e.toInvoice(itemId: item.id, rowSerial: rowSerial, orderType: item.orderType);
+          return e.toSaveTable(itemId: item.id, rowSerial: rowSerial);
         }));
         for (var question in item.questions) {
           modifiers.addAll(question.modifiers.map((e) {
             rowSerial++;
-            return e.toInvoice(itemId: item.id, rowSerial: rowSerial, orderType: item.orderType);
+            return e.toSaveTable(itemId: item.id, rowSerial: rowSerial);
           }));
         }
       }
       var body = jsonEncode({
-        "TableOrderMaster": cart.toInvoice(),
-        "TableOrderDetails": List<dynamic>.from(cart.items.map((e) => e.toInvoice())).toList(),
+        "TableOrderMaster": cart.toSaveTable(),
+        "TableOrderDetails": List<dynamic>.from(cart.items.map((e) => e.toSaveTable())).toList(),
         "TableOrderModifire": modifiers,
         "TableCart": {
           "TBLCART": jsonEncode(cart.toJson()),
@@ -791,7 +791,7 @@ class RestApi {
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
         type: 'SAVE_TABLE_ORDER',
-        status: 1,
+        status: 3,
         baseUrl: restDio.options.baseUrl,
         path: ApiUrl.SAVE_TABLE_ORDER,
         method: 'POST',

@@ -92,17 +92,22 @@ class _TableScreenState extends State<TableScreen> {
     var tables = await RestApi.getTables();
     floors = tables.map((e) => e.floorNo).toSet();
     _selectFloor ??= floors.first;
-    dineInSaved = tables
-        .map((e) => DineInModel(
-              isOpen: e.isOpened == 1,
-              isReservation: false,
-              tableId: e.id,
-              tableNo: e.tableNo,
-              floorNo: e.floorNo,
-              numberSeats: 0,
-              cart: e.cart.isEmpty ? CartModel.init(orderType: OrderType.dineIn, tableId: e.id) : CartModel.fromJson(jsonDecode(e.cart)),
-            ))
-        .toList();
+    dineInSaved = tables.map((e) {
+      CartModel? cart;
+      try {
+        cart = e.cart.isEmpty ? CartModel.init(orderType: OrderType.dineIn, tableId: e.id) : CartModel.fromJson(jsonDecode(e.cart));
+      } catch (ex) {
+        cart = CartModel.init(orderType: OrderType.dineIn, tableId: e.id);
+      }
+      return DineInModel(
+        isOpen: e.isOpened == 1,
+        isReservation: false,
+        tableId: e.id,
+        tableNo: e.tableNo,
+        floorNo: e.floorNo,
+        cart: cart,
+      );
+    }).toList();
     setState(() {});
     hideLoadingDialog();
   }
@@ -193,7 +198,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/round_table_4.png',
+                                                'assets/images/table.png',
                                                 height: 80.h,
                                               )
                                             ],
@@ -281,7 +286,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/round_table_4.png',
+                                                'assets/images/table.png',
                                                 height: 80.h,
                                               )
                                             ],
@@ -307,6 +312,7 @@ class _TableScreenState extends State<TableScreen> {
                 } else {
                   var result = await showAreYouSureDialog(title: 'Move'.tr);
                   if (result) {
+                    showLoadingDialog();
                     var resultApi = await RestApi.moveTable(_selectFromTableId!, _selectToTableId!);
                     if (resultApi) {
                       var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
@@ -314,12 +320,13 @@ class _TableScreenState extends State<TableScreen> {
                       dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
                       dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
                       dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
-                      dineInSaved[indexTo].numberSeats = dineInSaved[indexFrom].numberSeats;
                       dineInSaved[indexFrom].isOpen = false;
                       dineInSaved[indexFrom].isReservation = false;
-                      dineInSaved[indexFrom].numberSeats = 0;
                       dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
-                      mySharedPreferences.dineIn = dineInSaved;
+                      dineInSaved[indexTo].cart = calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
+
+                      await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
+                      hideLoadingDialog();
                       Get.back();
                     }
                   }
@@ -423,7 +430,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/round_table_4.png',
+                                                'assets/images/table.png',
                                                 height: 80.h,
                                               )
                                             ],
@@ -515,7 +522,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/round_table_4.png',
+                                                'assets/images/table.png',
                                                 height: 80.h,
                                               )
                                             ],
@@ -546,12 +553,15 @@ class _TableScreenState extends State<TableScreen> {
                       var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
                       var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
                       dineInSaved[indexTo].cart.items.addAll(dineInSaved[indexFrom].cart.items);
-                      dineInSaved[indexTo].numberSeats += dineInSaved[indexFrom].numberSeats;
+                      dineInSaved[indexTo].cart.totalSeats += dineInSaved[indexFrom].cart.totalSeats;
+                      dineInSaved[indexTo].cart.seatsFemale += dineInSaved[indexFrom].cart.seatsFemale;
+                      dineInSaved[indexTo].cart.seatsMale += dineInSaved[indexFrom].cart.seatsMale;
                       dineInSaved[indexFrom].isOpen = false;
                       dineInSaved[indexFrom].isReservation = false;
-                      dineInSaved[indexFrom].numberSeats = 0;
                       dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
-                      mySharedPreferences.dineIn = dineInSaved;
+                      dineInSaved[indexTo].cart = calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
+                      await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
+                      hideLoadingDialog();
                       Get.back();
                     }
                   }
@@ -615,7 +625,7 @@ class _TableScreenState extends State<TableScreen> {
     return _tableId;
   }
 
-  Future<int> _showNumberSeatsDialog() async {
+  Future<Map?> _showNumberSeatsDialog() async {
     TextEditingController _controllerMale = TextEditingController(text: '1');
     TextEditingController _controllerFemale = TextEditingController();
     TextEditingController _controllerChildren = TextEditingController();
@@ -742,9 +752,14 @@ class _TableScreenState extends State<TableScreen> {
       barrierDismissible: false,
     );
     if (result == null || !result) {
-      return 0;
+      return null;
     }
-    return _numberSeats;
+    return {
+      'number_seats': _numberSeats,
+      'male': int.tryParse(_controllerMale.text) ?? 0,
+      'female': int.tryParse(_controllerFemale.text) ?? 0,
+      'children': int.tryParse(_controllerChildren.text) ?? 0,
+    };
   }
 
   @override
@@ -831,19 +846,22 @@ class _TableScreenState extends State<TableScreen> {
                                   .map((e) => InkWell(
                                         onTap: () async {
                                           if (e.isOpen) {
-                                            Get.to(() => OrderScreen(type: OrderType.dineIn, tableId: e.tableId, numberSeats: e.numberSeats))!.then((value) {
+                                            Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
                                               _initData();
                                             });
                                           } else {
-                                            var numberSeats = await _showNumberSeatsDialog();
-                                            if (numberSeats != 0) {
+                                            var totalSeats = await _showNumberSeatsDialog();
+                                            if (totalSeats != null) {
                                               showLoadingDialog();
                                               bool isOpened = await RestApi.openTable(e.tableId);
                                               hideLoadingDialog();
                                               if (isOpened) {
                                                 e.isOpen = true;
                                               }
-                                              Get.to(() => OrderScreen(type: OrderType.dineIn, tableId: e.tableId, numberSeats: numberSeats))!.then((value) {
+                                              e.cart.totalSeats = totalSeats['number_seats'];
+                                              e.cart.seatsMale = totalSeats['male'];
+                                              e.cart.seatsFemale = totalSeats['female'];
+                                              Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
                                                 _initData();
                                               });
                                             }
