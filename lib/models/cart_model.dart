@@ -107,14 +107,14 @@ class CartModel extends Equatable {
         totalLineDiscount: json['totalLineDiscount'] == null ? 0 : json['totalLineDiscount'].toDouble(),
         totalDiscount: json['totalDiscount'] == null ? 0 : json['totalDiscount'].toDouble(),
         discount: json['discount'] == null ? 0 : json['discount'].toDouble(),
-        discountType: DiscountType.values[json['discountType']],
+        discountType: DiscountType.values[json['discountType'] ?? 0],
         subTotal: json['subTotal'] == null ? 0 : json['subTotal'].toDouble(),
         service: json['service'] == null ? 0 : json['service'].toDouble(),
         serviceTax: json['serviceTax'] == null ? 0 : json['serviceTax'].toDouble(),
         itemsTax: json['itemsTax'] == null ? 0 : json['itemsTax'].toDouble(),
         tax: json['tax'] == null ? 0 : json['tax'].toDouble(),
         amountDue: json['amountDue'] == null ? 0 : json['amountDue'].toDouble(),
-        items: List<CartItemModel>.from(json['items'].map((e) => CartItemModel.fromJson(e))),
+        items: json['items'] == null ? [] : List<CartItemModel>.from(json['items'].map((e) => CartItemModel.fromJson(e))),
         cash: json['cash'] == null ? 0 : json['cash'].toDouble(),
         credit: json['credit'] == null ? 0 : json['credit'].toDouble(),
         creditCardNumber: json['creditCardNumber'] ?? "",
@@ -128,6 +128,12 @@ class CartModel extends Equatable {
         payCompanyId: json['payCompanyId'] ?? 0,
         deliveryCompanyId: json['deliveryCompanyId'] ?? 0,
         parkName: json['parkName'] ?? '',
+        invNo: json['invNo'] ?? 0,
+        posNo: json['posNo'] ?? 0,
+        cashNo: json['cashNo'] ?? 0,
+        storeNo: json['storeNo'] ?? 0,
+        invDate: json['invDate'] ?? "",
+        returnedTotal: json['returnedTotal'] ?? 0,
       );
 
   factory CartModel.fromJsonServer(Map<String, dynamic> json) => CartModel(
@@ -167,7 +173,7 @@ class CartModel extends Equatable {
       );
 
   Map<String, dynamic> toJson() => {
-        'orderType': orderType.index,
+        'orderType': orderType,
         'id': id,
         'total': total,
         'deliveryCharge': deliveryCharge,
@@ -195,6 +201,12 @@ class CartModel extends Equatable {
         'payCompanyId': payCompanyId,
         'deliveryCompanyId': deliveryCompanyId,
         'parkName': parkName,
+        'invNo': invNo,
+        'posNo': posNo,
+        'cashNo': cashNo,
+        'storeNo': storeNo,
+        'invDate': invDate,
+        'returnedTotal': returnedTotal,
       };
 
   Map<String, dynamic> toInvoice() => {
@@ -370,6 +382,13 @@ class CartItemModel extends Equatable {
         isCombo: json['isCombo'] ?? false,
         modifiers: json['modifiers'] == null ? [] : List<CartItemModifierModel>.from(json['modifiers'].map((e) => CartItemModifierModel.fromJson(e))),
         questions: json['questions'] == null ? [] : List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
+        invNo: json['invNo'] ?? 0,
+        posNo: json['posNo'] ?? 0,
+        cashNo: json['cashNo'] ?? 0,
+        storeNo: json['storeNo'] ?? 0,
+        returnedQty: json['returnedQty'].toDouble() ?? 0,
+        returnedPrice: json['returnedPrice'].toDouble() ?? 0,
+        returnedTotal: json['returnedTotal'].toDouble() ?? 0,
       );
 
   factory CartItemModel.fromJsonServer({required Map<String, dynamic> json, required Map<String, dynamic> e}) => CartItemModel(
@@ -427,6 +446,13 @@ class CartItemModel extends Equatable {
         "isCombo": isCombo,
         "modifiers": List<dynamic>.from(modifiers.map((e) => e.toJson())),
         "questions": List<dynamic>.from(questions.map((e) => e.toJson())),
+        'invNo': invNo,
+        'posNo': posNo,
+        'cashNo': cashNo,
+        'storeNo': storeNo,
+        'returnedQty': returnedQty,
+        'returnedPrice': returnedPrice,
+        'returnedTotal': returnedTotal,
       };
 
   Map<String, dynamic> toInvoice() => {

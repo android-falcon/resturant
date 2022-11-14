@@ -18,6 +18,7 @@ class TablesModel {
     required this.width,
     required this.marginLeft,
     required this.marginTop,
+    required this.cart,
   });
 
   int id;
@@ -28,6 +29,7 @@ class TablesModel {
   double width;
   double marginLeft;
   double marginTop;
+  String cart;
 
   factory TablesModel.fromJson(Map<String, dynamic> json) => TablesModel(
         id: json["Id"] ?? 0,
@@ -38,6 +40,7 @@ class TablesModel {
         width: json["Width"]?.toDouble() ?? 0,
         marginLeft: json["MarginLeft"]?.toDouble() ?? 0,
         marginTop: json["MarginTop"]?.toDouble() ?? 0,
+        cart: json["TBLCART"] ?? "",
       );
 
   Map<String, dynamic> toJson() => {
@@ -49,5 +52,6 @@ class TablesModel {
         "Width": width,
         "MarginLeft": marginLeft,
         "MarginTop": marginTop,
+        "TBLCART": cart,
       };
 }

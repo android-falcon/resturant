@@ -70,11 +70,15 @@ class _HomeScreenState extends State<HomeScreen> {
         //     _showInOutDialog(type: InOutType.cashOut);
         //   },
         // ),
-        if (mySharedPreferences.employee.hasCashInOutPermission)
+        // if (mySharedPreferences.employee.hasCashInOutPermission)
           HomeMenu(
             name: 'Pay In'.tr,
             onTab: () {
-              _showInOutDialog(type: InOutType.payIn);
+              if (mySharedPreferences.employee.hasCashInOutPermission) {
+                _showInOutDialog(type: InOutType.payIn);
+              } else {
+                showLoginDialog();
+              }
             },
           ),
         if (mySharedPreferences.employee.hasCashInOutPermission)
@@ -270,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
     int _typeInputCash = 1;
     double moneyCount = 0;
 
-    await Get.dialog(
+    bool result = await Get.dialog(
       CustomDialog(
         gestureDetectorOnTap: () {
           _controllerSelectEdit = null;
@@ -515,7 +519,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           onExit: () async {
                             var result = await showAreYouSureDialog(title: 'Exit'.tr);
                             if (result) {
-                              Get.back();
+                              Get.back(result: false);
                             }
                           },
                           onSubmit: () async {
@@ -542,7 +546,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   case InOutType.cashOut:
                                     break;
                                 }
-                                Get.back();
+                                Get.back(result: true);
                               } else {
                                 Fluttertoast.showToast(msg: 'The value must be greater than zero'.tr);
                               }
@@ -561,7 +565,7 @@ class _HomeScreenState extends State<HomeScreen> {
       barrierDismissible: false,
     );
 
-    if (_printer != null) {
+    if (_printer != null && result) {
       ScreenshotController _screenshotController = ScreenshotController();
 
       Future.delayed(const Duration(milliseconds: 100)).then((value) async {
@@ -816,7 +820,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 totalCredit: double.parse(_controllerTotalCredit.text),
                                 netTotal: double.parse(_controllerNetTotal.text),
                               );
-                              if(resultEndCash){
+                              if (resultEndCash) {
                                 Get.back(result: true);
                               }
                             }
@@ -834,7 +838,7 @@ class _HomeScreenState extends State<HomeScreen> {
       barrierDismissible: false,
     );
 
-    if(result != null && result && _printer != null){
+    if (result != null && result && _printer != null) {
       ScreenshotController _screenshotController = ScreenshotController();
 
       Future.delayed(const Duration(milliseconds: 100)).then((value) async {
@@ -883,7 +887,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             children: [
                               Text(
-                                 'End Cash'.tr,
+                                'End Cash'.tr,
                                 style: kStyleLargePrinter,
                               ),
                             ],
@@ -1014,7 +1018,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     TextEditingController _controllerVoucherNumber = TextEditingController();
     CartModel? _reprintModel;
-    await Get.dialog(
+    bool result = await Get.dialog(
       CustomDialog(
         gestureDetectorOnTap: () {},
         builder: (context, setState, constraints) => Column(
@@ -1142,7 +1146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: kStyleTextButton,
                     ),
                     onPressed: () {
-                      Get.back();
+                      Get.back(result: false);
                     },
                   ),
                 ),
@@ -1158,7 +1162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: _reprintModel == null
                         ? null
                         : () async {
-                            Get.back();
+                            Get.back(result: true);
                           },
                   ),
                 ),
@@ -1170,7 +1174,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       barrierDismissible: false,
     );
-    if (_printer != null) {
+    if (_printer != null && result) {
       ScreenshotController _screenshotController = ScreenshotController();
 
       Future.delayed(const Duration(milliseconds: 100)).then((value) async {

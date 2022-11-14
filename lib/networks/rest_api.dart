@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/database/network_table.dart';
+import 'package:restaurant_system/models/all_data/tables_model.dart';
 import 'package:restaurant_system/models/all_data_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
@@ -530,6 +531,49 @@ class RestApi {
     }
   }
 
+  static Future<List<TablesModel>> getTables() async {
+    try {
+      var queryParameters = {
+        'PosNo': mySharedPreferences.posNo,
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'GET_TABLES',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.GET_TABLES,
+        method: 'GET',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.get(ApiUrl.GET_TABLES, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      return List<TablesModel>.from(response.data.map((x) => TablesModel.fromJson(x)));
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return [];
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return [];
+    }
+  }
+
   static Future<bool> openTable(int tableId) async {
     try {
       var queryParameters = {
@@ -738,8 +782,11 @@ class RestApi {
       }
       var body = jsonEncode({
         "TableOrderMaster": cart.toInvoice(),
-        "TableOrderDetails": List<dynamic>.from(cart.items.map((e) =>  e.toInvoice() )).toList(),
+        "TableOrderDetails": List<dynamic>.from(cart.items.map((e) => e.toInvoice())).toList(),
         "TableOrderModifire": modifiers,
+        "TableCart": {
+          "TBLCART": jsonEncode(cart.toJson()),
+        },
       });
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,

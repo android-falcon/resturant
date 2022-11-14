@@ -1164,19 +1164,19 @@ class _OrderScreenState extends State<OrderScreen> {
 
   _saveDineIn() async {
     showLoadingDialog();
-    bool isOpened = false;
-    if (!dineInSaved[indexTable].isOpen) {
-      isOpened = await RestApi.openTable(dineInSaved[indexTable].tableId);
-      if (isOpened) {
-        dineInSaved[indexTable].isOpen = true;
-      }
-    }
-    if (isOpened) {
-      dineInSaved[indexTable].cart = _cartModel;
-      dineInSaved[indexTable].numberSeats = widget.numberSeats!;
-      mySharedPreferences.dineIn = dineInSaved;
-      await RestApi.saveTableOrder(cart: dineInSaved[indexTable].cart);
-    }
+    // bool isOpened = false;
+    // if (!dineInSaved[indexTable].isOpen) {
+    //   isOpened = await RestApi.openTable(dineInSaved[indexTable].tableId);
+    //   if (isOpened) {
+    //     dineInSaved[indexTable].isOpen = true;
+    //   }
+    // }
+    // if (isOpened) {
+    dineInSaved[indexTable].cart = _cartModel;
+    dineInSaved[indexTable].numberSeats = widget.numberSeats!;
+    mySharedPreferences.dineIn = dineInSaved;
+    await RestApi.saveTableOrder(cart: dineInSaved[indexTable].cart);
+    // }
     hideLoadingDialog();
   }
 
@@ -1210,9 +1210,19 @@ class _OrderScreenState extends State<OrderScreen> {
                           setState(() {});
                         } else {
                           if (widget.type == OrderType.dineIn || _cartModel.items.isEmpty) {
-                            _showExitOrderScreenDialog().then((value) {
+                            _showExitOrderScreenDialog().then((value) async {
                               if (value) {
-                                Get.back();
+                                if (_cartModel.items.isEmpty) {
+                                  var result = await RestApi.closeTable(widget.tableId!);
+                                  if (result) {
+                                    dineInSaved[indexTable].cart = _cartModel;
+                                    dineInSaved[indexTable].isOpen = false;
+                                    mySharedPreferences.dineIn = dineInSaved;
+                                    Get.back();
+                                  }
+                                } else {
+                                  Get.back();
+                                }
                               }
                             });
                           } else {

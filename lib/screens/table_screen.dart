@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -34,8 +35,8 @@ class TableScreen extends StatefulWidget {
 class _TableScreenState extends State<TableScreen> {
   List<HomeMenu> _menu = [];
   Set<int> floors = {};
-  int _selectFloor = 0;
-  List<DineInModel> dineInSaved = mySharedPreferences.dineIn;
+  int? _selectFloor;
+  List<DineInModel> dineInSaved = []; //mySharedPreferences.dineIn;
 
   @override
   void initState() {
@@ -81,8 +82,29 @@ class _TableScreenState extends State<TableScreen> {
         },
       ),
     ];
-    floors = allDataModel.tables.map((e) => e.floorNo).toSet();
-    _selectFloor = floors.first;
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      _initData();
+    });
+  }
+
+  _initData() async {
+    showLoadingDialog();
+    var tables = await RestApi.getTables();
+    floors = tables.map((e) => e.floorNo).toSet();
+    _selectFloor ??= floors.first;
+    dineInSaved = tables
+        .map((e) => DineInModel(
+              isOpen: e.isOpened == 1,
+              isReservation: false,
+              tableId: e.id,
+              tableNo: e.tableNo,
+              floorNo: e.floorNo,
+              numberSeats: 0,
+              cart: e.cart.isEmpty ? CartModel.init(orderType: OrderType.dineIn, tableId: e.id) : CartModel.fromJson(jsonDecode(e.cart)),
+            ))
+        .toList();
+    setState(() {});
+    hideLoadingDialog();
   }
 
   Future<void> _showMoveDialog() async {
@@ -808,12 +830,23 @@ class _TableScreenState extends State<TableScreen> {
                                   .where((element) => element.floorNo == _selectFloor)
                                   .map((e) => InkWell(
                                         onTap: () async {
-                                          var numberSeats = e.isOpen ? e.numberSeats : await _showNumberSeatsDialog();
-                                          if (numberSeats != 0) {
-                                            Get.to(() => OrderScreen(type: OrderType.dineIn, tableId: e.tableId, numberSeats: numberSeats))!.then((value) {
-                                              dineInSaved = mySharedPreferences.dineIn;
-                                              setState(() {});
+                                          if (e.isOpen) {
+                                            Get.to(() => OrderScreen(type: OrderType.dineIn, tableId: e.tableId, numberSeats: e.numberSeats))!.then((value) {
+                                              _initData();
                                             });
+                                          } else {
+                                            var numberSeats = await _showNumberSeatsDialog();
+                                            if (numberSeats != 0) {
+                                              showLoadingDialog();
+                                              bool isOpened = await RestApi.openTable(e.tableId);
+                                              hideLoadingDialog();
+                                              if (isOpened) {
+                                                e.isOpen = true;
+                                              }
+                                              Get.to(() => OrderScreen(type: OrderType.dineIn, tableId: e.tableId, numberSeats: numberSeats))!.then((value) {
+                                                _initData();
+                                              });
+                                            }
                                           }
                                         },
                                         child: Column(
@@ -840,7 +873,7 @@ class _TableScreenState extends State<TableScreen> {
                                                         ),
                                                     ],
                                                     image: const DecorationImage(
-                                                      image: AssetImage('assets/images/round_table_4.png'),
+                                                      image: AssetImage('assets/images/table.png'),
                                                     ),
                                                   ),
                                                 ),

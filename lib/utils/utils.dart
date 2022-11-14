@@ -1,15 +1,23 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:restaurant_system/models/cart_model.dart';
+import 'package:restaurant_system/screens/widgets/custom_button.dart';
+import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
+import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/screens/widgets/loading_dialog.dart';
 import 'package:restaurant_system/screens/widgets/num_pad.dart';
+import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enums/enum_discount_type.dart';
 import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
+import 'package:restaurant_system/utils/my_shared_preferences.dart';
+import 'package:restaurant_system/utils/validation.dart';
 
 bool isNotEmpty(String? s) => s != null && s.isNotEmpty;
 
@@ -111,6 +119,91 @@ CartModel calculateOrder({required CartModel cart, required OrderType orderType,
   return cart;
 }
 
+showLoginDialog() async {
+  final GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+  final TextEditingController _controllerUsername = TextEditingController();
+  final TextEditingController _controllerPassword = TextEditingController();
+  await Get.dialog(
+    CustomDialog(
+      gestureDetectorOnTap: () {},
+      builder: (context, setState, constraints) => Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Form(
+              key: _keyForm,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CustomTextField(
+                    controller: _controllerUsername,
+                    label: Text('Username'.tr),
+                    maxLines: 1,
+                    validator: (value) {
+                      return Validation.isRequired(value);
+                    },
+                  ),
+                  CustomTextField(
+                    controller: _controllerPassword,
+                    label: Text('Password'.tr),
+                    obscureText: true,
+                    isPass: true,
+                    maxLines: 1,
+                    validator: (value) {
+                      return Validation.isRequired(value);
+                    },
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(width: 50.w),
+                      Expanded(
+                        child: CustomButton(
+                          fixed: true,
+                          backgroundColor: ColorsApp.red,
+                          child: Text(
+                            'Exit'.tr,
+                            style: kStyleTextButton,
+                          ),
+                          onPressed: () {
+                            Get.back(result: false);
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 5.w),
+                      Expanded(
+                        child: CustomButton(
+                          fixed: true,
+                          child: Text('Sign In'.tr),
+                          onPressed: () {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                            if (_keyForm.currentState!.validate()) {
+                              var indexEmployee = allDataModel.employees.indexWhere((element) => element.username == _controllerUsername.text && element.password == _controllerPassword.text && !element.isKitchenUser);
+                              if (indexEmployee != -1) {
+                                mySharedPreferences.employee = allDataModel.employees[indexEmployee];
+                                Get.back();
+                              } else {
+                                Fluttertoast.showToast(msg: 'Incorrect username or password'.tr, timeInSecForIosWeb: 3);
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 50.w),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+    barrierDismissible: false,
+  );
+}
+
 showLoadingDialog([String? text]) {
   log('showLoadingIndicator Called !!');
   Get.dialog(
@@ -125,7 +218,7 @@ showLoadingDialog([String? text]) {
   );
 }
 
-void hideLoadingDialog() {
+hideLoadingDialog() {
   if (Get.isDialogOpen!) {
     Get.back();
   }
