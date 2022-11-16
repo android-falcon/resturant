@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -36,7 +37,8 @@ class _TableScreenState extends State<TableScreen> {
   List<HomeMenu> _menu = [];
   Set<int> floors = {};
   int? _selectFloor;
-  List<DineInModel> dineInSaved = []; //mySharedPreferences.dineIn;
+  List<DineInModel> dineInSaved = []; //m// ySharedPreferences.dineIn;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -61,16 +63,16 @@ class _TableScreenState extends State<TableScreen> {
       //   name: 'Reservation'.tr,
       //   onTab: () {},
       // ),
-      HomeMenu(
-        name: 'Check Out'.tr,
-        onTab: () async {
-          var tableId = await _showCheckOutDialog();
-          if (tableId != null) {
-            var indexTable = dineInSaved.indexWhere((element) => element.tableId == tableId);
-            Get.to(() => PayScreen(cart: dineInSaved[indexTable].cart, tableId: tableId));
-          }
-        },
-      ),
+      // HomeMenu(
+      //   name: 'Check Out'.tr,
+      //   onTab: () async {
+      //     var tableId = await _showCheckOutDialog();
+      //     if (tableId != null) {
+      //       var indexTable = dineInSaved.indexWhere((element) => element.tableId == tableId);
+      //       Get.to(() => PayScreen(cart: dineInSaved[indexTable].cart, tableId: tableId));
+      //     }
+      //   },
+      // ),
       HomeMenu(
         name: 'Cash Drawer'.tr,
         onTab: () {},
@@ -83,12 +85,27 @@ class _TableScreenState extends State<TableScreen> {
       ),
     ];
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      _initData();
+      _initData(true);
     });
   }
 
-  _initData() async {
+  _initData(bool enableTimer) async {
     showLoadingDialog();
+    await _getTables();
+    hideLoadingDialog();
+    if(enableTimer){
+      _timer = Timer.periodic(const Duration(seconds: 3), (Timer t) async => await _getTables());
+    }
+  }
+
+
+  @override
+  void dispose() {
+    super.dispose();
+    _timer!.cancel();
+  }
+
+  _getTables() async{
     var tables = await RestApi.getTables();
     floors = tables.map((e) => e.floorNo).toSet();
     _selectFloor ??= floors.first;
@@ -102,6 +119,7 @@ class _TableScreenState extends State<TableScreen> {
       return DineInModel(
         isOpen: e.isOpened == 1,
         isReservation: false,
+        userId: e.userId,
         tableId: e.id,
         tableNo: e.tableNo,
         floorNo: e.floorNo,
@@ -109,7 +127,6 @@ class _TableScreenState extends State<TableScreen> {
       );
     }).toList();
     setState(() {});
-    hideLoadingDialog();
   }
 
   Future<void> _showMoveDialog() async {
@@ -320,6 +337,7 @@ class _TableScreenState extends State<TableScreen> {
                       dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
                       dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
                       dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
+                      dineInSaved[indexTo].cart.tableId = _selectToTableId!;
                       dineInSaved[indexFrom].isOpen = false;
                       dineInSaved[indexFrom].isReservation = false;
                       dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
@@ -562,7 +580,7 @@ class _TableScreenState extends State<TableScreen> {
                       dineInSaved[indexTo].cart = calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
                       await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
                       hideLoadingDialog();
-                      Get.back();
+                      // Get.back();
                     }
                   }
                 }
@@ -846,9 +864,11 @@ class _TableScreenState extends State<TableScreen> {
                                   .map((e) => InkWell(
                                         onTap: () async {
                                           if (e.isOpen) {
-                                            Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
-                                              _initData();
-                                            });
+                                            if (mySharedPreferences.employee.id == e.userId) {
+                                              Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
+                                                _initData(false);
+                                              });
+                                            }
                                           } else {
                                             var totalSeats = await _showNumberSeatsDialog();
                                             if (totalSeats != null) {
@@ -862,7 +882,7 @@ class _TableScreenState extends State<TableScreen> {
                                               e.cart.seatsMale = totalSeats['male'];
                                               e.cart.seatsFemale = totalSeats['female'];
                                               Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
-                                                _initData();
+                                                _initData(false);
                                               });
                                             }
                                           }
@@ -885,7 +905,7 @@ class _TableScreenState extends State<TableScreen> {
                                                     boxShadow: [
                                                       if (e.isOpen)
                                                         BoxShadow(
-                                                          color: Colors.green.withOpacity(0.5),
+                                                          color: mySharedPreferences.employee.id == e.userId ? Colors.green.withOpacity(0.5) : Colors.red.withOpacity(0.5),
                                                           spreadRadius: 1,
                                                           blurRadius: 20,
                                                         ),

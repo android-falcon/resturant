@@ -581,7 +581,7 @@ class RestApi {
         'UserId': mySharedPreferences.employee.id,
         'PosNo': mySharedPreferences.posNo,
         'CashNo': mySharedPreferences.cashNo,
-        'OpenDate': DateTime.now().toIso8601String(),
+        'OpenDate': mySharedPreferences.dailyClose.toIso8601String(),
       };
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
@@ -628,7 +628,7 @@ class RestApi {
         'UserId': mySharedPreferences.employee.id,
         'PosNo': mySharedPreferences.posNo,
         'CashNo': mySharedPreferences.cashNo,
-        'CloseDate': DateTime.now().toIso8601String(),
+        'CloseDate': mySharedPreferences.dailyClose.toIso8601String(),
       };
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
@@ -676,7 +676,7 @@ class RestApi {
         'UserId': mySharedPreferences.employee.id,
         'PosNo': mySharedPreferences.posNo,
         'CashNo': mySharedPreferences.cashNo,
-        'MoveDate': DateTime.now().toIso8601String(),
+        'MoveDate': mySharedPreferences.dailyClose.toIso8601String(),
       };
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
@@ -724,7 +724,7 @@ class RestApi {
         'UserId': mySharedPreferences.employee.id,
         'PosNo': mySharedPreferences.posNo,
         'CashNo': mySharedPreferences.cashNo,
-        'MergeDate': DateTime.now().toIso8601String(),
+        'MergeDate': mySharedPreferences.dailyClose.toIso8601String(),
       };
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,

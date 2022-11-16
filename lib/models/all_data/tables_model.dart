@@ -11,6 +11,7 @@ String tablesModelToJson(TablesModel data) => json.encode(data.toJson());
 class TablesModel {
   TablesModel({
     required this.id,
+    required this.userId,
     required this.tableNo,
     required this.floorNo,
     required this.isOpened,
@@ -22,6 +23,7 @@ class TablesModel {
   });
 
   int id;
+  int userId;
   int tableNo;
   int floorNo;
   int isOpened;
@@ -33,6 +35,7 @@ class TablesModel {
 
   factory TablesModel.fromJson(Map<String, dynamic> json) => TablesModel(
         id: json["Id"] ?? 0,
+        userId: json["UserId"] ?? 0,
         tableNo: json["TableNo"] ?? 0,
         floorNo: json["FloorNo"] ?? 0,
         isOpened: json["IsOpened"] ?? 0,
@@ -45,6 +48,7 @@ class TablesModel {
 
   Map<String, dynamic> toJson() => {
         "Id": id,
+        "UserId": userId,
         "TableNo": tableNo,
         "FloorNo": floorNo,
         "IsOpened": isOpened,
