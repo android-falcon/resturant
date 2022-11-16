@@ -93,11 +93,10 @@ class _TableScreenState extends State<TableScreen> {
     showLoadingDialog();
     await _getTables();
     hideLoadingDialog();
-    if(enableTimer){
+    if (enableTimer) {
       _timer = Timer.periodic(const Duration(seconds: 3), (Timer t) async => await _getTables());
     }
   }
-
 
   @override
   void dispose() {
@@ -105,7 +104,7 @@ class _TableScreenState extends State<TableScreen> {
     _timer!.cancel();
   }
 
-  _getTables() async{
+  _getTables() async {
     var tables = await RestApi.getTables();
     floors = tables.map((e) => e.floorNo).toSet();
     _selectFloor ??= floors.first;
@@ -192,7 +191,7 @@ class _TableScreenState extends State<TableScreen> {
                             child: StaggeredGrid.count(
                               crossAxisCount: 4,
                               children: dineInSaved
-                                  .where((element) => element.isOpen && element.floorNo == _selectFromFloor)
+                                  .where((element) => element.isOpen && element.floorNo == _selectFromFloor && element.userId == mySharedPreferences.employee.id)
                                   .map((e) => Container(
                                         margin: const EdgeInsets.all(2),
                                         decoration: BoxDecoration(
@@ -421,7 +420,7 @@ class _TableScreenState extends State<TableScreen> {
                             child: StaggeredGrid.count(
                               crossAxisCount: 4,
                               children: dineInSaved
-                                  .where((element) => element.isOpen && element.floorNo == _selectFromFloor)
+                                  .where((element) => element.isOpen && element.floorNo == _selectFromFloor && element.userId == mySharedPreferences.employee.id)
                                   .map((e) => Container(
                                         margin: const EdgeInsets.all(2),
                                         decoration: BoxDecoration(
@@ -513,7 +512,7 @@ class _TableScreenState extends State<TableScreen> {
                             child: StaggeredGrid.count(
                               crossAxisCount: 4,
                               children: dineInSaved
-                                  .where((element) => element.isOpen && element.floorNo == _selectToFloor)
+                                  .where((element) => element.isOpen && element.floorNo == _selectToFloor && element.userId == mySharedPreferences.employee.id)
                                   .map((e) => Container(
                                         margin: const EdgeInsets.all(2),
                                         decoration: BoxDecoration(
