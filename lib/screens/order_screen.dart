@@ -45,6 +45,7 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
+  bool _dineInChangedOrder = false;
   bool _isShowItem = false;
   int _selectedCategoryId = 0;
   late CartModel _cartModel;
@@ -583,6 +584,7 @@ class _OrderScreenState extends State<OrderScreen> {
       ),
       barrierDismissible: false,
     );
+    _dineInChangedOrder = true;
     return _modifiers ?? [];
   }
 
@@ -1016,6 +1018,7 @@ class _OrderScreenState extends State<OrderScreen> {
     if (qty == null) {
       return rQty;
     }
+    _dineInChangedOrder = true;
     return double.parse(qty);
   }
 
@@ -1160,6 +1163,7 @@ class _OrderScreenState extends State<OrderScreen> {
     showLoadingDialog();
     widget.dineIn!.cart = _cartModel;
     await RestApi.saveTableOrder(cart: widget.dineIn!.cart);
+    _dineInChangedOrder = false;
     hideLoadingDialog();
   }
 
@@ -1509,6 +1513,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                             }
                                           }
                                           _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                          _dineInChangedOrder = true;
                                           setState(() {});
                                         },
                                         child: SizedBox(
@@ -2020,7 +2025,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         Fluttertoast.showToast(msg: 'Please add items'.tr);
                                       } else {
                                         await _saveDineIn();
-                                        Get.back();
+                                        // Get.back();
                                       }
                                     },
                                   ),
@@ -2040,8 +2045,10 @@ class _OrderScreenState extends State<OrderScreen> {
                                     onPressed: () async {
                                       if (_cartModel.items.isEmpty) {
                                         Fluttertoast.showToast(msg: 'Please add items'.tr);
+                                      } else if(_dineInChangedOrder){
+                                        Fluttertoast.showToast(msg: 'Please save order'.tr);
                                       } else {
-                                        await _saveDineIn();
+                                        // await _saveDineIn();
                                         Get.to(() => PayScreen(cart: widget.dineIn!.cart, tableId: widget.dineIn!.tableId));
                                       }
                                     },
@@ -2200,6 +2207,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                   _cartModel.discount = 0;
                                 }
                                 _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _dineInChangedOrder = true;
                                 setState(() {});
                               }
                             } else {
@@ -2250,6 +2258,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 _cartModel.deliveryCharge = 0;
                                 _cartModel.discount = 0;
                                 _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _dineInChangedOrder = true;
                                 setState(() {});
                               }
                             }
@@ -2273,36 +2282,38 @@ class _OrderScreenState extends State<OrderScreen> {
                       width: 1,
                       thickness: 2,
                     ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          if (_cartModel.items.isNotEmpty) {
-                            _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
-                            _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
-                            setState(() {});
-                          } else {
-                            Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
-                          }
-                        },
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Delivery'.tr,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: kStyleTextDefault,
+                    if (widget.type == OrderType.takeAway)
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            if (_cartModel.items.isNotEmpty) {
+                              _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
+                              _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                              setState(() {});
+                            } else {
+                              Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
+                            }
+                          },
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: double.infinity,
+                            child: Center(
+                              child: Text(
+                                'Delivery'.tr,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: kStyleTextDefault,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
+                    if (widget.type == OrderType.takeAway)
+                      const VerticalDivider(
+                        width: 1,
+                        thickness: 2,
+                      ),
                     if (mySharedPreferences.employee.hasLineDiscPermission)
                       Expanded(
                         child: InkWell(
@@ -2317,6 +2328,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 _cartModel.items[_indexItemSelect].lineDiscount = result['discount'];
                                 _cartModel.items[_indexItemSelect].lineDiscountType = result['type'];
                                 _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _dineInChangedOrder = true;
                                 setState(() {});
                               } else {
                                 Fluttertoast.showToast(msg: 'Line discount is not available for this item'.tr);
@@ -2357,6 +2369,7 @@ class _OrderScreenState extends State<OrderScreen> {
                               _cartModel.discount = result['discount'];
                               _cartModel.discountType = result['type'];
                               _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                              _dineInChangedOrder = true;
                               setState(() {});
                             } else {
                               Fluttertoast.showToast(msg: 'No items accept discount in order'.tr);
@@ -2381,29 +2394,29 @@ class _OrderScreenState extends State<OrderScreen> {
                       width: 1,
                       thickness: 2,
                     ),
-                    if (widget.type == OrderType.dineIn)
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {},
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Center(
-                              child: Text(
-                                'Split'.tr,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
+                    // if (widget.type == OrderType.dineIn)
+                    //   Expanded(
+                    //     child: InkWell(
+                    //       onTap: () {},
+                    //       child: SizedBox(
+                    //         width: double.infinity,
+                    //         height: double.infinity,
+                    //         child: Center(
+                    //           child: Text(
+                    //             'Split'.tr,
+                    //             textAlign: TextAlign.center,
+                    //             overflow: TextOverflow.ellipsis,
+                    //             maxLines: 1,
+                    //             style: kStyleTextDefault,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // const VerticalDivider(
+                    //   width: 1,
+                    //   thickness: 2,
+                    // ),
                     if (mySharedPreferences.employee.hasPriceChangePermission)
                       Expanded(
                         child: InkWell(
@@ -2412,6 +2425,7 @@ class _OrderScreenState extends State<OrderScreen> {
                               if (_cartModel.items[_indexItemSelect].openPrice) {
                                 _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
                                 _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _dineInChangedOrder = true;
                                 setState(() {});
                               } else {
                                 Fluttertoast.showToast(msg: 'Price change is not available for this item'.tr);
