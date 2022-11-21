@@ -344,6 +344,7 @@ class CartItemModel extends Equatable {
     this.questions = const [],
     this.parentUuid = '',
     this.note = '',
+    this.dineInSavedOrder = false,
     this.isCombo = false,
     this.invNo = 0,
     this.posNo = 0,
@@ -385,6 +386,7 @@ class CartItemModel extends Equatable {
   int rowSerial;
   String note;
   bool isCombo;
+  bool dineInSavedOrder;
   List<CartItemModifierModel> modifiers;
   List<CartItemQuestionModel> questions;
 
@@ -413,6 +415,7 @@ class CartItemModel extends Equatable {
         rowSerial: json['rowSerial'] ?? 0,
         note: json['note'] ?? '',
         isCombo: json['isCombo'] ?? false,
+        dineInSavedOrder: json['dineInSavedOrder'] ?? false,
         modifiers: json['modifiers'] == null ? [] : List<CartItemModifierModel>.from(json['modifiers'].map((e) => CartItemModifierModel.fromJson(e))),
         questions: json['questions'] == null ? [] : List<CartItemQuestionModel>.from(json['questions'].map((e) => CartItemQuestionModel.fromJson(e))),
         invNo: json['invNo'] ?? 0,
@@ -432,6 +435,7 @@ class CartItemModel extends Equatable {
         storeNo: e["StoreNo"] ?? 0,
         rowSerial: e["RowSerial"] ?? 0,
         isCombo: (e["IsCombo"] ?? 0) == 1 ? true : false,
+        dineInSavedOrder: e["DineInSavedOrder"] ?? false,
         note: e["ItemRemark"] ?? "",
         id: e["ItemId"] ?? 0,
         qty: e["Qty"]?.toInt() ?? 0,
@@ -477,6 +481,7 @@ class CartItemModel extends Equatable {
         "rowSerial": rowSerial,
         "note": note,
         "isCombo": isCombo,
+        "dineInSavedOrder": dineInSavedOrder,
         "modifiers": List<dynamic>.from(modifiers.map((e) => e.toJson())),
         "questions": List<dynamic>.from(questions.map((e) => e.toJson())),
         'invNo': invNo,
@@ -539,6 +544,7 @@ class CartItemModel extends Equatable {
         "NetTotal": total, // المجموع النهائي للايتم مع الضريبة وسيرفس وضريبة السيرفس
         "ItemRemark": note,
         "IsCombo": isCombo ? 1 : 0,
+        "DineInSavedOrder": dineInSavedOrder ? 1 : 0,
         "IsSubItem": parentUuid != "" ? 1 : 0,
         "UUID": uuid,
         "ParentUUID": parentUuid,

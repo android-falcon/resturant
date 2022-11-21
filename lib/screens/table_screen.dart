@@ -333,6 +333,7 @@ class _TableScreenState extends State<TableScreen> {
                     if (resultApi) {
                       var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
                       var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
+                      dineInSaved[indexTo].userId = dineInSaved[indexFrom].userId;
                       dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
                       dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
                       dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
@@ -420,7 +421,7 @@ class _TableScreenState extends State<TableScreen> {
                             child: StaggeredGrid.count(
                               crossAxisCount: 4,
                               children: dineInSaved
-                                  .where((element) => element.isOpen && element.floorNo == _selectFromFloor && element.userId == mySharedPreferences.employee.id)
+                                  .where((element) => element.isOpen && element.floorNo == _selectFromFloor) //  && element.userId == mySharedPreferences.employee.id
                                   .map((e) => Container(
                                         margin: const EdgeInsets.all(2),
                                         decoration: BoxDecoration(

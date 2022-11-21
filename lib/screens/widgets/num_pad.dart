@@ -18,6 +18,7 @@ class NumPad extends StatelessWidget {
   void Function()? onPressedDot;
   void Function()? onPressed0;
   void Function()? onPressedDelete;
+  void Function()? onClear;
   void Function()? onSubmit;
   void Function()? onExit;
   final EdgeInsetsGeometry marginButton;
@@ -38,6 +39,7 @@ class NumPad extends StatelessWidget {
     this.onPressedDot,
     this.onPressed0,
     this.onPressedDelete,
+    this.onClear,
     this.onSubmit,
     this.onExit,
     this.marginButton = const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
@@ -154,7 +156,10 @@ class NumPad extends StatelessWidget {
               child: CustomButton(
                 margin: marginButton,
                 padding: paddingButton,
-                child: const Icon(Icons.backspace, size: 18,),
+                child: const Icon(
+                  Icons.backspace,
+                  size: 18,
+                ),
                 onPressed: onPressedDelete,
               ),
             ),
@@ -162,26 +167,45 @@ class NumPad extends StatelessWidget {
         ),
         Row(
           children: [
-            if(onExit != null)
-            Expanded(
-              child: CustomButton(
-                margin: marginButton,
-                padding: paddingButton,
-                child: Text('Exit'.tr , style: kStyleTextButton,),
-                backgroundColor: ColorsApp.red,
-                onPressed: onExit,
+            if (onExit != null)
+              Expanded(
+                child: CustomButton(
+                  margin: marginButton,
+                  padding: paddingButton,
+                  child: Text(
+                    'Exit'.tr,
+                    style: kStyleTextButton,
+                  ),
+                  backgroundColor: ColorsApp.red,
+                  onPressed: onExit,
+                ),
               ),
-            ),
-            if(onSubmit != null)
-            Expanded(
-              child: CustomButton(
-                margin: marginButton,
-                padding: paddingButton,
-                child: Text('Save'.tr, style: kStyleTextButton,),
-                backgroundColor: ColorsApp.green,
-                onPressed: onSubmit,
+            if (onClear != null)
+              Expanded(
+                child: CustomButton(
+                  margin: marginButton,
+                  padding: paddingButton,
+                  child: Text(
+                    'Clear'.tr,
+                    style: kStyleTextButton,
+                  ),
+                  backgroundColor: ColorsApp.blue,
+                  onPressed: onClear,
+                ),
               ),
-            ),
+            if (onSubmit != null)
+              Expanded(
+                child: CustomButton(
+                  margin: marginButton,
+                  padding: paddingButton,
+                  child: Text(
+                    'Save'.tr,
+                    style: kStyleTextButton,
+                  ),
+                  backgroundColor: ColorsApp.green,
+                  onPressed: onSubmit,
+                ),
+              ),
           ],
         ),
       ],

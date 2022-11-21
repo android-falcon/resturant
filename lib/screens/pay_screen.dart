@@ -76,7 +76,6 @@ class _PayScreenState extends State<PayScreen> {
         } else {
           Get.to(() => OrderScreen(type: widget.cart.orderType));
         }
-
       });
       if (widget.tableId != null) {
         RestApi.closeTable(widget.tableId!);
@@ -139,7 +138,7 @@ class _PayScreenState extends State<PayScreen> {
     );
   }
 
-  Future<Map<String, dynamic>> _showPayDialog({TextEditingController? controllerReceived, required double balance, required double received, bool enableReturnValue = false, TextEditingController? controllerCreditCard}) async {
+  Future<Map<String, dynamic>> _showPayDialog({TextEditingController? controllerReceived, required double balance, required double received, bool enableReturnValue = false, TextEditingController? controllerCreditCard, int? paymentCompany}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     if (controllerCreditCard != null && received == 0) {
       controllerReceived ??= TextEditingController(text: balance.toStringAsFixed(3));
@@ -153,6 +152,9 @@ class _PayScreenState extends State<PayScreen> {
     CreditCardType creditCardType = CreditCardType.unknown;
     CreditCardType selectedCreditCard = CreditCardType.visa;
     int? selectedPaymentCompany;
+    if (paymentCompany != null) {
+      selectedPaymentCompany = paymentCompany;
+    }
     TextEditingController _controllerSelected = controllerReceived;
     var result = await Get.dialog(
       CustomDialog(
@@ -291,6 +293,9 @@ class _PayScreenState extends State<PayScreen> {
                           }
                           setState(() {});
                           setState;
+                        },
+                        onClear: () {
+                          Get.back(result: "0.0");
                         },
                         onSubmit: () {
                           if (_keyForm.currentState!.validate()) {
@@ -471,7 +476,7 @@ class _PayScreenState extends State<PayScreen> {
                             children: [
                               if (widget.cart.orderType == OrderType.dineIn)
                                 Text(
-                                  '${'Table No'.tr} : ${widget.cart.tableId}',
+                                  '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == widget.cart.tableId)?.tableNo ?? ''}',
                                   style: kStyleDataPrinter,
                                   maxLines: 1,
                                 ),
@@ -1101,7 +1106,13 @@ class _PayScreenState extends State<PayScreen> {
                                             textAlign: TextAlign.center,
                                           ),
                                           onPressed: () async {
-                                            var result = await _showPayDialog(balance: remaining + widget.cart.credit, received: widget.cart.credit, enableReturnValue: false, controllerCreditCard: TextEditingController(text: widget.cart.creditCardNumber));
+                                            var result = await _showPayDialog(
+                                              balance: remaining + widget.cart.credit,
+                                              received: widget.cart.credit,
+                                              enableReturnValue: false,
+                                              controllerCreditCard: TextEditingController(text: widget.cart.creditCardNumber),
+                                              paymentCompany: widget.cart.payCompanyId == 0 ? null : widget.cart.payCompanyId,
+                                            );
                                             widget.cart.credit = result['received'];
                                             widget.cart.creditCardNumber = result['credit_card'];
                                             widget.cart.creditCardType = result['credit_card_type'];

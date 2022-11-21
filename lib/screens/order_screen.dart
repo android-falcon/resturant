@@ -1162,6 +1162,9 @@ class _OrderScreenState extends State<OrderScreen> {
   _saveDineIn() async {
     showLoadingDialog();
     widget.dineIn!.cart = _cartModel;
+    for (var item in widget.dineIn!.cart.items) {
+      item.dineInSavedOrder = true;
+    }
     await RestApi.saveTableOrder(cart: widget.dineIn!.cart);
     _dineInChangedOrder = false;
     hideLoadingDialog();
@@ -1461,11 +1464,15 @@ class _OrderScreenState extends State<OrderScreen> {
                                         borderRadius: BorderRadius.circular(5.r),
                                         onTap: () async {
                                           bool itemIsAdded = false;
-                                          var indexItem = _cartModel.items.indexWhere((element) => element.id == e.id && element.parentUuid == '' && element.modifiers.isEmpty);
+                                          var indexItem = _cartModel.items.lastIndexWhere((element) => element.id == e.id && element.parentUuid == '' && element.modifiers.isEmpty);
                                           var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == e.id).toList();
                                           var questionsSubItems = allDataModel.comboItemsForceQuestion.where((element) => element.itemId == e.id).toList();
                                           if (indexItem != -1 && questionsItem.isEmpty && questionsSubItems.isEmpty) {
-                                            itemIsAdded = true;
+                                            if (widget.type == OrderType.dineIn && _cartModel.items[indexItem].dineInSavedOrder) {
+                                              itemIsAdded = false;
+                                            } else {
+                                              itemIsAdded = true;
+                                            }
                                           }
                                           if (itemIsAdded) {
                                             _cartModel.items[indexItem].qty += 1;
@@ -2025,7 +2032,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         Fluttertoast.showToast(msg: 'Please add items'.tr);
                                       } else {
                                         await _saveDineIn();
-                                        // Get.back();
+                                        Get.back();
                                       }
                                     },
                                   ),
@@ -2045,7 +2052,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                     onPressed: () async {
                                       if (_cartModel.items.isEmpty) {
                                         Fluttertoast.showToast(msg: 'Please add items'.tr);
-                                      } else if(_dineInChangedOrder){
+                                      } else if (_dineInChangedOrder) {
                                         Fluttertoast.showToast(msg: 'Please save order'.tr);
                                       } else {
                                         // await _saveDineIn();
@@ -2107,14 +2114,18 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: InkWell(
                         onTap: () async {
                           if (_indexItemSelect != -1) {
-                            _cartModel.items[_indexItemSelect].qty = await _showQtyDialog(rQty: _cartModel.items[_indexItemSelect].qty, minQty: 0);
-                            for (var element in _cartModel.items) {
-                              if (_cartModel.items[_indexItemSelect].uuid == element.parentUuid) {
-                                element.qty = _cartModel.items[_indexItemSelect].qty;
+                            if (!_cartModel.items[_indexItemSelect].dineInSavedOrder) {
+                              _cartModel.items[_indexItemSelect].qty = await _showQtyDialog(rQty: _cartModel.items[_indexItemSelect].qty, minQty: 0);
+                              for (var element in _cartModel.items) {
+                                if (_cartModel.items[_indexItemSelect].uuid == element.parentUuid) {
+                                  element.qty = _cartModel.items[_indexItemSelect].qty;
+                                }
                               }
+                              _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                              setState(() {});
+                            } else {
+                              Fluttertoast.showToast(msg: 'The quantity of this item cannot be modified'.tr);
                             }
-                            _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
-                            setState(() {});
                           } else {
                             Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
                           }
@@ -2181,7 +2192,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       width: 1,
                       thickness: 2,
                     ),
-                    if (mySharedPreferences.employee.hasVoidPermission)
+                    if (!mySharedPreferences.employee.hasVoidPermission)
                       Expanded(
                         child: InkWell(
                           onTap: () async {

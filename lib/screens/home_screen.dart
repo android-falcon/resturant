@@ -74,11 +74,11 @@ class _HomeScreenState extends State<HomeScreen> {
           HomeMenu(
             name: 'Pay In'.tr,
             onTab: () {
-              if (mySharedPreferences.employee.hasCashInOutPermission) {
+              //if (mySharedPreferences.employee.hasCashInOutPermission) {
                 _showInOutDialog(type: InOutType.payIn);
-              } else {
-                showLoginDialog();
-              }
+              // } else {
+              //   showLoginDialog();
+              // }
             },
           ),
         if (mySharedPreferences.employee.hasCashInOutPermission)

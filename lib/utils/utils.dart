@@ -244,6 +244,7 @@ Widget numPadWidget(
   TextEditingController? controller,
   void Function(Function()) setState, {
   bool decimal = true,
+  Function()? onClear,
   Function()? onSubmit,
   Function()? onExit,
 }) {
@@ -263,6 +264,7 @@ Widget numPadWidget(
 
   return NumPad(
     controller: controller,
+    onClear: onClear,
     onSubmit: onSubmit,
     onExit: onExit ??
         () {

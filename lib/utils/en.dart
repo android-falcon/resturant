@@ -181,4 +181,6 @@ const Map<String, String> en = {
   'Actual Value': 'Actual Value',
   'Different': 'Different',
   'Please save order': 'Please save order',
+  'Clear': 'Clear',
+  'The quantity of this item cannot be modified': 'The quantity of this item cannot be modified',
 };
