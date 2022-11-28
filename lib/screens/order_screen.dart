@@ -15,7 +15,9 @@ import 'package:restaurant_system/models/all_data/item_with_questions_model.dart
 import 'package:restaurant_system/models/all_data/void_reason_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
+import 'package:restaurant_system/models/printer_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
+import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -32,6 +34,7 @@ import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
 import 'package:restaurant_system/utils/validation.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:uuid/uuid.dart';
 
 class OrderScreen extends StatefulWidget {
@@ -1161,6 +1164,7 @@ class _OrderScreenState extends State<OrderScreen> {
 
   _saveDineIn() async {
     showLoadingDialog();
+    await _showPrintDialog();
     widget.dineIn!.cart = _cartModel;
     for (var item in widget.dineIn!.cart.items) {
       item.dineInSavedOrder = true;
@@ -1168,6 +1172,213 @@ class _OrderScreenState extends State<OrderScreen> {
     await RestApi.saveTableOrder(cart: widget.dineIn!.cart);
     _dineInChangedOrder = false;
     hideLoadingDialog();
+  }
+
+  Future<void> _showPrintDialog() async {
+    List<PrinterInvoiceModel> invoices = [];
+
+    for (var printer in allDataModel.printers) {
+      var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
+      List<CartItemModel> cartItems = _cartModel.items.where((element) => !element.dineInSavedOrder && itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
+      if (cartItems.isNotEmpty) {
+        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
+      }
+    }
+    Future.delayed(const Duration(milliseconds: 100)).then((value) async {
+      await Future.forEach(invoices, (PrinterInvoiceModel element) async {
+        var screenshotKitchen = await element.screenshotController.capture(delay: const Duration(milliseconds: 10));
+        element.invoice = screenshotKitchen;
+      });
+      invoices.removeWhere((element) => element.invoice == null);
+      Printer.invoices(invoices: invoices);
+    });
+
+    await Get.dialog(
+      CustomDialog(
+        width: 150.w,
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomButton(
+                  fixed: true,
+                  child: Text('Print'.tr),
+                  onPressed: () {
+                    Printer.invoices(invoices: invoices);
+                  },
+                ),
+                SizedBox(width: 10.w),
+                CustomButton(
+                  fixed: true,
+                  child: Text('Close'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+            const Divider(thickness: 2),
+            Text(
+              'Kitchens Invoices'.tr,
+              style: kStyleLargePrinter,
+            ),
+            const Divider(thickness: 2),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: invoices.length,
+                separatorBuilder: (context, index) => invoices[index].items.isEmpty ? Container() : const Divider(thickness: 2),
+                itemBuilder: (context, index) => invoices[index].items.isEmpty
+                    ? Container()
+                    : Screenshot(
+                        controller: invoices[index].screenshotController,
+                        child: SizedBox(
+                          width: 215.w,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Center(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      _cartModel.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
+                                      style: kStyleLargePrinter,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${'Order No'.tr} : ${mySharedPreferences.orderNo - 1}',
+                                      style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                    if (_cartModel.orderType == OrderType.dineIn)
+                                      Text(
+                                        '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == _cartModel.tableId)?.tableNo ?? ''}',
+                                        style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                      ),
+                                    Text(
+                                      '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
+                                      style: kStyleDataPrinter,
+                                    ),
+                                    Text(
+                                      '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
+                                      style: kStyleDataPrinter,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Divider(
+                                color: Colors.black,
+                                height: 0,
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                // color: ColorsApp.primaryColor,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 4,
+                                      child: Text(
+                                        'Item Name'.tr,
+                                        style: kStyleDataPrinter,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        'Qty'.tr,
+                                        style: kStyleDataPrinter,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Text(
+                                        'Note'.tr,
+                                        style: kStyleDataPrinter,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Divider(color: Colors.black, height: 1),
+                              ListView.separated(
+                                itemCount: invoices[index].items.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                separatorBuilder: (context, indexItem) => const Divider(
+                                  height: 0,
+                                ),
+                                itemBuilder: (context, indexItem) => Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 4,
+                                        child: Text(
+                                          invoices[index].items[indexItem].name,
+                                          style: kStyleDataPrinter,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          '${invoices[index].items[indexItem].qty}',
+                                          style: kStyleDataPrinter,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          invoices[index].items[indexItem].note,
+                                          style: kStyleDataPrinter,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              if (_cartModel.note.isNotEmpty)
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Divider(
+                                      color: Colors.black,
+                                      height: 0,
+                                    ),
+                                    Text(
+                                      _cartModel.note,
+                                      style: kStyleDataPrinter,
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   @override

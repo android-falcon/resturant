@@ -182,5 +182,6 @@ const Map<String, String> en = {
   'Different': 'Different',
   'Please save order': 'Please save order',
   'Clear': 'Clear',
+  'Daily closing cannot be done due to order park': 'Daily closing cannot be done due to order park',
   'The quantity of this item cannot be modified': 'The quantity of this item cannot be modified',
 };

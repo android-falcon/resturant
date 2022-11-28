@@ -60,7 +60,8 @@ CartModel calculateOrder({required CartModel cart, required OrderType orderType,
     cart.total = cart.items.fold(0.0, (sum, item) => sum + item.total);
     cart.totalLineDiscount = cart.items.fold(0.0, (sum, item) => sum + item.totalLineDiscount);
     cart.totalDiscount = cart.discountType == DiscountType.percentage ? (cart.total - cart.totalLineDiscount) * (cart.discount / 100) : cart.discount;
-    cart.service = orderType == OrderType.takeAway ? 0 : cart.total * (allDataModel.companyConfig.first.servicePerc / 100);
+    cart.subTotal = cart.total - cart.totalDiscount - cart.totalLineDiscount;
+    cart.service = orderType == OrderType.takeAway ? 0 : cart.subTotal * (allDataModel.companyConfig.first.servicePerc / 100);
     cart.serviceTax = orderType == OrderType.takeAway ? 0 : cart.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
     double totalDiscountAvailableItem = cart.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? (item.total - item.totalLineDiscount) : 0));
     for (var element in cart.items) {
@@ -70,10 +71,10 @@ CartModel calculateOrder({required CartModel cart, required OrderType orderType,
         element.discount = 0;
       }
       element.tax = element.taxType == 2 ? 0 : (element.total - element.totalLineDiscount - element.discount) * (element.taxPercent / 100);
-      element.service = cart.service * (element.total / cart.total);
+      element.service = cart.service * ((element.total - element.totalLineDiscount - element.discount) / cart.subTotal);
       element.serviceTax = element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
     }
-    cart.subTotal = cart.total - cart.totalDiscount - cart.totalLineDiscount;
+
     cart.itemsTax = cart.items.fold(0.0, (sum, item) => sum + item.tax);
     cart.tax = cart.itemsTax + cart.serviceTax;
     cart.amountDue = cart.subTotal + cart.deliveryCharge + cart.service + cart.tax;
@@ -98,7 +99,8 @@ CartModel calculateOrder({required CartModel cart, required OrderType orderType,
     cart.total = cart.items.fold(0.0, (sum, item) => sum + item.total);
     cart.totalLineDiscount = cart.items.fold(0.0, (sum, item) => sum + item.totalLineDiscount);
     cart.totalDiscount = cart.discountType == DiscountType.percentage ? (cart.total - cart.totalLineDiscount) * (cart.discount / 100) : cart.discount;
-    cart.service = orderType == OrderType.takeAway ? 0 : cart.total * (allDataModel.companyConfig.first.servicePerc / 100);
+    cart.subTotal = cart.total - cart.totalDiscount - cart.totalLineDiscount;
+    cart.service = orderType == OrderType.takeAway ? 0 : cart.subTotal * (allDataModel.companyConfig.first.servicePerc / 100);
     cart.serviceTax = orderType == OrderType.takeAway ? 0 : cart.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
     double totalDiscountAvailableItem = cart.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? (item.total - item.totalLineDiscount) : 0));
     for (var element in cart.items) {
@@ -108,10 +110,10 @@ CartModel calculateOrder({required CartModel cart, required OrderType orderType,
         element.discount = 0;
       }
       element.tax = element.taxType == 2 ? 0 : (element.total - element.totalLineDiscount - element.discount) * (element.taxPercent / 100);
-      element.service = cart.service * (element.total / cart.total);
+      element.service = cart.service * ((element.total - element.totalLineDiscount - element.discount) / cart.subTotal);
       element.serviceTax = element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
     }
-    cart.subTotal = cart.total - cart.totalDiscount - cart.totalLineDiscount;
+
     cart.itemsTax = cart.items.fold(0.0, (sum, item) => sum + item.tax);
     cart.tax = cart.itemsTax + cart.serviceTax;
     cart.amountDue = cart.subTotal + cart.deliveryCharge + cart.service + cart.tax;

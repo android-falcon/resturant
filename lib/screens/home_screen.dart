@@ -132,8 +132,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 textConfirm: 'Confirm'.tr,
                 confirmTextColor: Colors.white,
                 onConfirm: () async {
-                  await RestApi.posDailyClose(closeDate: mySharedPreferences.dailyClose.add(const Duration(days: 1)));
-                  setState(() {});
+                  if(mySharedPreferences.park.isNotEmpty){
+                    Fluttertoast.showToast(msg: 'Daily closing cannot be done due to order park'.tr);
+                  } else {
+                    await RestApi.posDailyClose(closeDate: mySharedPreferences.dailyClose.add(const Duration(days: 1)));
+                    setState(() {});
+                  }
+
                 },
               );
             },

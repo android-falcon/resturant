@@ -366,10 +366,12 @@ class _PayScreenState extends State<PayScreen> {
       if (printer.cashNo == mySharedPreferences.cashNo) {
         invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: []));
       }
-      var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
-      List<CartItemModel> cartItems = widget.cart.items.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
-      if (cartItems.isNotEmpty) {
-        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
+      if (widget.cart.orderType == OrderType.takeAway) {
+        var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
+        List<CartItemModel> cartItems = widget.cart.items.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
+        if (cartItems.isNotEmpty) {
+          invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
+        }
       }
     }
     Future.delayed(const Duration(milliseconds: 100)).then((value) async {
@@ -865,7 +867,7 @@ class _PayScreenState extends State<PayScreen> {
                                     ),
                                     if (widget.cart.orderType == OrderType.dineIn)
                                       Text(
-                                        '${'Table No'.tr} : 1',
+                                        '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == widget.cart.tableId)?.tableNo ?? ''}',
                                         style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
                                       ),
                                     Text(
