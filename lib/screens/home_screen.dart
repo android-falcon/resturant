@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
         //     _showInOutDialog(type: InOutType.cashOut);
         //   },
         // ),
-        // if (mySharedPreferences.employee.hasCashInOutPermission)
+        if (mySharedPreferences.employee.hasCashInOutPermission)
           HomeMenu(
             name: 'Pay In'.tr,
             onTab: () {
@@ -1246,7 +1246,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: kStyleLargePrinter,
                             ),
                             Text(
-                              '${mySharedPreferences.orderNo - 1}',
+                              '${mySharedPreferences.orderNo}',
                               style: kStyleLargePrinter,
                             ),
                           ],

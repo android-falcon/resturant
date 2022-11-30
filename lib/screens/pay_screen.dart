@@ -64,10 +64,9 @@ class _PayScreenState extends State<PayScreen> {
         widget.cart.items[i].rowSerial = i + 1;
       }
       RestApi.invoice(cart: widget.cart, invoiceKind: InvoiceKind.invoicePay);
-      KitchenInvoice.init(orderNo: mySharedPreferences.orderNo, cart: widget.cart);
+      KitchenInvoice.init(orderNo: widget.cart.orderNo, cart: widget.cart);
 
       mySharedPreferences.inVocNo++;
-      mySharedPreferences.orderNo++;
 
       _showPrintDialog().then((value) {
         Get.offAll(HomeScreen());
@@ -442,7 +441,7 @@ class _PayScreenState extends State<PayScreen> {
                             style: kStyleLargePrinter,
                           ),
                           Text(
-                            '${mySharedPreferences.orderNo - 1}',
+                            '${widget.cart.orderNo}',
                             style: kStyleLargePrinter,
                           ),
                         ],
@@ -862,7 +861,7 @@ class _PayScreenState extends State<PayScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '${'Order No'.tr} : ${mySharedPreferences.orderNo - 1}',
+                                      '${'Order No'.tr} : ${widget.cart.orderNo}',
                                       style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
                                     ),
                                     if (widget.cart.orderType == OrderType.dineIn)

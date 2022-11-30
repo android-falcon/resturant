@@ -97,6 +97,13 @@ class RestApi {
             queryParameters: model.params.isEmpty ? null : jsonDecode(model.params),
           );
           break;
+        case 'PUT':
+          response = await uploadNetworkTableDio.put(
+            model.path,
+            data: model.body,
+            queryParameters: model.params.isEmpty ? null : jsonDecode(model.params),
+          );
+          break;
         default:
           response = await uploadNetworkTableDio.get('');
           break;
@@ -523,7 +530,7 @@ class RestApi {
     } on dio.DioError catch (e) {
       _traceError(e);
       hideLoadingDialog();
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: e.response?.data ?? 'Please try again'.tr, timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
       hideLoadingDialog();
@@ -648,6 +655,52 @@ class RestApi {
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.CLOSE_TABLE, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      return true;
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
+    }
+  }
+
+  static Future<bool> changeUserTable(int tableId, int oldUser, int newUserId) async {
+    try {
+      var queryParameters = {
+        'TableId': tableId,
+        'oldUser': oldUser,
+        'NewUserId': newUserId,
+        'PosNo': mySharedPreferences.posNo,
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'CHANGE_USER_TABLE',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.CHANGE_USER_TABLE,
+        method: 'PUT',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.put(ApiUrl.CHANGE_USER_TABLE, queryParameters: queryParameters);
       _networkLog(response);
       if (networkModel != null) {
         networkModel.status = 2;

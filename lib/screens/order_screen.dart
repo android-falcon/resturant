@@ -63,6 +63,8 @@ class _OrderScreenState extends State<OrderScreen> {
       _cartModel = widget.dineIn!.cart;
     } else {
       _cartModel = CartModel.init(orderType: widget.type);
+      mySharedPreferences.orderNo++;
+      _cartModel.orderNo = mySharedPreferences.orderNo;
     }
   }
 
@@ -1192,151 +1194,113 @@ class _OrderScreenState extends State<OrderScreen> {
       invoices.removeWhere((element) => element.invoice == null);
       Printer.invoices(invoices: invoices);
     });
-
-    await Get.dialog(
-      CustomDialog(
-        width: 150.w,
-        builder: (context, setState, constraints) => Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CustomButton(
-                  fixed: true,
-                  child: Text('Print'.tr),
-                  onPressed: () {
-                    Printer.invoices(invoices: invoices);
-                  },
-                ),
-                SizedBox(width: 10.w),
-                CustomButton(
-                  fixed: true,
-                  child: Text('Close'.tr),
-                  onPressed: () {
-                    Get.back();
-                  },
-                ),
-              ],
-            ),
-            const Divider(thickness: 2),
-            Text(
-              'Kitchens Invoices'.tr,
-              style: kStyleLargePrinter,
-            ),
-            const Divider(thickness: 2),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: invoices.length,
-                separatorBuilder: (context, index) => invoices[index].items.isEmpty ? Container() : const Divider(thickness: 2),
-                itemBuilder: (context, index) => invoices[index].items.isEmpty
-                    ? Container()
-                    : Screenshot(
-                        controller: invoices[index].screenshotController,
-                        child: SizedBox(
-                          width: 215.w,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Center(
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      _cartModel.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
-                                      style: kStyleLargePrinter,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 2.w),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${'Order No'.tr} : ${mySharedPreferences.orderNo - 1}',
-                                      style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                    if (_cartModel.orderType == OrderType.dineIn)
+    if (invoices.isNotEmpty) {
+      await Get.dialog(
+        CustomDialog(
+          width: 150.w,
+          builder: (context, setState, constraints) => Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // CustomButton(
+                  //   fixed: true,
+                  //   child: Text('Print'.tr),
+                  //   onPressed: () {
+                  //     Printer.invoices(invoices: invoices);
+                  //   },
+                  // ),
+                  // SizedBox(width: 10.w),
+                  CustomButton(
+                    fixed: true,
+                    child: Text('Close'.tr),
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                ],
+              ),
+              const Divider(thickness: 2),
+              Text(
+                'Kitchens Invoices'.tr,
+                style: kStyleLargePrinter,
+              ),
+              const Divider(thickness: 2),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: invoices.length,
+                  separatorBuilder: (context, index) => invoices[index].items.isEmpty ? Container() : const Divider(thickness: 2),
+                  itemBuilder: (context, index) => invoices[index].items.isEmpty
+                      ? Container()
+                      : Screenshot(
+                          controller: invoices[index].screenshotController,
+                          child: SizedBox(
+                            width: 215.w,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Center(
+                                  child: Column(
+                                    children: [
                                       Text(
-                                        '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == _cartModel.tableId)?.tableNo ?? ''}',
+                                        _cartModel.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
+                                        style: kStyleLargePrinter,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 15),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 2.w),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${'Order No'.tr} : ${_cartModel.orderNo}',
                                         style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
                                       ),
-                                    Text(
-                                      '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
-                                      style: kStyleDataPrinter,
-                                    ),
-                                    Text(
-                                      '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                      style: kStyleDataPrinter,
-                                    ),
-                                  ],
+                                      if (_cartModel.orderType == OrderType.dineIn)
+                                        Text(
+                                          '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == _cartModel.tableId)?.tableNo ?? ''}',
+                                          style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                        ),
+                                      Text(
+                                        '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
+                                        style: kStyleDataPrinter,
+                                      ),
+                                      Text(
+                                        '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
+                                        style: kStyleDataPrinter,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const Divider(
-                                color: Colors.black,
-                                height: 0,
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                // color: ColorsApp.primaryColor,
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      flex: 4,
-                                      child: Text(
-                                        'Item Name'.tr,
-                                        style: kStyleDataPrinter,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'Qty'.tr,
-                                        style: kStyleDataPrinter,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Text(
-                                        'Note'.tr,
-                                        style: kStyleDataPrinter,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Divider(color: Colors.black, height: 1),
-                              ListView.separated(
-                                itemCount: invoices[index].items.length,
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                separatorBuilder: (context, indexItem) => const Divider(
+                                const Divider(
+                                  color: Colors.black,
                                   height: 0,
                                 ),
-                                itemBuilder: (context, indexItem) => Padding(
+                                Container(
                                   padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                  // color: ColorsApp.primaryColor,
                                   child: Row(
                                     children: [
                                       Expanded(
                                         flex: 4,
                                         child: Text(
-                                          invoices[index].items[indexItem].name,
+                                          'Item Name'.tr,
                                           style: kStyleDataPrinter,
                                           textAlign: TextAlign.center,
                                         ),
                                       ),
                                       Expanded(
                                         child: Text(
-                                          '${invoices[index].items[indexItem].qty}',
+                                          'Qty'.tr,
                                           style: kStyleDataPrinter,
                                           textAlign: TextAlign.center,
                                         ),
@@ -1344,7 +1308,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                       Expanded(
                                         flex: 2,
                                         child: Text(
-                                          invoices[index].items[indexItem].note,
+                                          'Note'.tr,
                                           style: kStyleDataPrinter,
                                           textAlign: TextAlign.center,
                                         ),
@@ -1352,33 +1316,72 @@ class _OrderScreenState extends State<OrderScreen> {
                                     ],
                                   ),
                                 ),
-                              ),
-                              if (_cartModel.note.isNotEmpty)
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Divider(
-                                      color: Colors.black,
-                                      height: 0,
+                                const Divider(color: Colors.black, height: 1),
+                                ListView.separated(
+                                  itemCount: invoices[index].items.length,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  separatorBuilder: (context, indexItem) => const Divider(
+                                    height: 0,
+                                  ),
+                                  itemBuilder: (context, indexItem) => Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 4,
+                                          child: Text(
+                                            invoices[index].items[indexItem].name,
+                                            style: kStyleDataPrinter,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            '${invoices[index].items[indexItem].qty}',
+                                            style: kStyleDataPrinter,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            invoices[index].items[indexItem].note,
+                                            style: kStyleDataPrinter,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      _cartModel.note,
-                                      style: kStyleDataPrinter,
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                            ],
+                                if (_cartModel.note.isNotEmpty)
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Divider(
+                                        color: Colors.black,
+                                        height: 0,
+                                      ),
+                                      Text(
+                                        _cartModel.note,
+                                        style: kStyleDataPrinter,
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      barrierDismissible: false,
-    );
+        barrierDismissible: false,
+      );
+    }
   }
 
   @override
@@ -1390,7 +1393,15 @@ class _OrderScreenState extends State<OrderScreen> {
           setState(() {});
           return false;
         } else {
-          return await _showExitOrderScreenDialog();
+          var result = await _showExitOrderScreenDialog();
+          if (result && widget.type == OrderType.dineIn && _cartModel.items.isEmpty) {
+            var result = await RestApi.closeTable(widget.dineIn!.tableId);
+            if (result) {
+              widget.dineIn!.cart = _cartModel;
+              widget.dineIn!.isOpen = false;
+            }
+          }
+          return result;
         }
       },
       child: Scaffold(
@@ -2403,7 +2414,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       width: 1,
                       thickness: 2,
                     ),
-                    if (!mySharedPreferences.employee.hasVoidPermission)
+                    if (mySharedPreferences.employee.hasVoidPermission)
                       Expanded(
                         child: InkWell(
                           onTap: () async {

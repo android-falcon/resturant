@@ -7,9 +7,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
+import 'package:restaurant_system/models/printer_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
+import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
@@ -25,6 +28,7 @@ import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
+import 'package:screenshot/screenshot.dart';
 
 class TableScreen extends StatefulWidget {
   const TableScreen({Key? key}) : super(key: key);
@@ -45,20 +49,22 @@ class _TableScreenState extends State<TableScreen> {
     // TODO: implement initState
     super.initState();
     _menu = <HomeMenu>[
-      HomeMenu(
-        name: 'Move'.tr,
-        onTab: () async {
-          await _showMoveDialog();
-          setState(() {});
-        },
-      ),
-      HomeMenu(
-        name: 'Merge'.tr,
-        onTab: () async {
-          await _showMargeDialog();
-          setState(() {});
-        },
-      ),
+      if (mySharedPreferences.employee.hasMoveTablePermission)
+        HomeMenu(
+          name: 'Move'.tr,
+          onTab: () async {
+            await _showMoveDialog();
+            setState(() {});
+          },
+        ),
+      if (mySharedPreferences.employee.hasMergeTablePermission)
+        HomeMenu(
+          name: 'Merge'.tr,
+          onTab: () async {
+            await _showMargeDialog();
+            setState(() {});
+          },
+        ),
       // HomeMenu(
       //   name: 'Reservation'.tr,
       //   onTab: () {},
@@ -74,8 +80,26 @@ class _TableScreenState extends State<TableScreen> {
       //   },
       // ),
       HomeMenu(
-        name: 'Cash Drawer'.tr,
-        onTab: () {},
+        name: 'Print'.tr,
+        onTab: () async {
+          await _showPrintTablesDialog();
+          setState(() {});
+        },
+      ),
+      if (mySharedPreferences.employee.hasChangeTableCaptinPermission)
+        HomeMenu(
+          name: 'Change User'.tr,
+          onTab: () async {
+            await _showChangeUserDialog();
+            setState(() {});
+          },
+        ),
+      HomeMenu(
+        name: 'Report Tables'.tr,
+        onTab: () async {
+          await _showReportTablesDialog();
+          setState(() {});
+        },
       ),
       HomeMenu(
         name: 'Close'.tr,
@@ -126,6 +150,912 @@ class _TableScreenState extends State<TableScreen> {
       );
     }).toList();
     setState(() {});
+  }
+
+  Future<void> _showPrintTablesDialog() async {
+    int? _selectTableId;
+    int? _selectFloor = floors.first;
+    await Get.dialog(
+      CustomDialog(
+        enableScroll: false,
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text('Table'.tr),
+                        const Divider(),
+                        Container(
+                          width: double.infinity,
+                          height: 35.h,
+                          color: Colors.grey,
+                          child: Row(
+                              children: floors
+                                  .map(
+                                    (e) => Expanded(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Container(
+                                              height: 35.h,
+                                              color: _selectFloor == e ? ColorsApp.accentColor : null,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  _selectFloor = e;
+                                                  setState(() {});
+                                                },
+                                                child: Center(
+                                                  child: Text(
+                                                    '$e ${'Floor'.tr}',
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: kStyleTextDefault,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (floors.last != e) const VerticalDivider(color: Colors.white, width: 1, thickness: 2),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                  .toList()),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: StaggeredGrid.count(
+                              crossAxisCount: 4,
+                              children: dineInSaved
+                                  .where((element) => element.isOpen && element.floorNo == _selectFloor && element.userId == mySharedPreferences.employee.id)
+                                  .map((e) => Container(
+                                        margin: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          border: _selectTableId == e.tableId ? Border.all(color: Colors.black) : null,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        child: InkWell(
+                                          radius: 10,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                          onTap: () {
+                                            _selectTableId = e.tableId;
+                                            setState(() {});
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Center(
+                                                child: Text(
+                                                  '${e.tableNo}',
+                                                  style: kStyleTextTable,
+                                                ),
+                                              ),
+                                              Image.asset(
+                                                'assets/images/table.png',
+                                                height: 80.h,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomButton(
+                  fixed: true,
+                  child: Text('Print'.tr),
+                  onPressed: () async {
+                    if (_selectTableId == null) {
+                      Fluttertoast.showToast(msg: 'Please select a table'.tr);
+                    } else {
+                      var result = await showAreYouSureDialog(title: 'Change User'.tr);
+                      if (result) {
+                        Get.back();
+                        var indexTable = dineInSaved.indexWhere((element) => element.tableId == _selectTableId);
+                        _showPrintDialog(dineInSaved[indexTable].cart);
+                      }
+                    }
+                  },
+                ),
+                SizedBox(width: 10.w),
+                CustomButton(
+                  fixed: true,
+                  child: Text('Close'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  Future<void> _showPrintDialog(CartModel cart) async {
+    ScreenshotController _screenshotControllerCash = ScreenshotController();
+    List<PrinterInvoiceModel> invoices = [];
+
+    for (var printer in allDataModel.printers) {
+      if (printer.cashNo == mySharedPreferences.cashNo) {
+        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: []));
+      }
+    }
+    Future.delayed(const Duration(milliseconds: 100)).then((value) async {
+      var screenshotCash = await _screenshotControllerCash.capture(delay: const Duration(milliseconds: 10));
+      await Future.forEach(invoices, (PrinterInvoiceModel element) async {
+        if (element.items.isEmpty) {
+          element.invoice = screenshotCash;
+        } else {
+          var screenshotKitchen = await element.screenshotController.capture(delay: const Duration(milliseconds: 10));
+          element.invoice = screenshotKitchen;
+        }
+      });
+      invoices.removeWhere((element) => element.invoice == null);
+      Printer.invoices(invoices: invoices);
+    });
+    if (invoices.isNotEmpty) {
+      await Get.dialog(
+        CustomDialog(
+          width: 150.w,
+          builder: (context, setState, constraints) => Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CustomButton(
+                    fixed: true,
+                    child: Text('Print'.tr),
+                    onPressed: () {
+                      Printer.invoices(invoices: invoices);
+                    },
+                  ),
+                  SizedBox(width: 10.w),
+                  CustomButton(
+                    fixed: true,
+                    child: Text('Close'.tr),
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                ],
+              ),
+              const Divider(thickness: 2),
+              Screenshot(
+                controller: _screenshotControllerCash,
+                child: SizedBox(
+                  width: 215.w,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              cart.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
+                              style: kStyleLargePrinter,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              'Order No'.tr,
+                              style: kStyleLargePrinter,
+                            ),
+                            Text(
+                              '${cart.orderNo}',
+                              style: kStyleLargePrinter,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(color: Colors.black, thickness: 2),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Text(
+                                //   '${'Invoice No'.tr} : ${mySharedPreferences.inVocNo - 1}',
+                                //   style: kStyleDataPrinter,
+                                // ),
+                                Text(
+                                  '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
+                                  style: kStyleDataPrinter,
+                                ),
+                                Text(
+                                  '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
+                                  style: kStyleDataPrinter,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (cart.orderType == OrderType.dineIn)
+                                  Text(
+                                    '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == cart.tableId)?.tableNo ?? ''}',
+                                    style: kStyleDataPrinter,
+                                    maxLines: 1,
+                                  ),
+                                Text(
+                                  '${'User'.tr} : ${mySharedPreferences.employee.empName}',
+                                  style: kStyleDataPrinter,
+                                  maxLines: 1,
+                                ),
+                                Text(
+                                  '${'Phone'.tr} : ${allDataModel.companyConfig[0].phoneNo}',
+                                  style: kStyleDataPrinter,
+                                  maxLines: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(color: Colors.black, thickness: 2),
+                      Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: Text(
+                                    'Pro-Nam'.tr,
+                                    style: kStyleDataPrinter,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'Qty'.tr,
+                                    style: kStyleDataPrinter,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'Total'.tr,
+                                    style: kStyleDataPrinter,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Divider(color: Colors.black, height: 1),
+                          ListView.separated(
+                            itemCount: cart.items.length,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
+                            itemBuilder: (context, index) {
+                              if (cart.items[index].parentUuid.isNotEmpty) {
+                                return Container();
+                              } else {
+                                var subItem = cart.items.where((element) => element.parentUuid == cart.items[index].uuid).toList();
+                                return Column(
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 4,
+                                            child: Text(
+                                              cart.items[index].name,
+                                              style: kStyleDataPrinter,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Text(
+                                              '${cart.items[index].qty}',
+                                              style: kStyleDataPrinter,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Text(
+                                              cart.items[index].total.toStringAsFixed(3),
+                                              style: kStyleDataPrinter,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                      child: Column(
+                                        children: [
+                                          ListView.builder(
+                                            itemCount: cart.items[index].questions.length,
+                                            shrinkWrap: true,
+                                            physics: const NeverScrollableScrollPhysics(),
+                                            itemBuilder: (context, indexQuestions) => Column(
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        '- ${cart.items[index].questions[indexQuestions].question.trim()}',
+                                                        style: kStyleDataPrinter,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                ListView.builder(
+                                                  itemCount: cart.items[index].questions[indexQuestions].modifiers.length,
+                                                  shrinkWrap: true,
+                                                  physics: const NeverScrollableScrollPhysics(),
+                                                  itemBuilder: (context, indexModifiers) => Column(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: Text(
+                                                              '  • ${cart.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
+                                                              style: kStyleDataPrinter,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          ListView.builder(
+                                            itemCount: cart.items[index].modifiers.length,
+                                            shrinkWrap: true,
+                                            physics: const NeverScrollableScrollPhysics(),
+                                            itemBuilder: (context, indexModifiers) => Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    '• ${cart.items[index].modifiers[indexModifiers].name} * ${cart.items[index].modifiers[indexModifiers].modifier}',
+                                                    style: kStyleDataPrinter,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          if (subItem.isNotEmpty)
+                                            ListView.builder(
+                                              itemCount: subItem.length,
+                                              shrinkWrap: true,
+                                              physics: const NeverScrollableScrollPhysics(),
+                                              itemBuilder: (context, indexSubItem) {
+                                                return Row(
+                                                  children: [
+                                                    Expanded(
+                                                      flex: 3,
+                                                      child: Text(
+                                                        subItem[indexSubItem].name,
+                                                        style: kStyleDataPrinter,
+                                                        textAlign: TextAlign.center,
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        subItem[indexSubItem].priceChange.toStringAsFixed(3),
+                                                        style: kStyleDataPrinter,
+                                                        textAlign: TextAlign.center,
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        subItem[indexSubItem].total.toStringAsFixed(3),
+                                                        style: kStyleDataPrinter,
+                                                        textAlign: TextAlign.center,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                      const Divider(color: Colors.black, thickness: 2),
+                      Container(
+                        margin: EdgeInsets.symmetric(vertical: 4.h),
+                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Total'.tr,
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Text(
+                                  cart.total.toStringAsFixed(3),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Discount'.tr,
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Text(
+                                  cart.totalDiscount.toStringAsFixed(3),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Line Discount'.tr,
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Text(
+                                  cart.totalLineDiscount.toStringAsFixed(3),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Delivery Charge'.tr,
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Text(
+                                  cart.deliveryCharge.toStringAsFixed(3),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Service'.tr,
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Text(
+                                  cart.service.toStringAsFixed(3),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Tax'.tr,
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Text(
+                                  cart.tax.toStringAsFixed(3),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Amount Due'.tr,
+                                    style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Text(
+                                  cart.amountDue.toStringAsFixed(3),
+                                  style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            const Divider(color: Colors.black, thickness: 2),
+                            if (cart.cash != 0)
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Cash'.tr,
+                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  Text(
+                                    cart.cash.toStringAsFixed(3),
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            if (cart.credit != 0)
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Credit'.tr,
+                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  Text(
+                                    cart.credit.toStringAsFixed(3),
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            SizedBox(height: 15.h),
+                            Image.asset(
+                              'assets/images/welcome.png',
+                              height: 80.h,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        barrierDismissible: false,
+      );
+    }
+  }
+
+  Future<void> _showReportTablesDialog() async {
+    int? _selectFloor = floors.first;
+    await Get.dialog(
+      CustomDialog(
+        enableScroll: false,
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text('Table'.tr),
+                        const Divider(),
+                        Container(
+                          width: double.infinity,
+                          height: 35.h,
+                          color: Colors.grey,
+                          child: Row(
+                              children: floors
+                                  .map(
+                                    (e) => Expanded(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Container(
+                                              height: 35.h,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  _selectFloor = e;
+                                                  setState(() {});
+                                                },
+                                                child: Center(
+                                                  child: Text(
+                                                    '$e ${'Floor'.tr}',
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: kStyleTextDefault,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (floors.last != e) const VerticalDivider(color: Colors.white, width: 1, thickness: 2),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                  .toList()),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: StaggeredGrid.count(
+                              crossAxisCount: 4,
+                              children: dineInSaved
+                                  .where((element) => element.isOpen && element.floorNo == _selectFloor && element.userId == mySharedPreferences.employee.id)
+                                  .map((e) => Container(
+                                        margin: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.black),
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Center(
+                                              child: Text(
+                                                '${e.tableNo} (${allDataModel.employees.firstWhereOrNull((element) => element.id == e.userId)?.empName ?? ''})',
+                                                style: kStyleTextTable,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Image.asset(
+                                              'assets/images/table.png',
+                                              height: 80.h,
+                                            )
+                                          ],
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            CustomButton(
+              fixed: true,
+              child: Text('Close'.tr),
+              onPressed: () {
+                Get.back();
+              },
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  Future<void> _showChangeUserDialog() async {
+    int? _selectUserId;
+    int? _selectTableId;
+    int? _selectFloor = floors.first;
+    await Get.dialog(
+      CustomDialog(
+        enableScroll: false,
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text('Table'.tr),
+                        const Divider(),
+                        Container(
+                          width: double.infinity,
+                          height: 35.h,
+                          color: Colors.grey,
+                          child: Row(
+                              children: floors
+                                  .map(
+                                    (e) => Expanded(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Container(
+                                              height: 35.h,
+                                              color: _selectFloor == e ? ColorsApp.accentColor : null,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  _selectFloor = e;
+                                                  setState(() {});
+                                                },
+                                                child: Center(
+                                                  child: Text(
+                                                    '$e ${'Floor'.tr}',
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: kStyleTextDefault,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (floors.last != e) const VerticalDivider(color: Colors.white, width: 1, thickness: 2),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                  .toList()),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: StaggeredGrid.count(
+                              crossAxisCount: 4,
+                              children: dineInSaved
+                                  .where((element) => element.isOpen && element.floorNo == _selectFloor && element.userId == mySharedPreferences.employee.id)
+                                  .map((e) => Container(
+                                        margin: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          border: _selectTableId == e.tableId ? Border.all(color: Colors.black) : null,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        child: InkWell(
+                                          radius: 10,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                          onTap: () {
+                                            _selectTableId = e.tableId;
+                                            setState(() {});
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Center(
+                                                child: Text(
+                                                  '${e.tableNo}',
+                                                  style: kStyleTextTable,
+                                                ),
+                                              ),
+                                              Image.asset(
+                                                'assets/images/table.png',
+                                                height: 80.h,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  const VerticalDivider(thickness: 2),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text('Users'.tr),
+                        const Divider(),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: StaggeredGrid.count(
+                              crossAxisCount: 4,
+                              children: allDataModel.employees
+                                  .where((element) => element.id != mySharedPreferences.employee.id)
+                                  .map((e) => Container(
+                                        margin: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          border: _selectUserId == e.id ? Border.all(color: Colors.black) : null,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        child: InkWell(
+                                          radius: 10,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                          onTap: () {
+                                            _selectUserId = e.id;
+                                            setState(() {});
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Center(
+                                                child: Text(
+                                                  '${e.empName} (${e.id})',
+                                                  style: kStyleTextTable,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                              Image.asset(
+                                                'assets/images/user.png',
+                                                height: 80.h,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomButton(
+                  fixed: true,
+                  child: Text('Change User'.tr),
+                  onPressed: () async {
+                    if (_selectUserId == null) {
+                      Fluttertoast.showToast(msg: 'Please select a user'.tr);
+                    } else if (_selectTableId == null) {
+                      Fluttertoast.showToast(msg: 'Please select a table'.tr);
+                    } else {
+                      var result = await showAreYouSureDialog(title: 'Change User'.tr);
+                      if (result) {
+                        showLoadingDialog();
+                        var resultApi = await RestApi.changeUserTable(_selectTableId!, mySharedPreferences.employee.id, _selectUserId!);
+                        if (resultApi) {
+                          var indexTable = dineInSaved.indexWhere((element) => element.tableId == _selectTableId);
+                          dineInSaved[indexTable].userId = _selectUserId!;
+                          await RestApi.saveTableOrder(cart: dineInSaved[indexTable].cart);
+                        }
+                        hideLoadingDialog();
+                        Get.back();
+                      }
+                    }
+                  },
+                ),
+                SizedBox(width: 10.w),
+                CustomButton(
+                  fixed: true,
+                  child: Text('Close'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   Future<void> _showMoveDialog() async {
@@ -319,38 +1249,52 @@ class _TableScreenState extends State<TableScreen> {
                 ],
               ),
             ),
-            CustomButton(
-              fixed: true,
-              child: Text('Move'.tr),
-              onPressed: () async {
-                if (_selectFromTableId == null || _selectToTableId == null) {
-                  Fluttertoast.showToast(msg: 'Please select a table'.tr);
-                } else {
-                  var result = await showAreYouSureDialog(title: 'Move'.tr);
-                  if (result) {
-                    showLoadingDialog();
-                    var resultApi = await RestApi.moveTable(_selectFromTableId!, _selectToTableId!);
-                    if (resultApi) {
-                      var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
-                      var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
-                      dineInSaved[indexTo].userId = dineInSaved[indexFrom].userId;
-                      dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
-                      dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
-                      dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
-                      dineInSaved[indexTo].cart.tableId = _selectToTableId!;
-                      dineInSaved[indexFrom].isOpen = false;
-                      dineInSaved[indexFrom].isReservation = false;
-                      dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
-                      dineInSaved[indexTo].cart = calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomButton(
+                  fixed: true,
+                  child: Text('Move'.tr),
+                  onPressed: () async {
+                    if (_selectFromTableId == null || _selectToTableId == null) {
+                      Fluttertoast.showToast(msg: 'Please select a table'.tr);
+                    } else {
+                      var result = await showAreYouSureDialog(title: 'Move'.tr);
+                      if (result) {
+                        showLoadingDialog();
+                        var resultApi = await RestApi.moveTable(_selectFromTableId!, _selectToTableId!);
+                        if (resultApi) {
+                          var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
+                          var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
+                          dineInSaved[indexTo].userId = dineInSaved[indexFrom].userId;
+                          dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
+                          dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
+                          dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
+                          dineInSaved[indexTo].cart.tableId = _selectToTableId!;
+                          dineInSaved[indexFrom].isOpen = false;
+                          dineInSaved[indexFrom].isReservation = false;
+                          dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
+                          dineInSaved[indexTo].cart = calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
 
-                      await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
-                      hideLoadingDialog();
-                      Get.back();
+                          await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
+                        }
+                        hideLoadingDialog();
+                        Get.back();
+                      }
                     }
-                  }
-                }
-              },
-            )
+                  },
+                ),
+                SizedBox(width: 10.w),
+                CustomButton(
+                  fixed: true,
+                  child: Text('Close'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -557,35 +1501,49 @@ class _TableScreenState extends State<TableScreen> {
                 ],
               ),
             ),
-            CustomButton(
-              fixed: true,
-              child: Text('Marge'.tr),
-              onPressed: () async {
-                if (_selectFromTableId == null || _selectToTableId == null) {
-                  Fluttertoast.showToast(msg: 'Please select a table'.tr);
-                } else {
-                  var result = await showAreYouSureDialog(title: 'Marge'.tr);
-                  if (result) {
-                    var resultApi = await RestApi.mergeTable(_selectFromTableId!, _selectToTableId!);
-                    if (resultApi) {
-                      var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
-                      var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
-                      dineInSaved[indexTo].cart.items.addAll(dineInSaved[indexFrom].cart.items);
-                      dineInSaved[indexTo].cart.totalSeats += dineInSaved[indexFrom].cart.totalSeats;
-                      dineInSaved[indexTo].cart.seatsFemale += dineInSaved[indexFrom].cart.seatsFemale;
-                      dineInSaved[indexTo].cart.seatsMale += dineInSaved[indexFrom].cart.seatsMale;
-                      dineInSaved[indexFrom].isOpen = false;
-                      dineInSaved[indexFrom].isReservation = false;
-                      dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
-                      dineInSaved[indexTo].cart = calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
-                      await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
-                      hideLoadingDialog();
-                      // Get.back();
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomButton(
+                  fixed: true,
+                  child: Text('Marge'.tr),
+                  onPressed: () async {
+                    if (_selectFromTableId == null || _selectToTableId == null) {
+                      Fluttertoast.showToast(msg: 'Please select a table'.tr);
+                    } else {
+                      var result = await showAreYouSureDialog(title: 'Marge'.tr);
+                      if (result) {
+                        var resultApi = await RestApi.mergeTable(_selectFromTableId!, _selectToTableId!);
+                        if (resultApi) {
+                          var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
+                          var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
+                          dineInSaved[indexTo].cart.items.addAll(dineInSaved[indexFrom].cart.items);
+                          dineInSaved[indexTo].cart.totalSeats += dineInSaved[indexFrom].cart.totalSeats;
+                          dineInSaved[indexTo].cart.seatsFemale += dineInSaved[indexFrom].cart.seatsFemale;
+                          dineInSaved[indexTo].cart.seatsMale += dineInSaved[indexFrom].cart.seatsMale;
+                          dineInSaved[indexFrom].isOpen = false;
+                          dineInSaved[indexFrom].isReservation = false;
+                          dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
+                          dineInSaved[indexTo].cart = calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
+                          await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
+                        }
+                        hideLoadingDialog();
+                        Get.back();
+                      }
                     }
-                  }
-                }
-              },
-            )
+                  },
+                ),
+                SizedBox(width: 10.w),
+                CustomButton(
+                  fixed: true,
+                  child: Text('Close'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -876,7 +1834,9 @@ class _TableScreenState extends State<TableScreen> {
                                               bool isOpened = await RestApi.openTable(e.tableId);
                                               hideLoadingDialog();
                                               if (isOpened) {
+                                                mySharedPreferences.orderNo++;
                                                 e.isOpen = true;
+                                                e.cart.orderNo = mySharedPreferences.orderNo;
                                                 e.cart.totalSeats = totalSeats['number_seats'];
                                                 e.cart.seatsMale = totalSeats['male'];
                                                 e.cart.seatsFemale = totalSeats['female'];
@@ -884,7 +1844,6 @@ class _TableScreenState extends State<TableScreen> {
                                                   _initData(false);
                                                 });
                                               }
-
                                             }
                                           }
                                         },
