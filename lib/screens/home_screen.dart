@@ -1238,21 +1238,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 15),
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              'Order No'.tr,
-                              style: kStyleLargePrinter,
-                            ),
-                            Text(
-                              '${mySharedPreferences.orderNo}',
-                              style: kStyleLargePrinter,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Divider(color: Colors.black, thickness: 2),
+                      // Center(
+                      //   child: Column(
+                      //     children: [
+                      //       Text(
+                      //         'Order No'.tr,
+                      //         style: kStyleLargePrinter,
+                      //       ),
+                      //       Text(
+                      //         '${mySharedPreferences.orderNo}',
+                      //         style: kStyleLargePrinter,
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                      // const Divider(color: Colors.black, thickness: 2),
                       Row(
                         children: [
                           Expanded(
@@ -1261,7 +1261,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${'Invoice No'.tr} : ${mySharedPreferences.inVocNo - 1}',
+                                  '${'Invoice No'.tr} : ${_reprintModel!.invNo}',
                                   style: kStyleDataPrinter,
                                 ),
                                 Text(
@@ -1282,7 +1282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 if (_reprintModel!.orderType == OrderType.dineIn)
                                   Text(
-                                    '${'Table No'.tr} : ${_reprintModel!.tableId}',
+                                    '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == _reprintModel!.tableId)?.tableNo ?? 0}',
                                     style: kStyleDataPrinter,
                                     maxLines: 1,
                                   ),

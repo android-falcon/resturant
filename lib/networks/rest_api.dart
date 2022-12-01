@@ -277,7 +277,7 @@ class RestApi {
       }
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
@@ -328,7 +328,7 @@ class RestApi {
     } on dio.DioError catch (e) {
       hideLoadingDialog();
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return null;
     } catch (e) {
       hideLoadingDialog();
@@ -373,6 +373,7 @@ class RestApi {
         await NetworkTable.update(networkModel);
       }
       if (response.statusCode == 200) {
+
         CartModel model = CartModel.fromJsonServer(response.data);
         hideLoadingDialog();
         return model;
@@ -383,7 +384,7 @@ class RestApi {
     } on dio.DioError catch (e) {
       hideLoadingDialog();
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return null;
     } catch (e) {
       hideLoadingDialog();
@@ -427,7 +428,7 @@ class RestApi {
       }
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
@@ -478,7 +479,7 @@ class RestApi {
       }
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
@@ -530,7 +531,7 @@ class RestApi {
     } on dio.DioError catch (e) {
       _traceError(e);
       hideLoadingDialog();
-      Fluttertoast.showToast(msg: e.response?.data ?? 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
       hideLoadingDialog();
@@ -572,7 +573,7 @@ class RestApi {
       return List<TablesModel>.from(response.data.map((x) => TablesModel.fromJson(x)));
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return [];
     } catch (e) {
       _traceCatch(e);
@@ -619,7 +620,7 @@ class RestApi {
       return true;
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return false;
     } catch (e) {
       _traceCatch(e);
@@ -666,7 +667,7 @@ class RestApi {
       return true;
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return false;
     } catch (e) {
       _traceCatch(e);
@@ -712,7 +713,7 @@ class RestApi {
       return true;
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return false;
     } catch (e) {
       _traceCatch(e);
@@ -760,7 +761,7 @@ class RestApi {
       return true;
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return false;
     } catch (e) {
       _traceCatch(e);
@@ -808,7 +809,7 @@ class RestApi {
       return true;
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return false;
     } catch (e) {
       _traceCatch(e);
@@ -920,7 +921,7 @@ class RestApi {
       }
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
@@ -970,7 +971,7 @@ class RestApi {
       }
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
@@ -1010,7 +1011,7 @@ class RestApi {
       }
     } on dio.DioError catch (e) {
       _traceError(e);
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
@@ -1067,7 +1068,7 @@ class RestApi {
     } on dio.DioError catch (e) {
       _traceError(e);
       hideLoadingDialog();
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return false;
     } catch (e) {
       _traceCatch(e);
@@ -1123,7 +1124,7 @@ class RestApi {
     } on dio.DioError catch (e) {
       _traceError(e);
       hideLoadingDialog();
-      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return null;
     } catch (e) {
       _traceCatch(e);

@@ -580,16 +580,16 @@ class _PayScreenState extends State<PayScreen> {
                                           physics: const NeverScrollableScrollPhysics(),
                                           itemBuilder: (context, indexQuestions) => Column(
                                             children: [
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      '- ${widget.cart.items[index].questions[indexQuestions].question.trim()}',
-                                                      style: kStyleDataPrinter,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                              // Row(
+                                              //   children: [
+                                              //     Expanded(
+                                              //       child: Text(
+                                              //         '- ${widget.cart.items[index].questions[indexQuestions].question.trim()}',
+                                              //         style: kStyleDataPrinter,
+                                              //       ),
+                                              //     ),
+                                              //   ],
+                                              // ),
                                               ListView.builder(
                                                 itemCount: widget.cart.items[index].questions[indexQuestions].modifiers.length,
                                                 shrinkWrap: true,
@@ -600,7 +600,7 @@ class _PayScreenState extends State<PayScreen> {
                                                       children: [
                                                         Expanded(
                                                           child: Text(
-                                                            '  • ${widget.cart.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
+                                                            '  • ${widget.cart.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
                                                             style: kStyleDataPrinter,
                                                           ),
                                                         ),
