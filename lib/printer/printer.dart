@@ -23,6 +23,16 @@ class Printer {
           printer.disconnect();
           await Future.delayed(const Duration(milliseconds: 200));
           log('cashPrinter catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
+          try {
+            printImage(printer, invoice.invoice!);
+            await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
+            printer.disconnect();
+            await Future.delayed(const Duration(milliseconds: 200));
+          } catch (e) {
+            printer.disconnect();
+            await Future.delayed(const Duration(milliseconds: 200));
+            log('cashPrinter catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
+          }
         }
       } else {
         log('cashPrinter catch ${cashPosPrintResult.msg} || ${invoice.ipAddress}:${invoice.port}');
@@ -32,9 +42,18 @@ class Printer {
 
   static Future<void> payInOut({required PrinterImageModel printerImageModel}) async {
     final profile = await CapabilityProfile.load(); //name: 'TP806L'
-      final printer = NetworkPrinter(PaperSize.mm80, profile);
-      final cashPosPrintResult = await printer.connect(printerImageModel.ipAddress, port: printerImageModel.port);
-      if (cashPosPrintResult == PosPrintResult.success) {
+    final printer = NetworkPrinter(PaperSize.mm80, profile);
+    final cashPosPrintResult = await printer.connect(printerImageModel.ipAddress, port: printerImageModel.port);
+    if (cashPosPrintResult == PosPrintResult.success) {
+      try {
+        printImage(printer, printerImageModel.image!);
+        await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
+        printer.disconnect();
+        await Future.delayed(const Duration(milliseconds: 200));
+      } catch (e) {
+        printer.disconnect();
+        await Future.delayed(const Duration(milliseconds: 200));
+        log('cashPrinter catch ${e.toString()} || ${printerImageModel.ipAddress}:${printerImageModel.port}');
         try {
           printImage(printer, printerImageModel.image!);
           await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
@@ -45,12 +64,13 @@ class Printer {
           await Future.delayed(const Duration(milliseconds: 200));
           log('cashPrinter catch ${e.toString()} || ${printerImageModel.ipAddress}:${printerImageModel.port}');
         }
-      } else {
-        log('cashPrinter catch ${cashPosPrintResult.msg} || ${printerImageModel.ipAddress}:${printerImageModel.port}');
       }
+    } else {
+      log('cashPrinter catch ${cashPosPrintResult.msg} || ${printerImageModel.ipAddress}:${printerImageModel.port}');
+    }
   }
 
-  static void printImage(NetworkPrinter printer, Uint8List invoice)  {
+  static void printImage(NetworkPrinter printer, Uint8List invoice) {
     final img.Image? image = img.decodeImage(invoice);
     printer.image(image!, align: PosAlign.center);
     printer.cut();

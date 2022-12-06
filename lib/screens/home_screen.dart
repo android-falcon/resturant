@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/all_data/item_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/end_cash_model.dart';
@@ -70,24 +71,40 @@ class _HomeScreenState extends State<HomeScreen> {
         //     _showInOutDialog(type: InOutType.cashOut);
         //   },
         // ),
-        if (mySharedPreferences.employee.hasCashInOutPermission)
-          HomeMenu(
-            name: 'Pay In'.tr,
-            onTab: () {
-              //if (mySharedPreferences.employee.hasCashInOutPermission) {
-                _showInOutDialog(type: InOutType.payIn);
-              // } else {
-              //   showLoginDialog();
-              // }
-            },
-          ),
-        if (mySharedPreferences.employee.hasCashInOutPermission)
-          HomeMenu(
-            name: 'Pay Out'.tr,
-            onTab: () {
+        HomeMenu(
+          name: 'Pay In'.tr,
+          onTab: () async {
+            if (mySharedPreferences.employee.hasCashInOutPermission) {
+              _showInOutDialog(type: InOutType.payIn);
+            } else {
+              EmployeeModel? employee = await showLoginDialog();
+              if (employee != null) {
+                if (employee.hasCashInOutPermission) {
+                  _showInOutDialog(type: InOutType.payIn);
+                } else {
+                  Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                }
+              }
+            }
+          },
+        ),
+        HomeMenu(
+          name: 'Pay Out'.tr,
+          onTab: () async {
+            if (mySharedPreferences.employee.hasCashInOutPermission) {
               _showInOutDialog(type: InOutType.payOut);
-            },
-          ),
+            } else {
+              EmployeeModel? employee = await showLoginDialog();
+              if (employee != null) {
+                if (employee.hasCashInOutPermission) {
+                  _showInOutDialog(type: InOutType.payOut);
+                } else {
+                  Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                }
+              }
+            }
+          },
+        ),
         HomeMenu(
           name: 'End Cash'.tr,
           onTab: () async {
@@ -97,13 +114,23 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           },
         ),
-        if (mySharedPreferences.employee.hasRefundPermission)
-          HomeMenu(
-            name: 'Refund'.tr,
-            onTab: () {
+        HomeMenu(
+          name: 'Refund'.tr,
+          onTab: () async {
+            if (mySharedPreferences.employee.hasRefundPermission) {
               _showRefundDialog();
-            },
-          ),
+            } else {
+              EmployeeModel? employee = await showLoginDialog();
+              if (employee != null) {
+                if (employee.hasRefundPermission) {
+                  _showRefundDialog();
+                } else {
+                  Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                }
+              }
+            }
+          },
+        ),
         HomeMenu(
           name: 'Reprint Invoice'.tr,
           onTab: () {
@@ -114,35 +141,23 @@ class _HomeScreenState extends State<HomeScreen> {
           name: 'Cash Drawer'.tr,
           onTab: () async {},
         ),
-        if (mySharedPreferences.employee.isMaster)
-          HomeMenu(
-            name: 'Daily Close'.tr,
-            onTab: () {
-              Get.defaultDialog(
-                title: 'Daily Close'.tr,
-                titleStyle: kStyleTextTitle,
-                content: Column(
-                  children: [
-                    Text('Are you sure?'.tr),
-                    Text('${'Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}'),
-                    Text('${'New Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose.add(const Duration(days: 1)))}'),
-                  ],
-                ),
-                textCancel: 'Cancel'.tr,
-                textConfirm: 'Confirm'.tr,
-                confirmTextColor: Colors.white,
-                onConfirm: () async {
-                  if(mySharedPreferences.park.isNotEmpty){
-                    Fluttertoast.showToast(msg: 'Daily closing cannot be done due to order park'.tr);
-                  } else {
-                    await RestApi.posDailyClose(closeDate: mySharedPreferences.dailyClose.add(const Duration(days: 1)));
-                    setState(() {});
-                  }
-
-                },
-              );
-            },
-          ),
+        HomeMenu(
+          name: 'Daily Close'.tr,
+          onTab: () async {
+            if (mySharedPreferences.employee.isMaster) {
+              _showDailyCloseDialog();
+            } else {
+              EmployeeModel? employee = await showLoginDialog();
+              if (employee != null) {
+                if (employee.isMaster) {
+                  _showDailyCloseDialog();
+                } else {
+                  Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                }
+              }
+            }
+          },
+        ),
         HomeMenu(
           name: 'Rest Order No'.tr,
           onTab: () async {
@@ -175,6 +190,31 @@ class _HomeScreenState extends State<HomeScreen> {
       ];
       setState(() {});
     });
+  }
+
+  _showDailyCloseDialog(){
+    Get.defaultDialog(
+      title: 'Daily Close'.tr,
+      titleStyle: kStyleTextTitle,
+      content: Column(
+        children: [
+          Text('Are you sure?'.tr),
+          Text('${'Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}'),
+          Text('${'New Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose.add(const Duration(days: 1)))}'),
+        ],
+      ),
+      textCancel: 'Cancel'.tr,
+      textConfirm: 'Confirm'.tr,
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        if (mySharedPreferences.park.isNotEmpty) {
+          Fluttertoast.showToast(msg: 'Daily closing cannot be done due to order park'.tr);
+        } else {
+          await RestApi.posDailyClose(closeDate: mySharedPreferences.dailyClose.add(const Duration(days: 1)));
+          setState(() {});
+        }
+      },
+    );
   }
 
   _showTimeCardDialog() {
@@ -1917,7 +1957,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       flex: 2,
                                       child: InkWell(
                                         onTap: () async {
-                                          _refundModel!.items[index].returnedQty = await _showQtyDialog(rQty: _refundModel!.items[index].returnedQty, maxQty: _refundModel!.items[index].qty);
+                                          _refundModel!.items[index].returnedQty = await _showQtyDialog(decimal: false, rQty: _refundModel!.items[index].returnedQty, maxQty: _refundModel!.items[index].qty);
                                           for (var element in subItem) {
                                             element.returnedQty = _refundModel!.items[index].returnedQty;
                                           }
@@ -2130,9 +2170,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<double> _showQtyDialog({TextEditingController? controller, double? maxQty, double minQty = 0, required double rQty}) async {
+  Future<double> _showQtyDialog({TextEditingController? controller, double? maxQty, double minQty = 0, required double rQty, bool decimal = true}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
-    controller ??= TextEditingController(text: '$rQty');
+    controller ??= TextEditingController(text: '${decimal ? rQty : rQty.toInt()}');
     var qty = await Get.dialog(
       CustomDialog(
         builder: (context, setState, constraints) => Column(
@@ -2172,6 +2212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: numPadWidget(
                         controller,
                         setState,
+                        decimal: decimal,
                         onSubmit: () {
                           if (_keyForm.currentState!.validate()) {
                             Get.back(result: controller!.text);

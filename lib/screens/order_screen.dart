@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/all_data/category_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/combo_items_force_question_model.dart';
+import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
 import 'package:restaurant_system/models/all_data/void_reason_model.dart';
@@ -1186,6 +1187,7 @@ class _OrderScreenState extends State<OrderScreen> {
         invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
       }
     }
+    log('messageanan ${invoices.length}');
     Future.delayed(const Duration(milliseconds: 100)).then((value) async {
       await Future.forEach(invoices, (PrinterInvoiceModel element) async {
         var screenshotKitchen = await element.screenshotController.capture(delay: const Duration(milliseconds: 10));
@@ -1324,36 +1326,141 @@ class _OrderScreenState extends State<OrderScreen> {
                                   separatorBuilder: (context, indexItem) => const Divider(
                                     height: 0,
                                   ),
-                                  itemBuilder: (context, indexItem) => Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          flex: 4,
-                                          child: Text(
-                                            invoices[index].items[indexItem].name,
-                                            style: kStyleDataPrinter,
-                                            textAlign: TextAlign.center,
+                                  itemBuilder: (context, indexItem) {
+                                    var subItem = invoices[index].items.where((element) => element.parentUuid == invoices[index].items[indexItem].uuid).toList();
+
+                                    return Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                flex: 4,
+                                                child: Text(
+                                                  invoices[index].items[indexItem].name,
+                                                  style: kStyleDataPrinter,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Text(
+                                                  '${invoices[index].items[indexItem].qty}',
+                                                  style: kStyleDataPrinter,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(
+                                                  invoices[index].items[indexItem].note,
+                                                  style: kStyleDataPrinter,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            '${invoices[index].items[indexItem].qty}',
-                                            style: kStyleDataPrinter,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            invoices[index].items[indexItem].note,
-                                            style: kStyleDataPrinter,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                            child: Column(
+                                              children: [
+                                                ListView.builder(
+                                                  itemCount: invoices[index].items[indexItem].questions.length,
+                                                  shrinkWrap: true,
+                                                  physics: const NeverScrollableScrollPhysics(),
+                                                  itemBuilder: (context, indexQuestions) => Column(
+                                                    children: [
+                                                      // Row(
+                                                      //   children: [
+                                                      //     Expanded(
+                                                      //       child: Text(
+                                                      //         '- ${invoices[index].items[indexItem].questions[indexQuestions].question.trim()}',
+                                                      //         style: kStyleDataPrinter,
+                                                      //       ),
+                                                      //     ),
+                                                      //   ],
+                                                      // ),
+                                                      ListView.builder(
+                                                        itemCount: invoices[index].items[indexItem].questions[indexQuestions].modifiers.length,
+                                                        shrinkWrap: true,
+                                                        physics: const NeverScrollableScrollPhysics(),
+                                                        itemBuilder: (context, indexModifiers) => Column(
+                                                          children: [
+                                                            Row(
+                                                              children: [
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    '  • ${invoices[index].items[indexItem].questions[indexQuestions].modifiers[indexModifiers].modifier}',
+                                                                    style: kStyleDataPrinter,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                ListView.builder(
+                                                  itemCount: invoices[index].items[indexItem].modifiers.length,
+                                                  shrinkWrap: true,
+                                                  physics: const NeverScrollableScrollPhysics(),
+                                                  itemBuilder: (context, indexModifiers) => Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          '• ${invoices[index].items[indexItem].modifiers[indexModifiers].name} * ${invoices[index].items[indexItem].modifiers[indexModifiers].modifier}',
+                                                          style: kStyleDataPrinter,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                if (subItem.isNotEmpty)
+                                                  ListView.builder(
+                                                    itemCount: subItem.length,
+                                                    shrinkWrap: true,
+                                                    physics: const NeverScrollableScrollPhysics(),
+                                                    itemBuilder: (context, indexSubItem) {
+                                                      return Row(
+                                                        children: [
+                                                          Expanded(
+                                                            flex: 3,
+                                                            child: Text(
+                                                              subItem[indexSubItem].name,
+                                                              style: kStyleDataPrinter,
+                                                              textAlign: TextAlign.center,
+                                                              maxLines: 1,
+                                                              overflow: TextOverflow.ellipsis,
+                                                            ),
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              subItem[indexSubItem].priceChange.toStringAsFixed(3),
+                                                              style: kStyleDataPrinter,
+                                                              textAlign: TextAlign.center,
+                                                            ),
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              subItem[indexSubItem].total.toStringAsFixed(3),
+                                                              style: kStyleDataPrinter,
+                                                              textAlign: TextAlign.center,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  ),
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 ),
                                 if (_cartModel.note.isNotEmpty)
                                   Column(
@@ -2414,10 +2521,23 @@ class _OrderScreenState extends State<OrderScreen> {
                       width: 1,
                       thickness: 2,
                     ),
-                    if (mySharedPreferences.employee.hasVoidPermission)
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          var permission = false;
+                          if (mySharedPreferences.employee.hasVoidPermission) {
+                            permission = true;
+                          } else {
+                            EmployeeModel? employee = await showLoginDialog();
+                            if (employee != null) {
+                              if (employee.hasVoidPermission) {
+                                permission = true;
+                              } else {
+                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                              }
+                            }
+                          }
+                          if (permission) {
                             if (_indexItemSelect != -1) {
                               VoidReasonModel? result;
                               if (allDataModel.companyConfig[0].useVoidReason) {
@@ -2446,30 +2566,44 @@ class _OrderScreenState extends State<OrderScreen> {
                             } else {
                               Fluttertoast.showToast(msg: 'Please select the item you want to remove'.tr);
                             }
-                          },
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Center(
-                              child: Text(
-                                'Void'.tr,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
-                              ),
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Void'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
                             ),
                           ),
                         ),
                       ),
+                    ),
                     const VerticalDivider(
                       width: 1,
                       thickness: 2,
                     ),
-                    if (mySharedPreferences.employee.hasVoidAllPermission)
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          var permission = false;
+                          if (mySharedPreferences.employee.hasVoidAllPermission) {
+                            permission = true;
+                          } else {
+                            EmployeeModel? employee = await showLoginDialog();
+                            if (employee != null) {
+                              if (employee.hasVoidAllPermission) {
+                                permission = true;
+                              } else {
+                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                              }
+                            }
+                          }
+                          if (permission) {
                             if (_cartModel.items.isEmpty) {
                               Fluttertoast.showToast(msg: 'There must be items'.tr);
                             } else {
@@ -2495,22 +2629,23 @@ class _OrderScreenState extends State<OrderScreen> {
                                 setState(() {});
                               }
                             }
-                          },
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Center(
-                              child: Text(
-                                'Void All'.tr,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
-                              ),
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Void All'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
                             ),
                           ),
                         ),
                       ),
+                    ),
                     const VerticalDivider(
                       width: 1,
                       thickness: 2,
@@ -2547,10 +2682,23 @@ class _OrderScreenState extends State<OrderScreen> {
                         width: 1,
                         thickness: 2,
                       ),
-                    if (mySharedPreferences.employee.hasLineDiscPermission)
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          var permission = false;
+                          if (mySharedPreferences.employee.hasLineDiscPermission) {
+                            permission = true;
+                          } else {
+                            EmployeeModel? employee = await showLoginDialog();
+                            if (employee != null) {
+                              if (employee.hasLineDiscPermission) {
+                                permission = true;
+                              } else {
+                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                              }
+                            }
+                          }
+                          if (permission) {
                             if (_indexItemSelect != -1) {
                               if (_cartModel.items[_indexItemSelect].discountAvailable) {
                                 var result = await _showDiscountDialog(
@@ -2569,30 +2717,44 @@ class _OrderScreenState extends State<OrderScreen> {
                             } else {
                               Fluttertoast.showToast(msg: 'Please select the item you want to line discount'.tr);
                             }
-                          },
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Center(
-                              child: Text(
-                                'Line Discount'.tr,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
-                              ),
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Line Discount'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
                             ),
                           ),
                         ),
                       ),
+                    ),
                     const VerticalDivider(
                       width: 1,
                       thickness: 2,
                     ),
-                    if (mySharedPreferences.employee.hasDiscPermission)
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          var permission = false;
+                          if (mySharedPreferences.employee.hasDiscPermission) {
+                            permission = true;
+                          } else {
+                            EmployeeModel? employee = await showLoginDialog();
+                            if (employee != null) {
+                              if (employee.hasDiscPermission) {
+                                permission = true;
+                              } else {
+                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                              }
+                            }
+                          }
+                          if (permission) {
                             if (_cartModel.items.any((element) => element.discountAvailable)) {
                               var result = await _showDiscountDialog(
                                 discount: _cartModel.discount,
@@ -2607,22 +2769,23 @@ class _OrderScreenState extends State<OrderScreen> {
                             } else {
                               Fluttertoast.showToast(msg: 'No items accept discount in order'.tr);
                             }
-                          },
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Center(
-                              child: Text(
-                                'Discount'.tr,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
-                              ),
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Discount'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
                             ),
                           ),
                         ),
                       ),
+                    ),
                     const VerticalDivider(
                       width: 1,
                       thickness: 2,
@@ -2650,10 +2813,23 @@ class _OrderScreenState extends State<OrderScreen> {
                     //   width: 1,
                     //   thickness: 2,
                     // ),
-                    if (mySharedPreferences.employee.hasPriceChangePermission)
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          var permission = false;
+                          if (mySharedPreferences.employee.hasPriceChangePermission) {
+                            permission = true;
+                          } else {
+                            EmployeeModel? employee = await showLoginDialog();
+                            if (employee != null) {
+                              if (employee.hasPriceChangePermission) {
+                                permission = true;
+                              } else {
+                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                              }
+                            }
+                          }
+                          if (permission) {
                             if (_indexItemSelect != -1) {
                               if (_cartModel.items[_indexItemSelect].openPrice) {
                                 _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
@@ -2666,22 +2842,23 @@ class _OrderScreenState extends State<OrderScreen> {
                             } else {
                               Fluttertoast.showToast(msg: 'Please select the item you want to price change'.tr);
                             }
-                          },
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Center(
-                              child: Text(
-                                'Price Change'.tr,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
-                              ),
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Price Change'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
                             ),
                           ),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),

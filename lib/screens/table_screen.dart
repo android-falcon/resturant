@@ -30,6 +30,8 @@ import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
 import 'package:screenshot/screenshot.dart';
 
+import '../models/all_data/employee_model.dart';
+
 class TableScreen extends StatefulWidget {
   const TableScreen({Key? key}) : super(key: key);
 
@@ -49,22 +51,44 @@ class _TableScreenState extends State<TableScreen> {
     // TODO: implement initState
     super.initState();
     _menu = <HomeMenu>[
-      if (mySharedPreferences.employee.hasMoveTablePermission)
-        HomeMenu(
-          name: 'Move'.tr,
-          onTab: () async {
+      HomeMenu(
+        name: 'Move'.tr,
+        onTab: () async {
+          if (mySharedPreferences.employee.hasMoveTablePermission) {
             await _showMoveDialog();
             setState(() {});
-          },
-        ),
-      if (mySharedPreferences.employee.hasMergeTablePermission)
-        HomeMenu(
-          name: 'Merge'.tr,
-          onTab: () async {
+          } else {
+            EmployeeModel? employee = await showLoginDialog();
+            if (employee != null) {
+              if (employee.hasMoveTablePermission) {
+                await _showMoveDialog();
+                setState(() {});
+              } else {
+                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+              }
+            }
+          }
+        },
+      ),
+      HomeMenu(
+        name: 'Merge'.tr,
+        onTab: () async {
+          if (mySharedPreferences.employee.hasMergeTablePermission) {
             await _showMargeDialog();
             setState(() {});
-          },
-        ),
+          } else {
+            EmployeeModel? employee = await showLoginDialog();
+            if (employee != null) {
+              if (employee.hasMergeTablePermission) {
+                await _showMargeDialog();
+                setState(() {});
+              } else {
+                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+              }
+            }
+          }
+        },
+      ),
       // HomeMenu(
       //   name: 'Reservation'.tr,
       //   onTab: () {},
@@ -86,14 +110,25 @@ class _TableScreenState extends State<TableScreen> {
           setState(() {});
         },
       ),
-      if (mySharedPreferences.employee.hasChangeTableCaptinPermission)
-        HomeMenu(
-          name: 'Change User'.tr,
-          onTab: () async {
+      HomeMenu(
+        name: 'Change User'.tr,
+        onTab: () async {
+          if (mySharedPreferences.employee.hasChangeTableCaptinPermission) {
             await _showChangeUserDialog();
             setState(() {});
-          },
-        ),
+          } else {
+            EmployeeModel? employee = await showLoginDialog();
+            if (employee != null) {
+              if (employee.hasChangeTableCaptinPermission) {
+                await _showChangeUserDialog();
+                setState(() {});
+              } else {
+                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+              }
+            }
+          }
+        },
+      ),
       HomeMenu(
         name: 'Report Tables'.tr,
         onTab: () async {
@@ -141,6 +176,7 @@ class _TableScreenState extends State<TableScreen> {
       }
       return DineInModel(
         isOpen: e.isOpened == 1,
+        isPrinted: e.isPrinted == 1,
         isReservation: false,
         userId: e.userId,
         tableId: e.id,
@@ -264,10 +300,15 @@ class _TableScreenState extends State<TableScreen> {
                     if (_selectTableId == null) {
                       Fluttertoast.showToast(msg: 'Please select a table'.tr);
                     } else {
-                      var result = await showAreYouSureDialog(title: 'Change User'.tr);
+                      var result = await showAreYouSureDialog(title: 'Print Order'.tr);
                       if (result) {
-                        Get.back();
+                        showLoadingDialog();
                         var indexTable = dineInSaved.indexWhere((element) => element.tableId == _selectTableId);
+                        dineInSaved[indexTable].isPrinted = true;
+                        await RestApi.printTable(dineInSaved[indexTable].tableId);
+                        hideLoadingDialog();
+                        Get.back();
+
                         _showPrintDialog(dineInSaved[indexTable].cart);
                       }
                     }
@@ -1826,6 +1867,8 @@ class _TableScreenState extends State<TableScreen> {
                                               Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
                                                 _initData(false);
                                               });
+                                            } else {
+                                              Fluttertoast.showToast(msg: 'A table opened by another user'.tr);
                                             }
                                           } else {
                                             var totalSeats = await _showNumberSeatsDialog();
@@ -1863,9 +1906,9 @@ class _TableScreenState extends State<TableScreen> {
                                                   decoration: BoxDecoration(
                                                     borderRadius: const BorderRadius.only(topLeft: Radius.circular(150), topRight: Radius.circular(150), bottomLeft: Radius.circular(150), bottomRight: Radius.circular(150)),
                                                     boxShadow: [
-                                                      if (e.isOpen)
+                                                      if (e.isOpen && mySharedPreferences.employee.id == e.userId)
                                                         BoxShadow(
-                                                          color: mySharedPreferences.employee.id == e.userId ? Colors.green.withOpacity(0.5) : Colors.red.withOpacity(0.5),
+                                                          color: e.isPrinted ? Colors.yellow.withOpacity(0.5) : Colors.green.withOpacity(0.5),
                                                           spreadRadius: 1,
                                                           blurRadius: 20,
                                                         ),

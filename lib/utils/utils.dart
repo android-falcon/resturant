@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -121,11 +122,11 @@ CartModel calculateOrder({required CartModel cart, required OrderType orderType,
   return cart;
 }
 
-showLoginDialog() async {
+Future<EmployeeModel?> showLoginDialog() async {
   final GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
   final TextEditingController _controllerUsername = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
-  await Get.dialog(
+  var result = await Get.dialog(
     CustomDialog(
       gestureDetectorOnTap: () {},
       builder: (context, setState, constraints) => Column(
@@ -169,7 +170,7 @@ showLoginDialog() async {
                             style: kStyleTextButton,
                           ),
                           onPressed: () {
-                            Get.back(result: false);
+                            Get.back();
                           },
                         ),
                       ),
@@ -183,8 +184,7 @@ showLoginDialog() async {
                             if (_keyForm.currentState!.validate()) {
                               var indexEmployee = allDataModel.employees.indexWhere((element) => element.username == _controllerUsername.text && element.password == _controllerPassword.text && !element.isKitchenUser);
                               if (indexEmployee != -1) {
-                                mySharedPreferences.employee = allDataModel.employees[indexEmployee];
-                                Get.back();
+                                Get.back(result: allDataModel.employees[indexEmployee]);
                               } else {
                                 Fluttertoast.showToast(msg: 'Incorrect username or password'.tr, timeInSecForIosWeb: 3);
                               }
@@ -204,6 +204,7 @@ showLoginDialog() async {
     ),
     barrierDismissible: false,
   );
+  return result;
 }
 
 showLoadingDialog([String? text]) {

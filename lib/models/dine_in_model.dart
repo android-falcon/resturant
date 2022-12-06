@@ -5,6 +5,7 @@ class DineInModel {
   DineInModel({
     required this.isOpen,
     required this.isReservation,
+    required this.isPrinted,
     required this.userId,
     required this.tableId,
     required this.tableNo,
@@ -14,6 +15,7 @@ class DineInModel {
 
   bool isOpen;
   bool isReservation;
+  bool isPrinted;
   int userId;
   int tableId;
   int tableNo;
@@ -23,6 +25,7 @@ class DineInModel {
   factory DineInModel.init() => DineInModel(
     isOpen: false,
     isReservation: false,
+    isPrinted: false,
     userId: 0,
     tableId: 0,
     tableNo: 0,
@@ -33,6 +36,7 @@ class DineInModel {
   factory DineInModel.fromJson(Map<String, dynamic> json) => DineInModel(
     isOpen: json['isOpen'] ?? false,
     isReservation: json['isReservation'] ?? false,
+    isPrinted: json['isPrinted'] ?? false,
     userId: json['userId'] ?? 0,
     tableId: json['tableId'] ?? 0,
     tableNo: json['tableNo'] ?? 0,
@@ -43,6 +47,7 @@ class DineInModel {
   Map<String, dynamic> toJson() => {
     'isOpen':isOpen,
     'isReservation':isReservation,
+    'isPrinted':isPrinted,
     'userId':userId,
     'tableId':tableId,
     'tableNo':tableNo,
