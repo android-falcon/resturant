@@ -183,6 +183,7 @@ const Map<String, String> en = {
   'Please save order': 'Please save order',
   'Clear': 'Clear',
   'Users': 'Users',
+  'Version': 'Version',
   'Please select a user': 'Please select a user',
   'Change User': 'Change User',
   'Report Tables': 'Report Tables',

@@ -23,20 +23,20 @@ class _NetworkLogScreenState extends State<NetworkLogScreen> {
   bool _sortAsc = true;
 
   getLog() async {
-    showLoadingDialog();
+    Utils.showLoadingDialog();
     _filterApply = true;
     _indexSelected = -1;
     _networkModel = await NetworkTable.queryRows(status: 1);
-    hideLoadingDialog();
+    Utils.hideLoadingDialog();
     setState(() {});
   }
 
   getAllLog() async {
-    showLoadingDialog();
+    Utils.showLoadingDialog();
     _filterApply = false;
     _indexSelected = -1;
     _networkModel = await NetworkTable.queryAllRows(desc: true);
-    hideLoadingDialog();
+    Utils.hideLoadingDialog();
     setState(() {});
   }
 

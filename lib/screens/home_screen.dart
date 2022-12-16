@@ -77,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (mySharedPreferences.employee.hasCashInOutPermission) {
               _showInOutDialog(type: InOutType.payIn);
             } else {
-              EmployeeModel? employee = await showLoginDialog();
+              EmployeeModel? employee = await Utils.showLoginDialog();
               if (employee != null) {
                 if (employee.hasCashInOutPermission) {
                   _showInOutDialog(type: InOutType.payIn);
@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (mySharedPreferences.employee.hasCashInOutPermission) {
               _showInOutDialog(type: InOutType.payOut);
             } else {
-              EmployeeModel? employee = await showLoginDialog();
+              EmployeeModel? employee = await Utils.showLoginDialog();
               if (employee != null) {
                 if (employee.hasCashInOutPermission) {
                   _showInOutDialog(type: InOutType.payOut);
@@ -120,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (mySharedPreferences.employee.hasRefundPermission) {
               _showRefundDialog();
             } else {
-              EmployeeModel? employee = await showLoginDialog();
+              EmployeeModel? employee = await Utils.showLoginDialog();
               if (employee != null) {
                 if (employee.hasRefundPermission) {
                   _showRefundDialog();
@@ -147,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (mySharedPreferences.employee.isMaster) {
               _showDailyCloseDialog();
             } else {
-              EmployeeModel? employee = await showLoginDialog();
+              EmployeeModel? employee = await Utils.showLoginDialog();
               if (employee != null) {
                 if (employee.isMaster) {
                   _showDailyCloseDialog();
@@ -161,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
         HomeMenu(
           name: 'Rest Order No'.tr,
           onTab: () async {
-            var result = await showAreYouSureDialog(title: 'Rest Order No'.tr);
+            var result = await Utils.showAreYouSureDialog(title: 'Rest Order No'.tr);
             if (result) {
               RestApi.resetPOSOrderNo();
               mySharedPreferences.orderNo = 1;
@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
         HomeMenu(
           name: 'Exit'.tr,
           onTab: () async {
-            var result = await showAreYouSureDialog(title: 'Close App'.tr);
+            var result = await Utils.showAreYouSureDialog(title: 'Close App'.tr);
             if (result) {
               if (Platform.isAndroid) {
                 SystemNavigator.pop();
@@ -192,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  _showDailyCloseDialog(){
+  _showDailyCloseDialog() {
     Get.defaultDialog(
       title: 'Daily Close'.tr,
       titleStyle: kStyleTextTitle,
@@ -288,7 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(
+                      child: Utils.numPadWidget(
                         _controllerEmployeeId,
                         setState,
                         decimal: false,
@@ -558,17 +558,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(4),
-                        child: numPadWidget(
+                        child: Utils.numPadWidget(
                           _controllerSelectEdit,
                           setState,
                           onExit: () async {
-                            var result = await showAreYouSureDialog(title: 'Exit'.tr);
+                            var result = await Utils.showAreYouSureDialog(title: 'Exit'.tr);
                             if (result) {
                               Get.back(result: false);
                             }
                           },
                           onSubmit: () async {
-                            var result = await showAreYouSureDialog(title: 'Save'.tr);
+                            var result = await Utils.showAreYouSureDialog(title: 'Save'.tr);
                             if (result) {
                               if (_typeInputCash == 1 ? double.parse(_controllerManual.text) > 0 : moneyCount > 0) {
                                 switch (type) {
@@ -847,17 +847,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(4),
-                        child: numPadWidget(
+                        child: Utils.numPadWidget(
                           _controllerSelectEdit,
                           setState,
                           onExit: () async {
-                            var result = await showAreYouSureDialog(title: 'Exit'.tr);
+                            var result = await Utils.showAreYouSureDialog(title: 'Exit'.tr);
                             if (result) {
                               Get.back();
                             }
                           },
                           onSubmit: () async {
-                            var result = await showAreYouSureDialog(title: 'Save'.tr);
+                            var result = await Utils.showAreYouSureDialog(title: 'Save'.tr);
                             if (result) {
                               var resultEndCash = await RestApi.endCash(
                                 totalCash: double.parse(_controllerTotalCash.text),
@@ -1056,11 +1056,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _showReprintInvoiceDialog() async {
-    var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
-    PrinterImageModel? _printer;
-    if (indexPrinter != -1) {
-      _printer = PrinterImageModel(ipAddress: allDataModel.printers[indexPrinter].ipAddress, port: allDataModel.printers[indexPrinter].port);
-    }
     TextEditingController _controllerVoucherNumber = TextEditingController();
     CartModel? _reprintModel;
     bool result = await Get.dialog(
@@ -1170,7 +1165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () async {
                         FocusScope.of(context).requestFocus(FocusNode());
                         _reprintModel = await RestApi.getInvoice(invNo: int.parse(_controllerVoucherNumber.text));
-                        _reprintModel = calculateOrder(cart: _reprintModel!, orderType: _reprintModel!.orderType, invoiceKind: InvoiceKind.invoicePay);
+                        _reprintModel = Utils.calculateOrder(cart: _reprintModel!, orderType: _reprintModel!.orderType, invoiceKind: InvoiceKind.invoicePay);
                         setState(() {});
                       },
                     ),
@@ -1219,456 +1214,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       barrierDismissible: false,
     );
-    if (_printer != null && result) {
-      ScreenshotController _screenshotController = ScreenshotController();
-
-      Future.delayed(const Duration(milliseconds: 100)).then((value) async {
-        var screenshot = await _screenshotController.capture(delay: const Duration(milliseconds: 10));
-        _printer!.image = screenshot;
-        await Printer.payInOut(printerImageModel: _printer);
-      });
-
-      await Get.dialog(
-        CustomDialog(
-          width: 150.w,
-          builder: (context, setState, constraints) => Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CustomButton(
-                    fixed: true,
-                    child: Text('Print'.tr),
-                    onPressed: () async {
-                      await Printer.payInOut(printerImageModel: _printer!);
-                    },
-                  ),
-                  SizedBox(width: 10.w),
-                  CustomButton(
-                    fixed: true,
-                    child: Text('Close'.tr),
-                    onPressed: () {
-                      Get.back();
-                    },
-                  ),
-                ],
-              ),
-              const Divider(thickness: 2),
-              Screenshot(
-                controller: _screenshotController,
-                child: SizedBox(
-                  width: 215.w,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              'Reprint'.tr,
-                              style: kStyleLargePrinter,
-                            ),
-                            Text(
-                              _reprintModel!.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
-                              style: kStyleLargePrinter,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      // Center(
-                      //   child: Column(
-                      //     children: [
-                      //       Text(
-                      //         'Order No'.tr,
-                      //         style: kStyleLargePrinter,
-                      //       ),
-                      //       Text(
-                      //         '${mySharedPreferences.orderNo}',
-                      //         style: kStyleLargePrinter,
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
-                      // const Divider(color: Colors.black, thickness: 2),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${'Invoice No'.tr} : ${_reprintModel!.invNo}',
-                                  style: kStyleDataPrinter,
-                                ),
-                                Text(
-                                  '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
-                                  style: kStyleDataPrinter,
-                                ),
-                                Text(
-                                  '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                  style: kStyleDataPrinter,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (_reprintModel!.orderType == OrderType.dineIn)
-                                  Text(
-                                    '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == _reprintModel!.tableId)?.tableNo ?? 0}',
-                                    style: kStyleDataPrinter,
-                                    maxLines: 1,
-                                  ),
-                                Text(
-                                  '${'User'.tr} : ${mySharedPreferences.employee.empName}',
-                                  style: kStyleDataPrinter,
-                                  maxLines: 1,
-                                ),
-                                Text(
-                                  '${'Phone'.tr} : ${allDataModel.companyConfig[0].phoneNo}',
-                                  style: kStyleDataPrinter,
-                                  maxLines: 1,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(color: Colors.black, thickness: 2),
-                      Column(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 4,
-                                  child: Text(
-                                    'Pro-Nam'.tr,
-                                    style: kStyleDataPrinter,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    'Qty'.tr,
-                                    style: kStyleDataPrinter,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    'Total'.tr,
-                                    style: kStyleDataPrinter,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Divider(color: Colors.black, height: 1),
-                          ListView.separated(
-                            itemCount: _reprintModel!.items.length,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
-                            itemBuilder: (context, index) {
-                              if (_reprintModel!.items[index].parentUuid.isNotEmpty) {
-                                return Container();
-                              } else {
-                                var subItem = _reprintModel!.items.where((element) => element.parentUuid == _reprintModel!.items[index].uuid).toList();
-                                return Column(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            flex: 4,
-                                            child: Text(
-                                              _reprintModel!.items[index].name,
-                                              style: kStyleDataPrinter,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              '${_reprintModel!.items[index].qty}',
-                                              style: kStyleDataPrinter,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              _reprintModel!.items[index].total.toStringAsFixed(3),
-                                              style: kStyleDataPrinter,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                      child: Column(
-                                        children: [
-                                          ListView.builder(
-                                            itemCount: _reprintModel!.items[index].questions.length,
-                                            shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            itemBuilder: (context, indexQuestions) => Column(
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        '- ${_reprintModel!.items[index].questions[indexQuestions].question.trim()}',
-                                                        style: kStyleDataPrinter,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                ListView.builder(
-                                                  itemCount: _reprintModel!.items[index].questions[indexQuestions].modifiers.length,
-                                                  shrinkWrap: true,
-                                                  physics: const NeverScrollableScrollPhysics(),
-                                                  itemBuilder: (context, indexModifiers) => Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          Expanded(
-                                                            child: Text(
-                                                              '  • ${_reprintModel!.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
-                                                              style: kStyleDataPrinter,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          ListView.builder(
-                                            itemCount: _reprintModel!.items[index].modifiers.length,
-                                            shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            itemBuilder: (context, indexModifiers) => Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    '• ${_reprintModel!.items[index].modifiers[indexModifiers].name} * ${_reprintModel!.items[index].modifiers[indexModifiers].modifier}',
-                                                    style: kStyleDataPrinter,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          if (subItem.isNotEmpty)
-                                            ListView.builder(
-                                              itemCount: subItem.length,
-                                              shrinkWrap: true,
-                                              physics: const NeverScrollableScrollPhysics(),
-                                              itemBuilder: (context, indexSubItem) {
-                                                return Row(
-                                                  children: [
-                                                    Expanded(
-                                                      flex: 3,
-                                                      child: Text(
-                                                        subItem[indexSubItem].name,
-                                                        style: kStyleDataPrinter,
-                                                        textAlign: TextAlign.center,
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow.ellipsis,
-                                                      ),
-                                                    ),
-                                                    Expanded(
-                                                      child: Text(
-                                                        subItem[indexSubItem].priceChange.toStringAsFixed(3),
-                                                        style: kStyleDataPrinter,
-                                                        textAlign: TextAlign.center,
-                                                      ),
-                                                    ),
-                                                    Expanded(
-                                                      child: Text(
-                                                        subItem[indexSubItem].total.toStringAsFixed(3),
-                                                        style: kStyleDataPrinter,
-                                                        textAlign: TextAlign.center,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                );
-                                              },
-                                            ),
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                );
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                      const Divider(color: Colors.black, thickness: 2),
-                      Container(
-                        margin: EdgeInsets.symmetric(vertical: 4.h),
-                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Total'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  _reprintModel!.total.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Discount'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  _reprintModel!.totalDiscount.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Line Discount'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  _reprintModel!.totalLineDiscount.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Delivery Charge'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  _reprintModel!.deliveryCharge.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Service'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  _reprintModel!.service.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Tax'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  _reprintModel!.tax.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Amount Due'.tr,
-                                    style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  _reprintModel!.amountDue.toStringAsFixed(3),
-                                  style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            const Divider(color: Colors.black, thickness: 2),
-                            if (_reprintModel!.cash != 0)
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Cash'.tr,
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  Text(
-                                    _reprintModel!.cash.toStringAsFixed(3),
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            if (_reprintModel!.credit != 0)
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Credit'.tr,
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  Text(
-                                    _reprintModel!.credit.toStringAsFixed(3),
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            SizedBox(height: 15.h),
-                            Image.asset(
-                              'assets/images/welcome.png',
-                              height: 80.h,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        barrierDismissible: false,
+    if ( result) {
+      await Printer.showPrintDialog(
+        cart: _reprintModel!,
+        reprint: true,
+        kitchenPrinter: false,
+        showOrderNo: false,
+        invNo: '${_reprintModel!.invNo}'
       );
     }
   }
@@ -1838,7 +1390,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () async {
                         FocusScope.of(context).requestFocus(FocusNode());
                         _refundModel = await RestApi.getRefundInvoice(invNo: int.parse(_controllerVoucherNumber.text));
-                        _refundModel = calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
+                        _refundModel = Utils.calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
                         setState(() {});
                       },
                     ),
@@ -1961,7 +1513,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           for (var element in subItem) {
                                             element.returnedQty = _refundModel!.items[index].returnedQty;
                                           }
-                                          _refundModel = calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
+                                          _refundModel = Utils.calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
                                           setState(() {});
                                         },
                                         child: Row(
@@ -2069,7 +1621,7 @@ class _HomeScreenState extends State<HomeScreen> {
             //                       for (var element in subItem) {
             //                         element.returnedQty = e.returnedQty;
             //                       }
-            //                       _refundModel = calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
+            //                       _refundModel = Utils.calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
             //                       setState(() {});
             //                     },
             //                   ),
@@ -2148,7 +1700,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: _refundModel == null
                         ? null
                         : () async {
-                            var result = await showAreYouSureDialog(title: 'Refund'.tr);
+                            var result = await Utils.showAreYouSureDialog(title: 'Refund'.tr);
                             if (result) {
                               if (_refundModel!.items.any((element) => element.returnedQty > 0)) {
                                 _refundModel!.items.removeWhere((element) => element.returnedQty == 0);
@@ -2209,7 +1761,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(
+                      child: Utils.numPadWidget(
                         controller,
                         setState,
                         decimal: decimal,
@@ -2282,6 +1834,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               Expanded(
                                 child: Text(
                                   DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              const VerticalDivider(),
+                              Expanded(
+                                child: Text(
+                                  '${'Version'.tr}: ${packageInfo.version}+${packageInfo.buildNumber}',
                                   textAlign: TextAlign.center,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,

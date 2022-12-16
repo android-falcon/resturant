@@ -139,7 +139,7 @@ class RestApi {
 
   static Future<void> getData() async {
     try {
-      showLoadingDialog();
+      Utils.showLoadingDialog();
       var queryParameters = {
         'PosNo': mySharedPreferences.posNo,
       };
@@ -204,7 +204,7 @@ class RestApi {
       // } else {
       //   mySharedPreferences.dineIn = [];
       // }
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       if (networkModel != null) {
         networkModel.statusCode = response.statusCode!;
         networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
@@ -213,14 +213,14 @@ class RestApi {
       }
     } on dio.DioError catch (e) {
       _traceError(e);
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       if (mySharedPreferences.allData.isNotEmpty) {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       }
       // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       if (mySharedPreferences.allData.isNotEmpty) {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
       }
@@ -286,7 +286,7 @@ class RestApi {
 
   static Future<CartModel?> getRefundInvoice({required int invNo}) async {
     try {
-      showLoadingDialog();
+      Utils.showLoadingDialog();
       var queryParameters = {
         "PosNo": mySharedPreferences.posNo,
         "CashNo": mySharedPreferences.cashNo,
@@ -319,19 +319,19 @@ class RestApi {
       }
       if (response.statusCode == 200) {
         CartModel refundModel = CartModel.fromJsonServer(response.data);
-        hideLoadingDialog();
+        Utils.hideLoadingDialog();
         return refundModel;
       } else {
-        hideLoadingDialog();
+        Utils.hideLoadingDialog();
         return null;
       }
     } on dio.DioError catch (e) {
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       _traceError(e);
       Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return null;
     } catch (e) {
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
       return null;
@@ -340,7 +340,7 @@ class RestApi {
 
   static Future<CartModel?> getInvoice({required int invNo}) async {
     try {
-      showLoadingDialog();
+      Utils.showLoadingDialog();
       var queryParameters = {
         "coYear": mySharedPreferences.dailyClose.year,
         "PosNo": mySharedPreferences.posNo,
@@ -375,19 +375,19 @@ class RestApi {
       if (response.statusCode == 200) {
 
         CartModel model = CartModel.fromJsonServer(response.data);
-        hideLoadingDialog();
+        Utils.hideLoadingDialog();
         return model;
       } else {
-        hideLoadingDialog();
+        Utils.hideLoadingDialog();
         return null;
       }
     } on dio.DioError catch (e) {
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       _traceError(e);
       Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return null;
     } catch (e) {
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
       return null;
@@ -488,7 +488,7 @@ class RestApi {
 
   static Future<void> posDailyClose({required DateTime closeDate}) async {
     try {
-      showLoadingDialog();
+      Utils.showLoadingDialog();
       closeDate = DateFormat('yyyy-MM-dd').parse(DateFormat('yyyy-MM-dd').format(closeDate));
       var body = jsonEncode({
         "CoYear": mySharedPreferences.dailyClose.year,
@@ -519,7 +519,7 @@ class RestApi {
       allDataModel.posClose = closeDate;
       mySharedPreferences.allData = jsonEncode(allDataModel.toJson());
 
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       Get.back();
       Fluttertoast.showToast(msg: 'Successfully'.tr, timeInSecForIosWeb: 3);
       if (networkModel != null) {
@@ -530,11 +530,11 @@ class RestApi {
       }
     } on dio.DioError catch (e) {
       _traceError(e);
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
     } catch (e) {
       _traceCatch(e);
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
   }
@@ -656,6 +656,50 @@ class RestApi {
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.CLOSE_TABLE, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      return true;
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
+      return false;
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return false;
+    }
+  }
+
+
+  static Future<bool> unlockTable(int tableId) async {
+    try {
+      var queryParameters = {
+        'tblId': tableId,
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'UNLOCK_TABLE',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.UNLOCK_TABLE,
+        method: 'POST',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.post(ApiUrl.UNLOCK_TABLE, queryParameters: queryParameters);
       _networkLog(response);
       if (networkModel != null) {
         networkModel.status = 2;
@@ -1063,7 +1107,7 @@ class RestApi {
 
   static Future<bool> endCash({required double totalCash, required double totalCreditCard, required double totalCredit, required double netTotal}) async {
     try {
-      showLoadingDialog();
+      Utils.showLoadingDialog();
       var body = jsonEncode({
         "CoYear": mySharedPreferences.dailyClose.year,
         "EndCashDate": mySharedPreferences.dailyClose.toIso8601String(),
@@ -1101,7 +1145,7 @@ class RestApi {
         networkModel.uploadedAt = DateTime.now().toIso8601String();
         await NetworkTable.update(networkModel);
       }
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       if (response.statusCode == 200) {
         Fluttertoast.showToast(msg: 'Successfully'.tr, timeInSecForIosWeb: 3);
         return true;
@@ -1110,12 +1154,12 @@ class RestApi {
       }
     } on dio.DioError catch (e) {
       _traceError(e);
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return false;
     } catch (e) {
       _traceCatch(e);
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
       return false;
     }
@@ -1123,7 +1167,7 @@ class RestApi {
 
   static Future<EndCashModel?> getEndCash() async {
     try {
-      showLoadingDialog();
+      Utils.showLoadingDialog();
       var queryParameters = {
         "coYear": mySharedPreferences.dailyClose.year,
         "PosNo": mySharedPreferences.posNo,
@@ -1157,7 +1201,7 @@ class RestApi {
         networkModel.uploadedAt = DateTime.now().toIso8601String();
         await NetworkTable.update(networkModel);
       }
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       if (response.statusCode == 200) {
         return EndCashModel.fromJson(response.data);
       } else {
@@ -1166,12 +1210,12 @@ class RestApi {
       }
     } on dio.DioError catch (e) {
       _traceError(e);
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
       return null;
     } catch (e) {
       _traceCatch(e);
-      hideLoadingDialog();
+      Utils.hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
       return null;
     }

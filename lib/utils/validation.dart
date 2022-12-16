@@ -4,14 +4,14 @@ import 'package:restaurant_system/utils/utils.dart';
 
 class Validation {
   static String? isRequired(value) {
-    if (isEmpty(value)) {
+    if (Utils.isEmpty(value)) {
       return 'This field is required'.tr;
     }
     return null;
   }
 
   static String? qty(value, minQty, maxQty) {
-    if (isEmpty(value)) {
+    if (Utils.isEmpty(value)) {
       return 'This field is required'.tr;
     } else if (minQty != null && double.parse(value) < minQty) {
       return '${'Quantity must be greater than or equal to'.tr} $minQty';
@@ -22,7 +22,7 @@ class Validation {
   }
 
   static String? discount(type, value, price) {
-    if (isEmpty(value)) {
+    if (Utils.isEmpty(value)) {
       return 'This field is required'.tr;
     } else {
       if (DiscountType.value == type) {

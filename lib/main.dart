@@ -11,9 +11,11 @@ import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/splash_screen.dart';
 import 'package:restaurant_system/utils/app_themes.dart';
 import 'package:restaurant_system/utils/enums/enum_device_type.dart';
+import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_http_overrides.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/translations.dart';
+import 'package:restaurant_system/utils/utils.dart';
 import 'package:wakelock/wakelock.dart';
 
 void main() async {
@@ -35,6 +37,9 @@ class _RestaurantSystemState extends State<RestaurantSystem> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    Utils.packageInfo().then((value) {
+      packageInfo = value;
+    });
     Wakelock.enable();
     // log('Token : $token');
     // mySharedPreferences.deviceToken = token;
@@ -43,10 +48,10 @@ class _RestaurantSystemState extends State<RestaurantSystem> {
       DeviceOrientation.landscapeRight,
     ]);
     if (mySharedPreferences.language == "") {
-      if (Get.locale == null) {
+      if (Get.deviceLocale == null) {
         mySharedPreferences.language = 'en';
       } else {
-        String language = Get.locale!.languageCode;
+        String language = Get.deviceLocale!.languageCode;
         if (language != 'en' || language != 'ar') {
           mySharedPreferences.language = 'en';
         } else {

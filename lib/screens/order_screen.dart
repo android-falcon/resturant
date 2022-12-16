@@ -113,7 +113,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(
+                      child: Utils.numPadWidget(
                         controller,
                         setState,
                         onSubmit: () {
@@ -185,7 +185,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(
+                      child: Utils.numPadWidget(
                         controller,
                         setState,
                         onSubmit: () {
@@ -252,7 +252,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(
+                      child: Utils.numPadWidget(
                         controller,
                         setState,
                         onSubmit: () {
@@ -1002,7 +1002,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(
+                      child: Utils.numPadWidget(
                         controller,
                         setState,
                         onSubmit: () {
@@ -1166,330 +1166,18 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   _saveDineIn() async {
-    showLoadingDialog();
-    await _showPrintDialog();
+    Utils.showLoadingDialog();
+    await Printer.showPrintDialog(cart: _cartModel, showPrintButton: false, cashPrinter: false, kitchenPrinter: true, showInvoiceNo: false);
     widget.dineIn!.cart = _cartModel;
     for (var item in widget.dineIn!.cart.items) {
       item.dineInSavedOrder = true;
     }
     await RestApi.saveTableOrder(cart: widget.dineIn!.cart);
     _dineInChangedOrder = false;
-    hideLoadingDialog();
+    Utils.hideLoadingDialog();
   }
 
-  Future<void> _showPrintDialog() async {
-    List<PrinterInvoiceModel> invoices = [];
 
-    for (var printer in allDataModel.printers) {
-      var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
-      List<CartItemModel> cartItems = _cartModel.items.where((element) => !element.dineInSavedOrder && itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
-      if (cartItems.isNotEmpty) {
-        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
-      }
-    }
-    log('messageanan ${invoices.length}');
-    Future.delayed(const Duration(milliseconds: 100)).then((value) async {
-      await Future.forEach(invoices, (PrinterInvoiceModel element) async {
-        var screenshotKitchen = await element.screenshotController.capture(delay: const Duration(milliseconds: 10));
-        element.invoice = screenshotKitchen;
-      });
-      invoices.removeWhere((element) => element.invoice == null);
-      Printer.invoices(invoices: invoices);
-    });
-    if (invoices.isNotEmpty) {
-      await Get.dialog(
-        CustomDialog(
-          width: 150.w,
-          builder: (context, setState, constraints) => Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // CustomButton(
-                  //   fixed: true,
-                  //   child: Text('Print'.tr),
-                  //   onPressed: () {
-                  //     Printer.invoices(invoices: invoices);
-                  //   },
-                  // ),
-                  // SizedBox(width: 10.w),
-                  CustomButton(
-                    fixed: true,
-                    child: Text('Close'.tr),
-                    onPressed: () {
-                      Get.back();
-                    },
-                  ),
-                ],
-              ),
-              const Divider(thickness: 2),
-              Text(
-                'Kitchens Invoices'.tr,
-                style: kStyleLargePrinter,
-              ),
-              const Divider(thickness: 2),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: invoices.length,
-                  separatorBuilder: (context, index) => invoices[index].items.isEmpty ? Container() : const Divider(thickness: 2),
-                  itemBuilder: (context, index) => invoices[index].items.isEmpty
-                      ? Container()
-                      : Screenshot(
-                          controller: invoices[index].screenshotController,
-                          child: SizedBox(
-                            width: 215.w,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Center(
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        _cartModel.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
-                                        style: kStyleLargePrinter,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 15),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 2.w),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '${'Order No'.tr} : ${_cartModel.orderNo}',
-                                        style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
-                                      ),
-                                      if (_cartModel.orderType == OrderType.dineIn)
-                                        Text(
-                                          '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == _cartModel.tableId)?.tableNo ?? ''}',
-                                          style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
-                                        ),
-                                      Text(
-                                        '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
-                                        style: kStyleDataPrinter,
-                                      ),
-                                      Text(
-                                        '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                        style: kStyleDataPrinter,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Divider(
-                                  color: Colors.black,
-                                  height: 0,
-                                ),
-                                Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                  // color: ColorsApp.primaryColor,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 4,
-                                        child: Text(
-                                          'Item Name'.tr,
-                                          style: kStyleDataPrinter,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          'Qty'.tr,
-                                          style: kStyleDataPrinter,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          'Note'.tr,
-                                          style: kStyleDataPrinter,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Divider(color: Colors.black, height: 1),
-                                ListView.separated(
-                                  itemCount: invoices[index].items.length,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  separatorBuilder: (context, indexItem) => const Divider(
-                                    height: 0,
-                                  ),
-                                  itemBuilder: (context, indexItem) {
-                                    var subItem = invoices[index].items.where((element) => element.parentUuid == invoices[index].items[indexItem].uuid).toList();
-
-                                    return Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                flex: 4,
-                                                child: Text(
-                                                  invoices[index].items[indexItem].name,
-                                                  style: kStyleDataPrinter,
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Text(
-                                                  '${invoices[index].items[indexItem].qty}',
-                                                  style: kStyleDataPrinter,
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  invoices[index].items[indexItem].note,
-                                                  style: kStyleDataPrinter,
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                            child: Column(
-                                              children: [
-                                                ListView.builder(
-                                                  itemCount: invoices[index].items[indexItem].questions.length,
-                                                  shrinkWrap: true,
-                                                  physics: const NeverScrollableScrollPhysics(),
-                                                  itemBuilder: (context, indexQuestions) => Column(
-                                                    children: [
-                                                      // Row(
-                                                      //   children: [
-                                                      //     Expanded(
-                                                      //       child: Text(
-                                                      //         '- ${invoices[index].items[indexItem].questions[indexQuestions].question.trim()}',
-                                                      //         style: kStyleDataPrinter,
-                                                      //       ),
-                                                      //     ),
-                                                      //   ],
-                                                      // ),
-                                                      ListView.builder(
-                                                        itemCount: invoices[index].items[indexItem].questions[indexQuestions].modifiers.length,
-                                                        shrinkWrap: true,
-                                                        physics: const NeverScrollableScrollPhysics(),
-                                                        itemBuilder: (context, indexModifiers) => Column(
-                                                          children: [
-                                                            Row(
-                                                              children: [
-                                                                Expanded(
-                                                                  child: Text(
-                                                                    '  • ${invoices[index].items[indexItem].questions[indexQuestions].modifiers[indexModifiers].modifier}',
-                                                                    style: kStyleDataPrinter,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                ListView.builder(
-                                                  itemCount: invoices[index].items[indexItem].modifiers.length,
-                                                  shrinkWrap: true,
-                                                  physics: const NeverScrollableScrollPhysics(),
-                                                  itemBuilder: (context, indexModifiers) => Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child: Text(
-                                                          '• ${invoices[index].items[indexItem].modifiers[indexModifiers].name} * ${invoices[index].items[indexItem].modifiers[indexModifiers].modifier}',
-                                                          style: kStyleDataPrinter,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                if (subItem.isNotEmpty)
-                                                  ListView.builder(
-                                                    itemCount: subItem.length,
-                                                    shrinkWrap: true,
-                                                    physics: const NeverScrollableScrollPhysics(),
-                                                    itemBuilder: (context, indexSubItem) {
-                                                      return Row(
-                                                        children: [
-                                                          Expanded(
-                                                            flex: 3,
-                                                            child: Text(
-                                                              subItem[indexSubItem].name,
-                                                              style: kStyleDataPrinter,
-                                                              textAlign: TextAlign.center,
-                                                              maxLines: 1,
-                                                              overflow: TextOverflow.ellipsis,
-                                                            ),
-                                                          ),
-                                                          Expanded(
-                                                            child: Text(
-                                                              subItem[indexSubItem].priceChange.toStringAsFixed(3),
-                                                              style: kStyleDataPrinter,
-                                                              textAlign: TextAlign.center,
-                                                            ),
-                                                          ),
-                                                          Expanded(
-                                                            child: Text(
-                                                              subItem[indexSubItem].total.toStringAsFixed(3),
-                                                              style: kStyleDataPrinter,
-                                                              textAlign: TextAlign.center,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  ),
-                                              ],
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                                if (_cartModel.note.isNotEmpty)
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Divider(
-                                        color: Colors.black,
-                                        height: 0,
-                                      ),
-                                      Text(
-                                        _cartModel.note,
-                                        style: kStyleDataPrinter,
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        barrierDismissible: false,
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -1502,6 +1190,7 @@ class _OrderScreenState extends State<OrderScreen> {
         } else {
           var result = await _showExitOrderScreenDialog();
           if (result && widget.type == OrderType.dineIn && _cartModel.items.isEmpty) {
+            await RestApi.unlockTable(widget.dineIn!.tableId);
             var result = await RestApi.closeTable(widget.dineIn!.tableId);
             if (result) {
               widget.dineIn!.cart = _cartModel;
@@ -1532,6 +1221,8 @@ class _OrderScreenState extends State<OrderScreen> {
                             _showExitOrderScreenDialog().then((value) async {
                               if (value) {
                                 if (widget.type == OrderType.dineIn && _cartModel.items.isEmpty) {
+
+                                  await RestApi.unlockTable(widget.dineIn!.tableId);
                                   var result = await RestApi.closeTable(widget.dineIn!.tableId);
                                   if (result) {
                                     widget.dineIn!.cart = _cartModel;
@@ -1642,7 +1333,7 @@ class _OrderScreenState extends State<OrderScreen> {
                               var result = await _showParkDialog();
                               if (result != null) {
                                 _cartModel = result;
-                                _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                                 setState(() {});
                               }
                             }
@@ -1848,7 +1539,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                               }
                                             }
                                           }
-                                          _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                          _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                                           _dineInChangedOrder = true;
                                           setState(() {});
                                         },
@@ -2337,7 +2028,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                           park.add(_cartModel);
                                           mySharedPreferences.park = park;
                                           _cartModel = CartModel.init(orderType: OrderType.takeAway);
-                                          _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                          _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                                           setState(() {});
                                         }
                                       } else {
@@ -2450,7 +2141,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                   element.qty = _cartModel.items[_indexItemSelect].qty;
                                 }
                               }
-                              _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                               setState(() {});
                             } else {
                               Fluttertoast.showToast(msg: 'The quantity of this item cannot be modified'.tr);
@@ -2528,7 +2219,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (mySharedPreferences.employee.hasVoidPermission) {
                             permission = true;
                           } else {
-                            EmployeeModel? employee = await showLoginDialog();
+                            EmployeeModel? employee = await Utils.showLoginDialog();
                             if (employee != null) {
                               if (employee.hasVoidPermission) {
                                 permission = true;
@@ -2543,7 +2234,7 @@ class _OrderScreenState extends State<OrderScreen> {
                               if (allDataModel.companyConfig[0].useVoidReason) {
                                 result = await _showVoidReasonDialog();
                               } else {
-                                var areYouSure = await showAreYouSureDialog(title: 'Void'.tr);
+                                var areYouSure = await Utils.showAreYouSureDialog(title: 'Void'.tr);
                                 if (areYouSure) {
                                   result = VoidReasonModel.fromJson({});
                                 }
@@ -2559,7 +2250,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 } else if (_cartModel.items.every((element) => !element.discountAvailable)) {
                                   _cartModel.discount = 0;
                                 }
-                                _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                                 _dineInChangedOrder = true;
                                 setState(() {});
                               }
@@ -2594,7 +2285,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (mySharedPreferences.employee.hasVoidAllPermission) {
                             permission = true;
                           } else {
-                            EmployeeModel? employee = await showLoginDialog();
+                            EmployeeModel? employee = await Utils.showLoginDialog();
                             if (employee != null) {
                               if (employee.hasVoidAllPermission) {
                                 permission = true;
@@ -2611,7 +2302,7 @@ class _OrderScreenState extends State<OrderScreen> {
                               if (allDataModel.companyConfig[0].useVoidReason) {
                                 result = await _showVoidReasonDialog();
                               } else {
-                                var areYouSure = await showAreYouSureDialog(
+                                var areYouSure = await Utils.showAreYouSureDialog(
                                   title: 'Void All'.tr,
                                 );
                                 if (areYouSure) {
@@ -2624,7 +2315,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 _cartModel.items = [];
                                 _cartModel.deliveryCharge = 0;
                                 _cartModel.discount = 0;
-                                _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                                 _dineInChangedOrder = true;
                                 setState(() {});
                               }
@@ -2656,7 +2347,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           onTap: () async {
                             if (_cartModel.items.isNotEmpty) {
                               _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
-                              _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                               setState(() {});
                             } else {
                               Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
@@ -2689,7 +2380,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (mySharedPreferences.employee.hasLineDiscPermission) {
                             permission = true;
                           } else {
-                            EmployeeModel? employee = await showLoginDialog();
+                            EmployeeModel? employee = await Utils.showLoginDialog();
                             if (employee != null) {
                               if (employee.hasLineDiscPermission) {
                                 permission = true;
@@ -2708,7 +2399,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 );
                                 _cartModel.items[_indexItemSelect].lineDiscount = result['discount'];
                                 _cartModel.items[_indexItemSelect].lineDiscountType = result['type'];
-                                _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                                 _dineInChangedOrder = true;
                                 setState(() {});
                               } else {
@@ -2745,7 +2436,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (mySharedPreferences.employee.hasDiscPermission) {
                             permission = true;
                           } else {
-                            EmployeeModel? employee = await showLoginDialog();
+                            EmployeeModel? employee = await Utils.showLoginDialog();
                             if (employee != null) {
                               if (employee.hasDiscPermission) {
                                 permission = true;
@@ -2763,7 +2454,7 @@ class _OrderScreenState extends State<OrderScreen> {
                               );
                               _cartModel.discount = result['discount'];
                               _cartModel.discountType = result['type'];
-                              _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                               _dineInChangedOrder = true;
                               setState(() {});
                             } else {
@@ -2820,7 +2511,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           if (mySharedPreferences.employee.hasPriceChangePermission) {
                             permission = true;
                           } else {
-                            EmployeeModel? employee = await showLoginDialog();
+                            EmployeeModel? employee = await Utils.showLoginDialog();
                             if (employee != null) {
                               if (employee.hasPriceChangePermission) {
                                 permission = true;
@@ -2833,7 +2524,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             if (_indexItemSelect != -1) {
                               if (_cartModel.items[_indexItemSelect].openPrice) {
                                 _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
-                                _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                                 _dineInChangedOrder = true;
                                 setState(() {});
                               } else {

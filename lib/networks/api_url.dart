@@ -30,7 +30,7 @@ class ApiUrl{
   // ignore: non_constant_identifier_names
   static String LOCK_TABLE = "/api/postData/LOCKTABLE";
   // ignore: non_constant_identifier_names
-  static String UNLOCK_TABLE = "/api/postData/UNLOCKTABLE";
+  static String UNLOCK_TABLE = "/api/postData/UnLockTable";
   // ignore: non_constant_identifier_names
   static String SET_TABLE_CONFIG = "/api/postData/SetTableConfig";
   // ignore: non_constant_identifier_names

@@ -58,7 +58,7 @@ class _TableScreenState extends State<TableScreen> {
             await _showMoveDialog();
             setState(() {});
           } else {
-            EmployeeModel? employee = await showLoginDialog();
+            EmployeeModel? employee = await Utils.showLoginDialog();
             if (employee != null) {
               if (employee.hasMoveTablePermission) {
                 await _showMoveDialog();
@@ -77,7 +77,7 @@ class _TableScreenState extends State<TableScreen> {
             await _showMargeDialog();
             setState(() {});
           } else {
-            EmployeeModel? employee = await showLoginDialog();
+            EmployeeModel? employee = await Utils.showLoginDialog();
             if (employee != null) {
               if (employee.hasMergeTablePermission) {
                 await _showMargeDialog();
@@ -117,7 +117,7 @@ class _TableScreenState extends State<TableScreen> {
             await _showChangeUserDialog();
             setState(() {});
           } else {
-            EmployeeModel? employee = await showLoginDialog();
+            EmployeeModel? employee = await Utils.showLoginDialog();
             if (employee != null) {
               if (employee.hasChangeTableCaptinPermission) {
                 await _showChangeUserDialog();
@@ -149,9 +149,9 @@ class _TableScreenState extends State<TableScreen> {
   }
 
   _initData(bool enableTimer) async {
-    showLoadingDialog();
+    Utils.showLoadingDialog();
     await _getTables();
-    hideLoadingDialog();
+    Utils.hideLoadingDialog();
     if (enableTimer) {
       _timer = Timer.periodic(const Duration(seconds: 3), (Timer t) async => await _getTables());
     }
@@ -300,16 +300,21 @@ class _TableScreenState extends State<TableScreen> {
                     if (_selectTableId == null) {
                       Fluttertoast.showToast(msg: 'Please select a table'.tr);
                     } else {
-                      var result = await showAreYouSureDialog(title: 'Print Order'.tr);
+                      var result = await Utils.showAreYouSureDialog(title: 'Print Order'.tr);
                       if (result) {
-                        showLoadingDialog();
+                        Utils.showLoadingDialog();
                         var indexTable = dineInSaved.indexWhere((element) => element.tableId == _selectTableId);
                         dineInSaved[indexTable].isPrinted = true;
                         await RestApi.printTable(dineInSaved[indexTable].tableId);
-                        hideLoadingDialog();
+                        Utils.hideLoadingDialog();
                         Get.back();
 
-                        _showPrintDialog(dineInSaved[indexTable].cart);
+                        Printer.showPrintDialog(
+                          cart: dineInSaved[indexTable].cart,
+                          showPrintButton: true,
+                          kitchenPrinter: false,
+                          showInvoiceNo: false,
+                        );
                       }
                     }
                   },
@@ -331,469 +336,6 @@ class _TableScreenState extends State<TableScreen> {
     );
   }
 
-  Future<void> _showPrintDialog(CartModel cart) async {
-    ScreenshotController _screenshotControllerCash = ScreenshotController();
-    List<PrinterInvoiceModel> invoices = [];
-
-    for (var printer in allDataModel.printers) {
-      if (printer.cashNo == mySharedPreferences.cashNo) {
-        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: []));
-      }
-    }
-    Future.delayed(const Duration(milliseconds: 100)).then((value) async {
-      var screenshotCash = await _screenshotControllerCash.capture(delay: const Duration(milliseconds: 10));
-      await Future.forEach(invoices, (PrinterInvoiceModel element) async {
-        if (element.items.isEmpty) {
-          element.invoice = screenshotCash;
-        } else {
-          var screenshotKitchen = await element.screenshotController.capture(delay: const Duration(milliseconds: 10));
-          element.invoice = screenshotKitchen;
-        }
-      });
-      invoices.removeWhere((element) => element.invoice == null);
-      Printer.invoices(invoices: invoices);
-    });
-    if (invoices.isNotEmpty) {
-      await Get.dialog(
-        CustomDialog(
-          width: 150.w,
-          builder: (context, setState, constraints) => Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CustomButton(
-                    fixed: true,
-                    child: Text('Print'.tr),
-                    onPressed: () {
-                      Printer.invoices(invoices: invoices);
-                    },
-                  ),
-                  SizedBox(width: 10.w),
-                  CustomButton(
-                    fixed: true,
-                    child: Text('Close'.tr),
-                    onPressed: () {
-                      Get.back();
-                    },
-                  ),
-                ],
-              ),
-              const Divider(thickness: 2),
-              Screenshot(
-                controller: _screenshotControllerCash,
-                child: SizedBox(
-                  width: 215.w,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              cart.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
-                              style: kStyleLargePrinter,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              'Order No'.tr,
-                              style: kStyleLargePrinter,
-                            ),
-                            Text(
-                              '${cart.orderNo}',
-                              style: kStyleLargePrinter,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Divider(color: Colors.black, thickness: 2),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Text(
-                                //   '${'Invoice No'.tr} : ${mySharedPreferences.inVocNo - 1}',
-                                //   style: kStyleDataPrinter,
-                                // ),
-                                Text(
-                                  '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
-                                  style: kStyleDataPrinter,
-                                ),
-                                Text(
-                                  '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                  style: kStyleDataPrinter,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (cart.orderType == OrderType.dineIn)
-                                  Text(
-                                    '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == cart.tableId)?.tableNo ?? ''}',
-                                    style: kStyleDataPrinter,
-                                    maxLines: 1,
-                                  ),
-                                Text(
-                                  '${'User'.tr} : ${mySharedPreferences.employee.empName}',
-                                  style: kStyleDataPrinter,
-                                  maxLines: 1,
-                                ),
-                                Text(
-                                  '${'Phone'.tr} : ${allDataModel.companyConfig[0].phoneNo}',
-                                  style: kStyleDataPrinter,
-                                  maxLines: 1,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(color: Colors.black, thickness: 2),
-                      Column(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 4,
-                                  child: Text(
-                                    'Pro-Nam'.tr,
-                                    style: kStyleDataPrinter,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    'Qty'.tr,
-                                    style: kStyleDataPrinter,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    'Total'.tr,
-                                    style: kStyleDataPrinter,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Divider(color: Colors.black, height: 1),
-                          ListView.separated(
-                            itemCount: cart.items.length,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            separatorBuilder: (context, index) => const Divider(color: Colors.black, height: 1),
-                            itemBuilder: (context, index) {
-                              if (cart.items[index].parentUuid.isNotEmpty) {
-                                return Container();
-                              } else {
-                                var subItem = cart.items.where((element) => element.parentUuid == cart.items[index].uuid).toList();
-                                return Column(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            flex: 4,
-                                            child: Text(
-                                              cart.items[index].name,
-                                              style: kStyleDataPrinter,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              '${cart.items[index].qty}',
-                                              style: kStyleDataPrinter,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              cart.items[index].total.toStringAsFixed(3),
-                                              style: kStyleDataPrinter,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                      child: Column(
-                                        children: [
-                                          ListView.builder(
-                                            itemCount: cart.items[index].questions.length,
-                                            shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            itemBuilder: (context, indexQuestions) => Column(
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        '- ${cart.items[index].questions[indexQuestions].question.trim()}',
-                                                        style: kStyleDataPrinter,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                ListView.builder(
-                                                  itemCount: cart.items[index].questions[indexQuestions].modifiers.length,
-                                                  shrinkWrap: true,
-                                                  physics: const NeverScrollableScrollPhysics(),
-                                                  itemBuilder: (context, indexModifiers) => Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          Expanded(
-                                                            child: Text(
-                                                              '  • ${cart.items[index].questions[indexQuestions].modifiers[indexModifiers]}',
-                                                              style: kStyleDataPrinter,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          ListView.builder(
-                                            itemCount: cart.items[index].modifiers.length,
-                                            shrinkWrap: true,
-                                            physics: const NeverScrollableScrollPhysics(),
-                                            itemBuilder: (context, indexModifiers) => Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    '• ${cart.items[index].modifiers[indexModifiers].name} * ${cart.items[index].modifiers[indexModifiers].modifier}',
-                                                    style: kStyleDataPrinter,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          if (subItem.isNotEmpty)
-                                            ListView.builder(
-                                              itemCount: subItem.length,
-                                              shrinkWrap: true,
-                                              physics: const NeverScrollableScrollPhysics(),
-                                              itemBuilder: (context, indexSubItem) {
-                                                return Row(
-                                                  children: [
-                                                    Expanded(
-                                                      flex: 3,
-                                                      child: Text(
-                                                        subItem[indexSubItem].name,
-                                                        style: kStyleDataPrinter,
-                                                        textAlign: TextAlign.center,
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow.ellipsis,
-                                                      ),
-                                                    ),
-                                                    Expanded(
-                                                      child: Text(
-                                                        subItem[indexSubItem].priceChange.toStringAsFixed(3),
-                                                        style: kStyleDataPrinter,
-                                                        textAlign: TextAlign.center,
-                                                      ),
-                                                    ),
-                                                    Expanded(
-                                                      child: Text(
-                                                        subItem[indexSubItem].total.toStringAsFixed(3),
-                                                        style: kStyleDataPrinter,
-                                                        textAlign: TextAlign.center,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                );
-                                              },
-                                            ),
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                );
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                      const Divider(color: Colors.black, thickness: 2),
-                      Container(
-                        margin: EdgeInsets.symmetric(vertical: 4.h),
-                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Total'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  cart.total.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Discount'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  cart.totalDiscount.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Line Discount'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  cart.totalLineDiscount.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Delivery Charge'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  cart.deliveryCharge.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Service'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  cart.service.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Tax'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  cart.tax.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Amount Due'.tr,
-                                    style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Text(
-                                  cart.amountDue.toStringAsFixed(3),
-                                  style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            const Divider(color: Colors.black, thickness: 2),
-                            if (cart.cash != 0)
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Cash'.tr,
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  Text(
-                                    cart.cash.toStringAsFixed(3),
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            if (cart.credit != 0)
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Credit'.tr,
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  Text(
-                                    cart.credit.toStringAsFixed(3),
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            SizedBox(height: 15.h),
-                            Image.asset(
-                              'assets/images/welcome.png',
-                              height: 80.h,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        barrierDismissible: false,
-      );
-    }
-  }
 
   Future<void> _showReportTablesDialog() async {
     int? _selectFloor = floors.first;
@@ -854,7 +396,7 @@ class _TableScreenState extends State<TableScreen> {
                             child: StaggeredGrid.count(
                               crossAxisCount: 4,
                               children: dineInSaved
-                                  .where((element) => element.isOpen && element.floorNo == _selectFloor && element.userId == mySharedPreferences.employee.id)
+                                  .where((element) => element.isOpen && element.floorNo == _selectFloor)
                                   .map((e) => Container(
                                         margin: const EdgeInsets.all(2),
                                         decoration: BoxDecoration(
@@ -1067,16 +609,16 @@ class _TableScreenState extends State<TableScreen> {
                     } else if (_selectTableId == null) {
                       Fluttertoast.showToast(msg: 'Please select a table'.tr);
                     } else {
-                      var result = await showAreYouSureDialog(title: 'Change User'.tr);
+                      var result = await Utils.showAreYouSureDialog(title: 'Change User'.tr);
                       if (result) {
-                        showLoadingDialog();
+                        Utils.showLoadingDialog();
                         var resultApi = await RestApi.changeUserTable(_selectTableId!, mySharedPreferences.employee.id, _selectUserId!);
                         if (resultApi) {
                           var indexTable = dineInSaved.indexWhere((element) => element.tableId == _selectTableId);
                           dineInSaved[indexTable].userId = _selectUserId!;
                           await RestApi.saveTableOrder(cart: dineInSaved[indexTable].cart);
                         }
-                        hideLoadingDialog();
+                        Utils.hideLoadingDialog();
                         Get.back();
                       }
                     }
@@ -1301,9 +843,9 @@ class _TableScreenState extends State<TableScreen> {
                     if (_selectFromTableId == null || _selectToTableId == null) {
                       Fluttertoast.showToast(msg: 'Please select a table'.tr);
                     } else {
-                      var result = await showAreYouSureDialog(title: 'Move'.tr);
+                      var result = await Utils.showAreYouSureDialog(title: 'Move'.tr);
                       if (result) {
-                        showLoadingDialog();
+                        Utils.showLoadingDialog();
                         var resultApi = await RestApi.moveTable(_selectFromTableId!, _selectToTableId!);
                         if (resultApi) {
                           var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
@@ -1316,11 +858,11 @@ class _TableScreenState extends State<TableScreen> {
                           dineInSaved[indexFrom].isOpen = false;
                           dineInSaved[indexFrom].isReservation = false;
                           dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
-                          dineInSaved[indexTo].cart = calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
+                          dineInSaved[indexTo].cart = Utils.calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
 
                           await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
                         }
-                        hideLoadingDialog();
+                        Utils.hideLoadingDialog();
                         Get.back();
                       }
                     }
@@ -1553,7 +1095,7 @@ class _TableScreenState extends State<TableScreen> {
                     if (_selectFromTableId == null || _selectToTableId == null) {
                       Fluttertoast.showToast(msg: 'Please select a table'.tr);
                     } else {
-                      var result = await showAreYouSureDialog(title: 'Marge'.tr);
+                      var result = await Utils.showAreYouSureDialog(title: 'Marge'.tr);
                       if (result) {
                         var resultApi = await RestApi.mergeTable(_selectFromTableId!, _selectToTableId!);
                         if (resultApi) {
@@ -1566,10 +1108,10 @@ class _TableScreenState extends State<TableScreen> {
                           dineInSaved[indexFrom].isOpen = false;
                           dineInSaved[indexFrom].isReservation = false;
                           dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
-                          dineInSaved[indexTo].cart = calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
+                          dineInSaved[indexTo].cart = Utils.calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
                           await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
                         }
-                        hideLoadingDialog();
+                        Utils.hideLoadingDialog();
                         Get.back();
                       }
                     }
@@ -1873,9 +1415,9 @@ class _TableScreenState extends State<TableScreen> {
                                           } else {
                                             var totalSeats = await _showNumberSeatsDialog();
                                             if (totalSeats != null) {
-                                              showLoadingDialog();
+                                              Utils.showLoadingDialog();
                                               bool isOpened = await RestApi.openTable(e.tableId);
-                                              hideLoadingDialog();
+                                              Utils.hideLoadingDialog();
                                               if (isOpened) {
                                                 mySharedPreferences.orderNo++;
                                                 e.isOpen = true;
