@@ -20,7 +20,7 @@ import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:screenshot/screenshot.dart';
 
 class Printer {
-  static Future<void> showPrintDialog({
+  static Future<void> printInvoicesDialog({
     required CartModel cart,
     bool kitchenPrinter = true,
     bool cashPrinter = true,
@@ -624,10 +624,10 @@ class Printer {
                                         height: 0,
                                       ),
                                       itemBuilder: (context, indexItem) {
-                                        if (cart.items[indexItem].parentUuid.isNotEmpty) {
+                                        if (invoices[index].items[indexItem].parentUuid.isNotEmpty) {
                                           return Container();
                                         } else {
-                                          var subItem = cart.items.where((element) => element.parentUuid == cart.items[indexItem].uuid).toList();
+                                          var subItem = cart.items.where((element) => element.parentUuid == invoices[index].items[indexItem].uuid).toList();
                                           return Column(
                                             children: [
                                               Padding(
@@ -665,7 +665,7 @@ class Printer {
                                                 child: Column(
                                                   children: [
                                                     ListView.builder(
-                                                      itemCount: cart.items[indexItem].questions.length,
+                                                      itemCount: invoices[index].items[indexItem].questions.length,
                                                       shrinkWrap: true,
                                                       physics: const NeverScrollableScrollPhysics(),
                                                       itemBuilder: (context, indexQuestions) => Column(
@@ -681,7 +681,7 @@ class Printer {
                                                           //   ],
                                                           // ),
                                                           ListView.builder(
-                                                            itemCount: cart.items[indexItem].questions[indexQuestions].modifiers.length,
+                                                            itemCount: invoices[index].items[indexItem].questions[indexQuestions].modifiers.length,
                                                             shrinkWrap: true,
                                                             physics: const NeverScrollableScrollPhysics(),
                                                             itemBuilder: (context, indexModifiers) => Column(
@@ -690,7 +690,7 @@ class Printer {
                                                                   children: [
                                                                     Expanded(
                                                                       child: Text(
-                                                                        '  • ${cart.items[indexItem].questions[indexQuestions].modifiers[indexModifiers].modifier}',
+                                                                        '  • ${invoices[index].items[indexItem].questions[indexQuestions].modifiers[indexModifiers].modifier}',
                                                                         style: kStyleDataPrinter,
                                                                       ),
                                                                     ),
@@ -703,14 +703,14 @@ class Printer {
                                                       ),
                                                     ),
                                                     ListView.builder(
-                                                      itemCount: cart.items[indexItem].modifiers.length,
+                                                      itemCount: invoices[index].items[indexItem].modifiers.length,
                                                       shrinkWrap: true,
                                                       physics: const NeverScrollableScrollPhysics(),
                                                       itemBuilder: (context, indexModifiers) => Row(
                                                         children: [
                                                           Expanded(
                                                             child: Text(
-                                                              '• ${cart.items[indexItem].modifiers[indexModifiers].name} * ${cart.items[indexItem].modifiers[indexModifiers].modifier}',
+                                                              '• ${invoices[index].items[indexItem].modifiers[indexModifiers].name} * ${invoices[index].items[indexItem].modifiers[indexModifiers].modifier}',
                                                               style: kStyleDataPrinter,
                                                             ),
                                                           ),
@@ -785,6 +785,311 @@ class Printer {
                   ),
                 ],
               ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  static Future<void> printKitchenVoidItemsDialog({
+    required CartModel cart,
+    required List<CartItemModel> itemsVoid,
+  }) async {
+    List<PrinterInvoiceModel> invoices = [];
+
+    for (var printer in allDataModel.printers) {
+      var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
+      List<CartItemModel> cartItems = itemsVoid.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
+      if (cartItems.isNotEmpty) {
+        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
+      }
+    }
+    Future.delayed(const Duration(milliseconds: 100)).then((value) async {
+      await Future.forEach(invoices, (PrinterInvoiceModel element) async {
+        var screenshotKitchen = await element.screenshotController.capture(delay: const Duration(milliseconds: 10));
+        element.invoice = screenshotKitchen;
+      });
+      invoices.removeWhere((element) => element.invoice == null);
+      Printer.invoices(invoices: invoices);
+    });
+
+    await Get.dialog(
+      CustomDialog(
+        width: 150.w,
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomButton(
+                  margin: EdgeInsets.symmetric(horizontal: 5.w),
+                  fixed: true,
+                  child: Text('Close'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+            const Divider(thickness: 2),
+            Column(
+              children: [
+                const Divider(thickness: 2),
+                Text(
+                  'Kitchens Invoices'.tr,
+                  style: kStyleLargePrinter,
+                ),
+                const Divider(thickness: 2),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: invoices.length,
+                    separatorBuilder: (context, index) => invoices[index].items.isEmpty ? Container() : const Divider(thickness: 2),
+                    itemBuilder: (context, index) => invoices[index].items.isEmpty
+                        ? Container()
+                        : Screenshot(
+                            controller: invoices[index].screenshotController,
+                            child: SizedBox(
+                              width: 215.w,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Center(
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          'Void Items'.tr,
+                                          style: kStyleLargePrinter,
+                                        ),
+                                        Text(
+                                          cart.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
+                                          style: kStyleLargePrinter,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 15),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 2.w),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${'Order No'.tr} : ${cart.orderNo}',
+                                          style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                        ),
+                                        if (cart.orderType == OrderType.dineIn)
+                                          Text(
+                                            '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == cart.tableId)?.tableNo ?? ''}',
+                                            style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                          ),
+                                        Text(
+                                          '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
+                                          style: kStyleDataPrinter,
+                                        ),
+                                        Text(
+                                          '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
+                                          style: kStyleDataPrinter,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Divider(
+                                    color: Colors.black,
+                                    height: 0,
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                    // color: ColorsApp.primaryColor,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 4,
+                                          child: Text(
+                                            'Item Name'.tr,
+                                            style: kStyleDataPrinter,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            'Qty'.tr,
+                                            style: kStyleDataPrinter,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Note'.tr,
+                                            style: kStyleDataPrinter,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Divider(color: Colors.black, height: 1),
+                                  ListView.separated(
+                                    itemCount: invoices[index].items.length,
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    separatorBuilder: (context, indexItem) => const Divider(
+                                      height: 0,
+                                    ),
+                                    itemBuilder: (context, indexItem) {
+                                      if (invoices[index].items[indexItem].parentUuid.isNotEmpty) {
+                                        return Container();
+                                      } else {
+                                        var subItem = itemsVoid.where((element) => element.parentUuid == invoices[index].items[indexItem].uuid).toList();
+                                        return Column(
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                              child: Row(
+                                                children: [
+                                                  Expanded(
+                                                    flex: 4,
+                                                    child: Text(
+                                                      invoices[index].items[indexItem].name,
+                                                      style: kStyleDataPrinter,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '${invoices[index].items[indexItem].qty}',
+                                                      style: kStyleDataPrinter,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    flex: 2,
+                                                    child: Text(
+                                                      invoices[index].items[indexItem].note,
+                                                      style: kStyleDataPrinter,
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                              child: Column(
+                                                children: [
+                                                  ListView.builder(
+                                                    itemCount: invoices[index].items[indexItem].questions.length,
+                                                    shrinkWrap: true,
+                                                    physics: const NeverScrollableScrollPhysics(),
+                                                    itemBuilder: (context, indexQuestions) => Column(
+                                                      children: [
+                                                        // Row(
+                                                        //   children: [
+                                                        //     Expanded(
+                                                        //       child: Text(
+                                                        //         '- ${cart.items[index].questions[indexQuestions].question.trim()}',
+                                                        //         style: kStyleDataPrinter,
+                                                        //       ),
+                                                        //     ),
+                                                        //   ],
+                                                        // ),
+                                                        ListView.builder(
+                                                          itemCount: invoices[index].items[indexItem].questions[indexQuestions].modifiers.length,
+                                                          shrinkWrap: true,
+                                                          physics: const NeverScrollableScrollPhysics(),
+                                                          itemBuilder: (context, indexModifiers) => Column(
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      '  • ${invoices[index].items[indexItem].questions[indexQuestions].modifiers[indexModifiers].modifier}',
+                                                                      style: kStyleDataPrinter,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  ListView.builder(
+                                                    itemCount: invoices[index].items[indexItem].modifiers.length,
+                                                    shrinkWrap: true,
+                                                    physics: const NeverScrollableScrollPhysics(),
+                                                    itemBuilder: (context, indexModifiers) => Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            '• ${invoices[index].items[indexItem].modifiers[indexModifiers].name} * ${invoices[index].items[indexItem].modifiers[indexModifiers].modifier}',
+                                                            style: kStyleDataPrinter,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  if (subItem.isNotEmpty)
+                                                    ListView.builder(
+                                                      itemCount: subItem.length,
+                                                      shrinkWrap: true,
+                                                      physics: const NeverScrollableScrollPhysics(),
+                                                      itemBuilder: (context, indexSubItem) {
+                                                        return Row(
+                                                          children: [
+                                                            Expanded(
+                                                              flex: 4,
+                                                              child: Text(
+                                                                subItem[indexSubItem].name,
+                                                                style: kStyleDataPrinter,
+                                                                textAlign: TextAlign.center,
+                                                                maxLines: 1,
+                                                                overflow: TextOverflow.ellipsis,
+                                                              ),
+                                                            ),
+                                                            Expanded(
+                                                              child: Text(
+                                                                '${subItem[indexSubItem].qty}',
+                                                                style: kStyleDataPrinter,
+                                                                textAlign: TextAlign.center,
+                                                              ),
+                                                            ),
+                                                            Expanded(
+                                                              flex: 2,
+                                                              child: Text(
+                                                                subItem[indexSubItem].note,
+                                                                style: kStyleDataPrinter,
+                                                                textAlign: TextAlign.center,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

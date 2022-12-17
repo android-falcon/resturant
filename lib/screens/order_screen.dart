@@ -1167,7 +1167,7 @@ class _OrderScreenState extends State<OrderScreen> {
 
   _saveDineIn() async {
     Utils.showLoadingDialog();
-    await Printer.showPrintDialog(cart: _cartModel, showPrintButton: false, cashPrinter: false, kitchenPrinter: true, showInvoiceNo: false);
+    await Printer.printInvoicesDialog(cart: _cartModel, showPrintButton: false, cashPrinter: false, kitchenPrinter: true, showInvoiceNo: false);
     widget.dineIn!.cart = _cartModel;
     for (var item in widget.dineIn!.cart.items) {
       item.dineInSavedOrder = true;
@@ -1176,8 +1176,6 @@ class _OrderScreenState extends State<OrderScreen> {
     _dineInChangedOrder = false;
     Utils.hideLoadingDialog();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -1221,7 +1219,6 @@ class _OrderScreenState extends State<OrderScreen> {
                             _showExitOrderScreenDialog().then((value) async {
                               if (value) {
                                 if (widget.type == OrderType.dineIn && _cartModel.items.isEmpty) {
-
                                   await RestApi.unlockTable(widget.dineIn!.tableId);
                                   var result = await RestApi.closeTable(widget.dineIn!.tableId);
                                   if (result) {
@@ -2241,6 +2238,13 @@ class _OrderScreenState extends State<OrderScreen> {
                               }
                               if (result != null) {
                                 RestApi.saveVoidItem(item: _cartModel.items[_indexItemSelect], reason: result.reasonName);
+                                if (_cartModel.orderType == OrderType.dineIn && _cartModel.items[_indexItemSelect].dineInSavedOrder) {
+                                  List<CartItemModel> voidItems = [];
+                                  voidItems.add(_cartModel.items[_indexItemSelect]);
+                                  voidItems.addAll(_cartModel.items.where((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid));
+                                  Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
+                                }
+
                                 _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
                                 _cartModel.items.removeAt(_indexItemSelect);
                                 _indexItemSelect = -1;
@@ -2311,6 +2315,11 @@ class _OrderScreenState extends State<OrderScreen> {
                               }
                               if (result != null) {
                                 RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
+                                List<CartItemModel> voidItems = [];
+                                voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
+                                if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
+                                  Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
+                                }
                                 _indexItemSelect = -1;
                                 _cartModel.items = [];
                                 _cartModel.deliveryCharge = 0;

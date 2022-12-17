@@ -1215,7 +1215,7 @@ class _HomeScreenState extends State<HomeScreen> {
       barrierDismissible: false,
     );
     if ( result) {
-      await Printer.showPrintDialog(
+      await Printer.printInvoicesDialog(
         cart: _reprintModel!,
         reprint: true,
         kitchenPrinter: false,

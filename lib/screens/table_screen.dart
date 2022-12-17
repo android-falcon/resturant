@@ -309,7 +309,7 @@ class _TableScreenState extends State<TableScreen> {
                         Utils.hideLoadingDialog();
                         Get.back();
 
-                        Printer.showPrintDialog(
+                        Printer.printInvoicesDialog(
                           cart: dineInSaved[indexTable].cart,
                           showPrintButton: true,
                           kitchenPrinter: false,
@@ -1448,7 +1448,7 @@ class _TableScreenState extends State<TableScreen> {
                                                   decoration: BoxDecoration(
                                                     borderRadius: const BorderRadius.only(topLeft: Radius.circular(150), topRight: Radius.circular(150), bottomLeft: Radius.circular(150), bottomRight: Radius.circular(150)),
                                                     boxShadow: [
-                                                      if (e.isOpen && mySharedPreferences.employee.id == e.userId)
+                                                      if (e.isOpen) //  && mySharedPreferences.employee.id == e.userId
                                                         BoxShadow(
                                                           color: e.isPrinted ? Colors.yellow.withOpacity(0.5) : Colors.green.withOpacity(0.5),
                                                           spreadRadius: 1,

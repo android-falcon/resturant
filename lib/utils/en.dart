@@ -184,6 +184,7 @@ const Map<String, String> en = {
   'Clear': 'Clear',
   'Users': 'Users',
   'Version': 'Version',
+  'Void Items': 'Void Items',
   'Please select a user': 'Please select a user',
   'Change User': 'Change User',
   'Report Tables': 'Report Tables',

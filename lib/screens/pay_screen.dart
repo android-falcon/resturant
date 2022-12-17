@@ -68,7 +68,7 @@ class _PayScreenState extends State<PayScreen> {
 
       mySharedPreferences.inVocNo++;
 
-      Printer.showPrintDialog(cart: widget.cart, showPrintButton: false, invNo: '${mySharedPreferences.inVocNo - 1}').then((value) {
+      Printer.printInvoicesDialog(cart: widget.cart, showPrintButton: false, invNo: '${mySharedPreferences.inVocNo - 1}').then((value) {
         Get.offAll(() => HomeScreen());
         if (widget.tableId != null) {
           Get.to(() => TableScreen());
