@@ -1101,8 +1101,8 @@ class Printer {
     final profile = await CapabilityProfile.load(); //name: 'TP806L'
     for (var invoice in invoices) {
       final printer = NetworkPrinter(PaperSize.mm80, profile);
-      final cashPosPrintResult = await printer.connect(invoice.ipAddress, port: invoice.port); // invoice.ipAddress
-      if (cashPosPrintResult == PosPrintResult.success) {
+      var printerResult = await printer.connect(invoice.ipAddress, port: invoice.port);
+      if (printerResult == PosPrintResult.success) {
         try {
           printImage(printer, invoice.invoice!);
           await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
@@ -1111,7 +1111,7 @@ class Printer {
         } catch (e) {
           printer.disconnect();
           await Future.delayed(const Duration(milliseconds: 200));
-          log('cashPrinter catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
+          log('printer catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
           try {
             printImage(printer, invoice.invoice!);
             await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
@@ -1120,11 +1120,27 @@ class Printer {
           } catch (e) {
             printer.disconnect();
             await Future.delayed(const Duration(milliseconds: 200));
-            log('cashPrinter catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
+            log('printer catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
           }
         }
       } else {
-        log('cashPrinter catch ${cashPosPrintResult.msg} || ${invoice.ipAddress}:${invoice.port}');
+        log('printer else ${printerResult.msg} || ${invoice.ipAddress}:${invoice.port}');
+        await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
+        printerResult = await printer.connect(invoice.ipAddress, port: invoice.port);
+        if (printerResult == PosPrintResult.success) {
+          try {
+            printImage(printer, invoice.invoice!);
+            await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
+            printer.disconnect();
+            await Future.delayed(const Duration(milliseconds: 200));
+          } catch (e) {
+            printer.disconnect();
+            await Future.delayed(const Duration(milliseconds: 200));
+            log('printer catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
+          }
+        } else {
+          log('printer catch ${printerResult.msg} || ${invoice.ipAddress}:${invoice.port}');
+        }
       }
     }
   }
