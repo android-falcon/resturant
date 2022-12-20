@@ -1407,6 +1407,7 @@ class _TableScreenState extends State<TableScreen> {
                                           if (e.isOpen) {
                                             if (mySharedPreferences.employee.id == e.userId) {
                                               Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
+                                                RestApi.unlockTable(e.tableId);
                                                 _initData(false);
                                               });
                                             } else {
@@ -1426,6 +1427,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 e.cart.seatsMale = totalSeats['male'];
                                                 e.cart.seatsFemale = totalSeats['female'];
                                                 Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
+                                                   RestApi.unlockTable(e.tableId);
                                                   _initData(false);
                                                 });
                                               }

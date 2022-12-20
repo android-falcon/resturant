@@ -72,6 +72,9 @@ class _OrderScreenState extends State<OrderScreen> {
   @override
   void dispose() {
     super.dispose();
+    if (widget.dineIn != null) {
+      RestApi.unlockTable(widget.dineIn!.tableId);
+    }
   }
 
   Future<double> _showDeliveryDialog({TextEditingController? controller, required double delivery}) async {
@@ -1188,7 +1191,6 @@ class _OrderScreenState extends State<OrderScreen> {
         } else {
           var result = await _showExitOrderScreenDialog();
           if (result && widget.type == OrderType.dineIn && _cartModel.items.isEmpty) {
-            await RestApi.unlockTable(widget.dineIn!.tableId);
             var result = await RestApi.closeTable(widget.dineIn!.tableId);
             if (result) {
               widget.dineIn!.cart = _cartModel;
@@ -1219,7 +1221,6 @@ class _OrderScreenState extends State<OrderScreen> {
                             _showExitOrderScreenDialog().then((value) async {
                               if (value) {
                                 if (widget.type == OrderType.dineIn && _cartModel.items.isEmpty) {
-                                  await RestApi.unlockTable(widget.dineIn!.tableId);
                                   var result = await RestApi.closeTable(widget.dineIn!.tableId);
                                   if (result) {
                                     widget.dineIn!.cart = _cartModel;
