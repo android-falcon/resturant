@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:restaurant_system/utils/color.dart';
 
+import 'constant.dart';
+
 class AppThemes {
   late Map<AppTheme, ThemeData> appThemeData;
 
@@ -9,8 +11,8 @@ class AppThemes {
       AppTheme.lightTheme: ThemeData(
         toggleableActiveColor: ColorsApp.primaryColor.shade700,
         //brightness: Brightness.light,
-        primarySwatch: ColorsApp.primaryColor,
-        primaryColor: ColorsApp.primaryColor,
+        primarySwatch:UMNIA_FALG==1 ?ColorsApp.accentColor: ColorsApp.primaryColor,
+        primaryColor: UMNIA_FALG==1 ?ColorsApp.accentColor:ColorsApp.primaryColor,
         // fontFamily: fontFamily,
         cardColor: Colors.white,
         scaffoldBackgroundColor: const Color(0xFFDADADA),
@@ -22,7 +24,7 @@ class AppThemes {
           )
         ),
         colorScheme: ColorScheme.fromSwatch(primarySwatch: ColorsApp.primaryColor).copyWith(
-          secondary: ColorsApp.primaryColor.shade700,
+          secondary: UMNIA_FALG==1 ?ColorsApp.accentColor:ColorsApp.primaryColor.shade700,
           brightness: Brightness.light,
         ),
         textButtonTheme: TextButtonThemeData(
@@ -33,20 +35,20 @@ class AppThemes {
           ),
         ),
         textSelectionTheme: TextSelectionThemeData(
-          cursorColor: ColorsApp.primaryColor,
-          selectionHandleColor: ColorsApp.primaryColor.shade700,
+          cursorColor:UMNIA_FALG==1 ?ColorsApp.accentColor: ColorsApp.primaryColor,
+          selectionHandleColor: UMNIA_FALG==1 ?ColorsApp.accentColor:ColorsApp.primaryColor.shade700,
         ),
       ),
       AppTheme.darkTheme: ThemeData(
-        toggleableActiveColor: ColorsApp.primaryColor.shade700,
+        toggleableActiveColor:UMNIA_FALG==1 ?ColorsApp.accentColor: ColorsApp.primaryColor.shade700,
         // brightness: Brightness.dark,
-        primarySwatch: ColorsApp.primaryColor,
-        primaryColor: ColorsApp.primaryColor,
+        primarySwatch:UMNIA_FALG==1 ?ColorsApp.accentColor: ColorsApp.primaryColor,
+        primaryColor: UMNIA_FALG==1 ?ColorsApp.accentColor:ColorsApp.primaryColor,
         // fontFamily: fontFamily,
         cardColor: Colors.black,
         scaffoldBackgroundColor: const Color(0xFF212121),
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: ColorsApp.primaryColor).copyWith(
-          secondary: ColorsApp.primaryColor.shade700,
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: UMNIA_FALG==1 ?ColorsApp.accentColor:ColorsApp.primaryColor).copyWith(
+          secondary: UMNIA_FALG==1 ?ColorsApp.accentColor:ColorsApp.primaryColor.shade700,
           brightness: Brightness.dark,
         ),
         textButtonTheme: TextButtonThemeData(
@@ -57,8 +59,8 @@ class AppThemes {
           ),
         ),
         textSelectionTheme: TextSelectionThemeData(
-          cursorColor: ColorsApp.primaryColor,
-          selectionHandleColor: ColorsApp.primaryColor.shade700,
+          cursorColor: UMNIA_FALG==1 ?ColorsApp.accentColor:ColorsApp.primaryColor,
+          selectionHandleColor:UMNIA_FALG==1 ?ColorsApp.accentColor: ColorsApp.primaryColor.shade700,
         ),
       ),
     };

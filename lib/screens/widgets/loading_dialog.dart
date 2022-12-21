@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../utils/color.dart';
+
 //General loading widget to use anywhere in the app
 class LoadingDialog extends StatelessWidget {
   final String title;
@@ -23,12 +25,12 @@ class LoadingDialog extends StatelessWidget {
           width: 100.w,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.light ? Colors.white : Colors.grey[600],
+            color: Theme.of(context).brightness == Brightness.light ? Colors.white : Colors.orange[600],
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
             children: [
-              const CircularProgressIndicator(),
+               CircularProgressIndicator(color: ColorsApp.orange_2,),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsetsDirectional.only(start: 10),
