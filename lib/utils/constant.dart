@@ -18,4 +18,4 @@ final kStyleTitlePrinter = TextStyle(fontWeight: FontWeight.bold, fontSize: 27.s
 final kStyleDataPrinter = TextStyle(fontSize: 23.sp);
 final kStyleHint= TextStyle(fontWeight: FontWeight.normal, fontSize: 13.sp,color: Colors.grey);
 const placeholderImage = 'assets/images/logo.png';
-const UMNIA_FALG=1;
+const UMNIA_FALG=0;
