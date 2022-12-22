@@ -6,6 +6,7 @@ class PrinterInvoiceModel {
   PrinterInvoiceModel({
     required this.ipAddress,
     required this.port,
+    required this.openCashDrawer,
     required this.items,
     required this.screenshotController,
     this.invoice,
@@ -13,6 +14,7 @@ class PrinterInvoiceModel {
 
   String ipAddress;
   int port;
+  bool openCashDrawer;
   List<CartItemModel> items;
   ScreenshotController screenshotController;
   Uint8List? invoice;

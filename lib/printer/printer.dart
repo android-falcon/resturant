@@ -20,23 +20,14 @@ import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:screenshot/screenshot.dart';
 
 class Printer {
-  static Future<void> printInvoicesDialog({
-    required CartModel cart,
-    bool kitchenPrinter = true,
-    bool cashPrinter = true,
-    bool reprint = false,
-    bool showPrintButton = true,
-    bool showOrderNo = true,
-    bool showInvoiceNo = true,
-    String invNo = '',
-  }) async {
+  static Future<void> printInvoicesDialog({required CartModel cart, bool kitchenPrinter = true, bool cashPrinter = true, bool reprint = false, bool showPrintButton = true, bool showOrderNo = true, bool showInvoiceNo = true, String invNo = ''}) async {
     ScreenshotController _screenshotControllerCash = ScreenshotController();
     List<PrinterInvoiceModel> invoices = [];
 
     for (var printer in allDataModel.printers) {
       if (cashPrinter) {
         if (printer.cashNo == mySharedPreferences.cashNo) {
-          invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: []));
+          invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: true, screenshotController: ScreenshotController(), items: []));
         }
       }
       if (kitchenPrinter) {
@@ -44,13 +35,13 @@ class Printer {
           var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
           List<CartItemModel> cartItems = cart.items.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
           if (cartItems.isNotEmpty) {
-            invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
+            invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: false, screenshotController: ScreenshotController(), items: cartItems));
           }
         } else if (cart.orderType == OrderType.dineIn) {
           var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
           List<CartItemModel> cartItems = cart.items.where((element) => !element.dineInSavedOrder && itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
           if (cartItems.isNotEmpty) {
-            invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
+            invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: false, screenshotController: ScreenshotController(), items: cartItems));
           }
         }
       }
@@ -792,17 +783,14 @@ class Printer {
     );
   }
 
-  static Future<void> printKitchenVoidItemsDialog({
-    required CartModel cart,
-    required List<CartItemModel> itemsVoid,
-  }) async {
+  static Future<void> printKitchenVoidItemsDialog({required CartModel cart, required List<CartItemModel> itemsVoid}) async {
     List<PrinterInvoiceModel> invoices = [];
 
     for (var printer in allDataModel.printers) {
       var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
       List<CartItemModel> cartItems = itemsVoid.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
       if (cartItems.isNotEmpty) {
-        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, screenshotController: ScreenshotController(), items: cartItems));
+        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: false, screenshotController: ScreenshotController(), items: cartItems));
       }
     }
     Future.delayed(const Duration(milliseconds: 100)).then((value) async {
@@ -1104,7 +1092,7 @@ class Printer {
       var printerResult = await printer.connect(invoice.ipAddress, port: invoice.port);
       if (printerResult == PosPrintResult.success) {
         try {
-          printImage(printer, invoice.invoice!);
+          printImage(printer, invoice.invoice!, openCashDrawer: invoice.openCashDrawer);
           await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
           printer.disconnect();
           await Future.delayed(const Duration(milliseconds: 200));
@@ -1113,7 +1101,7 @@ class Printer {
           await Future.delayed(const Duration(milliseconds: 200));
           log('printer catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
           try {
-            printImage(printer, invoice.invoice!);
+            printImage(printer, invoice.invoice!, openCashDrawer: invoice.openCashDrawer);
             await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
             printer.disconnect();
             await Future.delayed(const Duration(milliseconds: 200));
@@ -1129,7 +1117,7 @@ class Printer {
         printerResult = await printer.connect(invoice.ipAddress, port: invoice.port);
         if (printerResult == PosPrintResult.success) {
           try {
-            printImage(printer, invoice.invoice!);
+            printImage(printer, invoice.invoice!, openCashDrawer: invoice.openCashDrawer);
             await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
             printer.disconnect();
             await Future.delayed(const Duration(milliseconds: 200));
@@ -1151,7 +1139,7 @@ class Printer {
     final cashPosPrintResult = await printer.connect(printerImageModel.ipAddress, port: printerImageModel.port);
     if (cashPosPrintResult == PosPrintResult.success) {
       try {
-        printImage(printer, printerImageModel.image!);
+        printImage(printer, printerImageModel.image!, openCashDrawer: true);
         await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
         printer.disconnect();
         await Future.delayed(const Duration(milliseconds: 200));
@@ -1160,7 +1148,7 @@ class Printer {
         await Future.delayed(const Duration(milliseconds: 200));
         log('cashPrinter catch ${e.toString()} || ${printerImageModel.ipAddress}:${printerImageModel.port}');
         try {
-          printImage(printer, printerImageModel.image!);
+          printImage(printer, printerImageModel.image!, openCashDrawer: true);
           await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
           printer.disconnect();
           await Future.delayed(const Duration(milliseconds: 200));
@@ -1175,9 +1163,29 @@ class Printer {
     }
   }
 
-  static void printImage(NetworkPrinter printer, Uint8List invoice) {
+  static void printImage(NetworkPrinter printer, Uint8List invoice, {bool openCashDrawer = false}) {
     final img.Image? image = img.decodeImage(invoice);
     printer.image(image!, align: PosAlign.center);
     printer.cut();
+    if (openCashDrawer) {
+      printer.drawer();
+    }
+  }
+
+  static void openCash(String ipAddress, int port) async {
+    final profile = await CapabilityProfile.load(); //name: 'TP806L'
+    final printer = NetworkPrinter(PaperSize.mm80, profile);
+    final printerResult = await printer.connect(ipAddress, port: port);
+    if (printerResult == PosPrintResult.success) {
+      try {
+        printer.drawer();
+        await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
+        printer.disconnect();
+        await Future.delayed(const Duration(milliseconds: 200));
+      } catch (e) {
+        printer.disconnect();
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
+    }
   }
 }

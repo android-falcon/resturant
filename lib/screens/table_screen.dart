@@ -111,6 +111,15 @@ class _TableScreenState extends State<TableScreen> {
         },
       ),
       HomeMenu(
+        name: 'Cash Drawer'.tr,
+        onTab: () async {
+          var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
+          if (indexPrinter != -1) {
+            Printer.openCash(allDataModel.printers[indexPrinter].ipAddress, allDataModel.printers[indexPrinter].port);
+          }
+        },
+      ),
+      HomeMenu(
         name: 'Change User'.tr,
         onTab: () async {
           if (mySharedPreferences.employee.hasChangeTableCaptinPermission) {

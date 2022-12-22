@@ -139,7 +139,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         HomeMenu(
           name: 'Cash Drawer'.tr,
-          onTab: () async {},
+          onTab: () async {
+            var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
+            if (indexPrinter != -1) {
+              Printer.openCash(allDataModel.printers[indexPrinter].ipAddress, allDataModel.printers[indexPrinter].port);
+            }
+          },
         ),
         HomeMenu(
           name: 'Daily Close'.tr,
@@ -1214,14 +1219,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       barrierDismissible: false,
     );
-    if ( result) {
-      await Printer.printInvoicesDialog(
-        cart: _reprintModel!,
-        reprint: true,
-        kitchenPrinter: false,
-        showOrderNo: false,
-        invNo: '${_reprintModel!.invNo}'
-      );
+    if (result) {
+      await Printer.printInvoicesDialog(cart: _reprintModel!, reprint: true, kitchenPrinter: false, showOrderNo: false, invNo: '${_reprintModel!.invNo}');
     }
   }
 
