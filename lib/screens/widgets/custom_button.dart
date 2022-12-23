@@ -34,12 +34,14 @@ class CustomButton extends StatelessWidget {
       margin: margin ?? const EdgeInsets.symmetric(vertical: 8),
       width: fixed! ? width : double.infinity,
       height: height,
+
       child: ElevatedButton(
         child:  child,
         style: ElevatedButton.styleFrom(
           onPrimary: Colors.black,
+          backgroundColor:backgroundColor ,
           primary: backgroundColor,
-          padding: padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius ?? 4),
             side: side ?? BorderSide.none,

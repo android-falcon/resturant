@@ -58,6 +58,7 @@ class NumPad extends StatelessWidget {
                 padding: paddingButton,
                 child: const Text('1'),
                 onPressed: onPressed1,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
             Expanded(
@@ -66,6 +67,7 @@ class NumPad extends StatelessWidget {
                 padding: paddingButton,
                 child: const Text('2'),
                 onPressed: onPressed2,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
             Expanded(
@@ -74,6 +76,7 @@ class NumPad extends StatelessWidget {
                 padding: paddingButton,
                 child: const Text('3'),
                 onPressed: onPressed3,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
           ],
@@ -85,6 +88,7 @@ class NumPad extends StatelessWidget {
                 margin: marginButton,
                 padding: paddingButton,
                 child: const Text('4'),
+                backgroundColor: ColorsApp.orange_2,
                 onPressed: onPressed4,
               ),
             ),
@@ -94,6 +98,7 @@ class NumPad extends StatelessWidget {
                 padding: paddingButton,
                 child: const Text('5'),
                 onPressed: onPressed5,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
             Expanded(
@@ -102,6 +107,7 @@ class NumPad extends StatelessWidget {
                 padding: paddingButton,
                 child: const Text('6'),
                 onPressed: onPressed6,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
           ],
@@ -114,6 +120,7 @@ class NumPad extends StatelessWidget {
                 padding: paddingButton,
                 child: const Text('7'),
                 onPressed: onPressed7,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
             Expanded(
@@ -122,6 +129,7 @@ class NumPad extends StatelessWidget {
                 padding: paddingButton,
                 child: const Text('8'),
                 onPressed: onPressed8,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
             Expanded(
@@ -130,6 +138,7 @@ class NumPad extends StatelessWidget {
                 padding: paddingButton,
                 child: const Text('9'),
                 onPressed: onPressed9,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
           ],
@@ -142,6 +151,7 @@ class NumPad extends StatelessWidget {
                 padding: paddingButton,
                 child: const Text('.'),
                 onPressed: onPressedDot,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
             Expanded(
@@ -150,6 +160,7 @@ class NumPad extends StatelessWidget {
                 padding: paddingButton,
                 child: const Text('0'),
                 onPressed: onPressed0,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
             Expanded(
@@ -161,6 +172,7 @@ class NumPad extends StatelessWidget {
                   size: 18,
                 ),
                 onPressed: onPressedDelete,
+                backgroundColor: ColorsApp.orange_2,
               ),
             ),
           ],
@@ -176,8 +188,9 @@ class NumPad extends StatelessWidget {
                     'Exit'.tr,
                     style: kStyleTextButton,
                   ),
-                  backgroundColor: ColorsApp.red,
+                  backgroundColor: ColorsApp.red_light,
                   onPressed: onExit,
+
                 ),
               ),
             if (onClear != null)

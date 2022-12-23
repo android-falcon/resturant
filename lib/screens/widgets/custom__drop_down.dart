@@ -58,7 +58,7 @@ class CustomDropDown extends StatelessWidget {
                           hint,
                           style: const TextStyle(fontWeight: FontWeight.normal),
                         ),
-                        icon: const Padding(
+                        icon:  Padding(
                           padding: EdgeInsetsDirectional.only(end: 5.0),
                           child: Icon(
                             Icons.keyboard_arrow_down,

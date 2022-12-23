@@ -37,6 +37,8 @@ import 'package:restaurant_system/utils/utils.dart';
 import 'package:restaurant_system/utils/validation.dart';
 import 'package:screenshot/screenshot.dart';
 
+import '../utils/drawer.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -51,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       _menu = <HomeMenu>[
         // HomeMenu(
@@ -226,36 +229,13 @@ class _HomeScreenState extends State<HomeScreen> {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     TextEditingController _controllerEmployeeId = TextEditingController();
 
-    Get.dialog(
+  Future<double> _showQtyDialog({TextEditingController? controller, double? maxQty, double minQty = 0, required double rQty}) async {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    controller ??= TextEditingController(text: '$rQty');
+    var qty = await Get.dialog(
       CustomDialog(
         builder: (context, setState, constraints) => Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${'Date'.tr} : ${DateFormat('yyyy-MM-dd hh:mm a').format(mySharedPreferences.dailyClose)}',
-                    style: kStyleTextDefault,
-                  ),
-                ),
-                Text(
-                  'Time Card'.tr,
-                  style: kStyleTextTitle,
-                ),
-                Expanded(
-                  child: Text(
-                    '',
-                    textAlign: TextAlign.end,
-                    style: kStyleTextDefault,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 8.h),
-            const Divider(
-              thickness: 1,
-              height: 1,
-            ),
             Form(
               key: _keyForm,
               child: Row(
@@ -266,16 +246,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       children: [
                         CustomTextField(
-                          margin: EdgeInsets.only(top: 10.h),
-                          controller: _controllerEmployeeId,
-                          label: Text('Employee Id'.tr),
+                          controller: controller,
+                          label: Text('${'Qty'.tr} ${maxQty != null ? '($maxQty)' : ''}'),
                           fillColor: Colors.white,
                           maxLines: 1,
                           inputFormatters: [
-                            EnglishDigitsTextInputFormatter(decimal: false),
+                            EnglishDigitsTextInputFormatter(decimal: true),
                           ],
                           validator: (value) {
-                            return Validation.isRequired(value);
+                            return Validation.qty(value, minQty, maxQty);
                           },
                           enableInteractiveSelection: false,
                           keyboardType: const TextInputType.numberWithOptions(),
@@ -283,20 +262,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             FocusScope.of(context).requestFocus(FocusNode());
                           },
                         ),
-                        CustomButton(
-                          child: Text('Search'.tr),
-                          onPressed: () {},
-                        ),
                       ],
                     ),
                   ),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
+
                       child: Utils.numPadWidget(
                         _controllerEmployeeId,
                         setState,
-                        decimal: false,
+                        onSubmit: () {
+                          if (_keyForm.currentState!.validate()) {
+                            Get.back(result: controller!.text);
+                          }
+                        },
                       ),
                     ),
                   ),
@@ -308,14 +288,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       barrierDismissible: false,
     );
+    if (qty == null) {
+      return rQty;
+    }
+    return double.parse(qty);
   }
 
-  _showInOutDialog({required InOutType type}) async {
-    var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
-    PrinterImageModel? _printer;
-    if (indexPrinter != -1) {
-      _printer = PrinterImageModel(ipAddress: allDataModel.printers[indexPrinter].ipAddress, port: allDataModel.printers[indexPrinter].port);
-    }
 
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     TextEditingController _controllerManual = TextEditingController(text: '0');
@@ -615,140 +593,31 @@ class _HomeScreenState extends State<HomeScreen> {
       barrierDismissible: false,
     );
 
-    if (_printer != null && result) {
-      ScreenshotController _screenshotController = ScreenshotController();
 
-      Future.delayed(const Duration(milliseconds: 100)).then((value) async {
-        var screenshot = await _screenshotController.capture(delay: const Duration(milliseconds: 10));
-        _printer!.image = screenshot;
-        await Printer.payInOut(printerImageModel: _printer);
-      });
+       ),
+        drawer:
+        ClipPath(
+          // clipper: OvalRightBorderClipper(),
+          child: Container(
+            width: 120.w,
+            child: Drawer(
 
-      await Get.dialog(
-        CustomDialog(
-          width: 150.w,
-          builder: (context, setState, constraints) {
-            return Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CustomButton(
-                      fixed: true,
-                      child: Text('Print'.tr),
-                      onPressed: () async {
-                        await Printer.payInOut(printerImageModel: _printer!);
-                      },
-                    ),
-                    SizedBox(width: 10.w),
-                    CustomButton(
-                      fixed: true,
-                      child: Text('Close'.tr),
-                      onPressed: () {
-                        Get.back();
-                      },
-                    ),
-                  ],
-                ),
-                const Divider(thickness: 2),
-                Screenshot(
-                  controller: _screenshotController,
-                  child: SizedBox(
-                    width: 215.w,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: Column(
-                            children: [
-                              Text(
-                                type == InOutType.payIn
-                                    ? 'Pay In'.tr
-                                    : type == InOutType.payOut
-                                        ? 'Pay Out'.tr
-                                        : type == InOutType.cashIn
-                                            ? 'Cash In'
-                                            : type == InOutType.cashOut
-                                                ? 'Cash Out'
-                                                : '',
-                                style: kStyleLargePrinter,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        const Divider(color: Colors.black, thickness: 2),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${'Value'.tr} : ${_typeInputCash == 1 ? double.parse(_controllerManual.text).toStringAsFixed(3) : moneyCount.toStringAsFixed(3)}',
-                                    style: kStyleDataPrinter,
-                                  ),
-                                  Text(
-                                    '${'Remark'.tr} : ${_controllerRemark.text}',
-                                    style: kStyleDataPrinter,
-                                  ),
-                                  Text(
-                                    '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
-                                    style: kStyleDataPrinter,
-                                  ),
-                                  Text(
-                                    '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                    style: kStyleDataPrinter,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(color: Colors.black, thickness: 2),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
+              child:AppDrawer(),
+            ),
+          ),
         ),
-        barrierDismissible: false,
-      );
-    }
-  }
+        body: Stack(
 
-  _showEndCashDialog({required EndCashModel endCash}) async {
-    var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
-    PrinterImageModel? _printer;
-    if (indexPrinter != -1) {
-      _printer = PrinterImageModel(ipAddress: allDataModel.printers[indexPrinter].ipAddress, port: allDataModel.printers[indexPrinter].port);
-    }
+          children: [
 
-    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
-    TextEditingController _controllerTotalCash = TextEditingController(text: '0');
-    TextEditingController _controllerTotalCreditCard = TextEditingController(text: '0');
-    TextEditingController _controllerTotalCredit = TextEditingController(text: '0');
-    TextEditingController _controllerNetTotal = TextEditingController(text: '0');
-    TextEditingController? _controllerSelectEdit = _controllerTotalCash;
-
-    var result = await Get.dialog(
-      CustomDialog(
-        gestureDetectorOnTap: () {
-          _controllerSelectEdit = null;
-        },
-        builder: (context, setState, constraints) {
-          double netTotal = double.parse(_controllerTotalCash.text) + double.parse(_controllerTotalCreditCard.text) + double.parse(_controllerTotalCredit.text);
-          _controllerNetTotal.text = netTotal.toStringAsFixed(3);
-          return Column(
-            children: [
-              Row(
+            Container(
+              color: Colors.white,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
+
                     child: Text(
                       '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
                       style: kStyleTextDefault,
@@ -888,177 +757,39 @@ class _HomeScreenState extends State<HomeScreen> {
       barrierDismissible: false,
     );
 
-    if (result != null && result && _printer != null) {
-      ScreenshotController _screenshotController = ScreenshotController();
 
-      Future.delayed(const Duration(milliseconds: 100)).then((value) async {
-        var screenshot = await _screenshotController.capture(delay: const Duration(milliseconds: 10));
-        _printer!.image = screenshot;
-        await Printer.payInOut(printerImageModel: _printer);
-      });
+                        SizedBox(height: 20.h),
 
-      await Get.dialog(
-        CustomDialog(
-          width: 150.w,
-          builder: (context, setState, constraints) {
-            return Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CustomButton(
-                      fixed: true,
-                      child: Text('Print'.tr),
-                      onPressed: () async {
-                        await Printer.payInOut(printerImageModel: _printer!);
-                      },
-                    ),
-                    SizedBox(width: 10.w),
-                    CustomButton(
-                      fixed: true,
-                      child: Text('Close'.tr),
-                      onPressed: () {
-                        Get.back();
-                      },
-                    ),
-                  ],
-                ),
-                const Divider(thickness: 2),
-                Screenshot(
-                  controller: _screenshotController,
-                  child: SizedBox(
-                    width: 215.w,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: Column(
-                            children: [
-                              Text(
-                                'End Cash'.tr,
-                                style: kStyleLargePrinter,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        const Divider(color: Colors.black, thickness: 2),
                         Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Center(
-                                    child: Text(
-                                      'Total Cash'.tr,
-                                      style: kStyleTitlePrinter,
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        '${'Input'.tr} : ${double.parse(_controllerTotalCash.text).toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
-                                      ),
-                                      Text(
-                                        '${'Actual Value'.tr} : ${endCash.totalCash.toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
-                                      ),
-                                    ],
-                                  ),
-                                  Center(
-                                    child: Text(
-                                      '${'Different'.tr} : ${(double.parse(_controllerTotalCash.text) - double.parse(endCash.totalCash.toString())).toStringAsFixed(3)}',
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  const Divider(color: Colors.black, thickness: 2),
-                                  Center(
-                                    child: Text(
-                                      'Total Credit Card'.tr,
-                                      style: kStyleTitlePrinter,
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        '${'Input'.tr} : ${double.parse(_controllerTotalCreditCard.text).toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
-                                      ),
-                                      Text(
-                                        '${'Actual Value'.tr} : ${endCash.totalCreditCard.toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
-                                      ),
-                                    ],
-                                  ),
-                                  Center(
-                                    child: Text(
-                                      '${'Different'.tr} : ${double.parse(double.parse(_controllerTotalCreditCard.text).toStringAsFixed(3)) - double.parse(endCash.totalCreditCard.toStringAsFixed(3))}',
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  const Divider(color: Colors.black, thickness: 2),
-                                  Center(
-                                    child: Text(
-                                      'Net Total'.tr,
-                                      style: kStyleTitlePrinter,
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        '${'Input'.tr} : ${double.parse(_controllerNetTotal.text).toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
-                                      ),
-                                      Text(
-                                        '${'Actual Value'.tr} : ${endCash.netTotal.toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
-                                      ),
-                                    ],
-                                  ),
-                                  Center(
-                                    child: Text(
-                                      '${'Different'.tr} : ${double.parse(double.parse(_controllerNetTotal.text).toStringAsFixed(3)) - double.parse(endCash.netTotal.toStringAsFixed(3))}',
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  const Divider(color: Colors.black, thickness: 2),
-                                  Text(
-                                    '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
-                                    style: kStyleDataPrinter,
-                                  ),
-                                  Text(
-                                    '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                    style: kStyleDataPrinter,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+
+                      children: [
+                        SizedBox(width: 10.w,),
+                        Image.asset(
+                          'assets/images/takeway108.png',
+                          height: 250.h,
+                          width: 170.w,
                         ),
-                        const Divider(color: Colors.black, thickness: 2),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-        barrierDismissible: false,
-      );
-    }
-  }
+                        Column(
+
+                          children: [
+                            Image.asset(
+                              'assets/images/choose109.png',
+                              height: 40.h,
+                              width: 100.w,
+                            ),
+                            SizedBox(height: 20.h),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 6.w),
+                                  child: InkWell(
+                                    onTap: () {
+                                      Get.to(() => OrderScreen(type: OrderType.takeAway));
+                                    },
+                                    child: Container(
+
 
   _showReprintInvoiceDialog() async {
     TextEditingController _controllerVoucherNumber = TextEditingController();
@@ -1714,12 +1445,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(width: 50.w),
               ],
             ),
+
           ],
         ),
       ),
-      barrierDismissible: false,
     );
   }
+
+
+  String getTitleText() {
+   var today= DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose);
+  var title=  '${'Branch'.tr}: ${allDataModel.companyConfig.first.companyName}  \t\t\t' +today;
+  return title;
+  }
+
+  getLogo() {
+    return   Image.asset(
+      'assets/images/choose109.png',
+      height: 40.h,
+      width: 100.w,);}
 
   Future<double> _showQtyDialog({TextEditingController? controller, double? maxQty, double minQty = 0, required double rQty, bool decimal = true}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();

@@ -96,15 +96,16 @@ class _CustomTextFieldState extends State<CustomTextField> {
           hintStyle: Theme.of(context).textTheme.bodyText2!.copyWith(color: widget.textColor),
           prefixIcon: widget.prefixIcon != null
               ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(vertical: 5.0),
                   child: widget.prefixIcon,
                 )
               : null,
           suffixIcon: widget.isPass
               ? InkWell(
                   child: Icon(
+
                     _visiblePassword ? Icons.visibility : Icons.visibility_off,
-                    color: Colors.black,
+                    color: Colors.black45,
                     size: 14,
                   ),
                   onTap: () {
@@ -116,7 +117,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 )
               : widget.suffixIcon != null
                   ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      padding: const EdgeInsets.symmetric(vertical: 6.0),
                       child: widget.suffixIcon,
                     )
                   : null,
