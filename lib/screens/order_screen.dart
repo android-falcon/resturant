@@ -11,12 +11,15 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/all_data/category_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/combo_items_force_question_model.dart';
+import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/item_with_questions_model.dart';
 import 'package:restaurant_system/models/all_data/void_reason_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
+import 'package:restaurant_system/models/printer_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
+import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -33,6 +36,7 @@ import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
 import 'package:restaurant_system/utils/validation.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:uuid/uuid.dart';
 
 import '../utils/TakeDrawer.dart';
@@ -67,6 +71,8 @@ class _OrderScreenState extends State<OrderScreen> {
       _cartModel = widget.dineIn!.cart;
     } else {
       _cartModel = CartModel.init(orderType: widget.type);
+      mySharedPreferences.orderNo++;
+      _cartModel.orderNo = mySharedPreferences.orderNo;
     }
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       _menu = <HomeMenu>[
@@ -124,6 +130,9 @@ class _OrderScreenState extends State<OrderScreen> {
   @override
   void dispose() {
     super.dispose();
+    if (widget.dineIn != null) {
+      RestApi.unlockTable(widget.dineIn!.tableId);
+    }
   }
   Column buildDrawer() {
     return Column(
@@ -214,7 +223,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(
+                      child: Utils.numPadWidget(
                         controller,
                         setState,
                         onSubmit: () {
@@ -300,6 +309,21 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                   ),
 
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Utils.numPadWidget(
+                        controller,
+                        setState,
+                        onSubmit: () {
+                          if (_keyForm.currentState!.validate()) {
+                            Get.back(result: controller!.text);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+
                 ],
               ),
             ),
@@ -356,7 +380,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(
+                      child: Utils.numPadWidget(
                         controller,
                         setState,
                         onSubmit: () {
@@ -1154,7 +1178,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(
+                      child: Utils.numPadWidget(
                         controller,
                         setState,
                         onSubmit: () {
@@ -1331,14 +1355,15 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   _saveDineIn() async {
-    showLoadingDialog();
+    Utils.showLoadingDialog();
+    await Printer.printInvoicesDialog(cart: _cartModel, showPrintButton: false, cashPrinter: false, kitchenPrinter: true, showInvoiceNo: false);
     widget.dineIn!.cart = _cartModel;
     for (var item in widget.dineIn!.cart.items) {
       item.dineInSavedOrder = true;
     }
     await RestApi.saveTableOrder(cart: widget.dineIn!.cart);
     _dineInChangedOrder = false;
-    hideLoadingDialog();
+    Utils.hideLoadingDialog();
   }
 
   @override
@@ -1350,7 +1375,15 @@ class _OrderScreenState extends State<OrderScreen> {
           setState(() {});
           return false;
         } else {
-          return await _showExitOrderScreenDialog();
+          var result = await _showExitOrderScreenDialog();
+          if (result && widget.type == OrderType.dineIn && _cartModel.items.isEmpty) {
+            var result = await RestApi.closeTable(widget.dineIn!.tableId);
+            if (result) {
+              widget.dineIn!.cart = _cartModel;
+              widget.dineIn!.isOpen = false;
+            }
+          }
+          return result;
         }
       },
       child: Scaffold(
@@ -1442,12 +1475,26 @@ class _OrderScreenState extends State<OrderScreen> {
 
                     if (widget.type == OrderType.takeAway)
                       Expanded(
-                        child: Text(
-                          allDataModel.deliveryCompanyModel.firstWhereOrNull((element) => element.id == _cartModel.deliveryCompanyId)?.coName ?? 'Delivery Company',
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: UMNIA_FALG==1?kStyleTextDefault.copyWith(color: ColorsApp.orange_light):kStyleTextDefault,
+                        child: InkWell(
+                          onTap: () async {
+                            if (_cartModel.items.isNotEmpty) {
+                              Fluttertoast.showToast(msg: 'The cart must be emptied, in order to be able to get park'.tr);
+                            } else {
+                              var result = await _showParkDialog();
+                              if (result != null) {
+                                _cartModel = result;
+                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                setState(() {});
+                              }
+                            }
+                          },
+                          child: Text(
+                            'Park'.tr,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: kStyleTextDefault,
+                          ),
                         ),
                       ),
 
@@ -1651,9 +1698,21 @@ class _OrderScreenState extends State<OrderScreen> {
                                                   }
                                                 }
                                               }
-                                              _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
-                                              _dineInChangedOrder = true;
-                                              setState(() {});
+
+                                            }
+                                          }
+                                          _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                          _dineInChangedOrder = true;
+                                          setState(() {});
+                                        },
+                                        child: SizedBox(
+                                          // height: maxHeightItem == 0 ? null : maxHeightItem,
+                                          child: MeasureSize(
+                                            onChange: (size) {
+                                              // if (size.height > maxHeightItem) {
+                                              //   maxHeightItem = size.height;
+                                              //   setState(() {});
+                                              // }
                                             },
                                             child: SizedBox(
                                               // height: maxHeightItem == 0 ? null : maxHeightItem,
@@ -2346,7 +2405,20 @@ class _OrderScreenState extends State<OrderScreen> {
                                     backgroundColor: ColorsApp.orange_2,
                                     onPressed: () async {
                                       if (_cartModel.items.isNotEmpty) {
+/*<<<<<<< design
                                         Get.to(() => PayScreen(cart: _cartModel,openTypeDialog: 0,));
+=======*/
+                                        var result = await _showAddParkDialog();
+                                        if (result.isNotEmpty) {
+                                          _cartModel.parkName = result;
+                                          var park = mySharedPreferences.park;
+                                          park.add(_cartModel);
+                                          mySharedPreferences.park = park;
+                                          _cartModel = CartModel.init(orderType: OrderType.takeAway);
+                                          _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                          setState(() {});
+                                        }
+//>>>>>>> master
                                       } else {
                                         Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
                                       }
@@ -2569,19 +2641,25 @@ class _OrderScreenState extends State<OrderScreen> {
                               } else {
                                 Fluttertoast.showToast(msg: 'Please select the item you want to modifier'.tr);
                               }
-                            },
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: double.infinity,
-                              child: Center(
-                                child: Text(
-                                  'Modifier'.tr,
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: kStyleTextDefault,
-                                ),
-                              ),
+                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                              setState(() {});
+                            } else {
+                              Fluttertoast.showToast(msg: 'The quantity of this item cannot be modified'.tr);
+                            }
+                          } else {
+                            Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Qty'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
                             ),
                           ),
                         ),
@@ -2618,49 +2696,143 @@ class _OrderScreenState extends State<OrderScreen> {
                         width: 1,
                         thickness: 2,
                       ),
-                      if (mySharedPreferences.employee.hasVoidAllPermission)
-                        Container(
-                          width: 70.w,
-                          height: 40.h,
-                          decoration:  BoxDecoration(
-                            border: Border.all(color: ColorsApp.orange_2),
-                            borderRadius: BorderRadius.circular(
-                              10.0,
-
-                            ),
-                          ),
-                          child: InkWell(
-                            onTap: () async {
-                              if (_cartModel.items.isEmpty) {
-                                Fluttertoast.showToast(msg: 'There must be items'.tr);
+                    ),
+                    const VerticalDivider(
+                      width: 1,
+                      thickness: 2,
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          var permission = false;
+                          if (mySharedPreferences.employee.hasVoidPermission) {
+                            permission = true;
+                          } else {
+                            EmployeeModel? employee = await Utils.showLoginDialog();
+                            if (employee != null) {
+                              if (employee.hasVoidPermission) {
+                                permission = true;
                               } else {
-                                VoidReasonModel? result;
-                                if (allDataModel.companyConfig[0].useVoidReason) {
-                                  result = await _showVoidReasonDialog();
-                                } else {
-                                  var areYouSure = await showAreYouSureDialog(
-                                    title: 'Void All'.tr,
-                                  );
-                                  if (areYouSure) {
-                                    result = VoidReasonModel.fromJson({});
-                                  }
+                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                              }
+                            }
+                          }
+                          if (permission) {
+                            if (_indexItemSelect != -1) {
+                              VoidReasonModel? result;
+                              if (allDataModel.companyConfig[0].useVoidReason) {
+                                result = await _showVoidReasonDialog();
+                              } else {
+                                var areYouSure = await Utils.showAreYouSureDialog(title: 'Void'.tr);
+                                if (areYouSure) {
+                                  result = VoidReasonModel.fromJson({});
                                 }
-                                if (result != null) {
-                                  RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
-                                  _indexItemSelect = -1;
-                                  _cartModel.items = [];
+                              }
+                              if (result != null) {
+                                RestApi.saveVoidItem(item: _cartModel.items[_indexItemSelect], reason: result.reasonName);
+                                if (_cartModel.orderType == OrderType.dineIn && _cartModel.items[_indexItemSelect].dineInSavedOrder) {
+                                  List<CartItemModel> voidItems = [];
+                                  voidItems.add(_cartModel.items[_indexItemSelect]);
+                                  voidItems.addAll(_cartModel.items.where((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid));
+                                  Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
+                                }
+
+                                _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
+                                _cartModel.items.removeAt(_indexItemSelect);
+                                _indexItemSelect = -1;
+                                if (_cartModel.items.isEmpty) {
+
                                   _cartModel.deliveryCharge = 0;
                                   _cartModel.discount = 0;
                                   _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
                                   _dineInChangedOrder = true;
                                   setState(() {});
                                 }
+                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _dineInChangedOrder = true;
+                                setState(() {});
                               }
-                            },
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: double.infinity,
-                              child: Row(
+                            } else {
+                              Fluttertoast.showToast(msg: 'Please select the item you want to remove'.tr);
+                            }
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Void'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
+                            ),
+                          ),
+                        ),
+                      const VerticalDivider(
+                        width: 1,
+                        thickness: 2,
+                      ),
+
+                    ),
+                    const VerticalDivider(
+                      width: 1,
+                      thickness: 2,
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          var permission = false;
+                          if (mySharedPreferences.employee.hasVoidAllPermission) {
+                            permission = true;
+                          } else {
+                            EmployeeModel? employee = await Utils.showLoginDialog();
+                            if (employee != null) {
+                              if (employee.hasVoidAllPermission) {
+                                permission = true;
+                              } else {
+                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                              }
+                            }
+                          }
+                          if (permission) {
+                            if (_cartModel.items.isEmpty) {
+                              Fluttertoast.showToast(msg: 'There must be items'.tr);
+                            } else {
+                              VoidReasonModel? result;
+                              if (allDataModel.companyConfig[0].useVoidReason) {
+                                result = await _showVoidReasonDialog();
+                              } else {
+                                var areYouSure = await Utils.showAreYouSureDialog(
+                                  title: 'Void All'.tr,
+                                );
+                                if (areYouSure) {
+                                  result = VoidReasonModel.fromJson({});
+                                }
+                              }
+                              if (result != null) {
+                                RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
+                                List<CartItemModel> voidItems = [];
+                                voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
+                                if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
+                                  Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
+                                }
+                                _indexItemSelect = -1;
+                                _cartModel.items = [];
+                                _cartModel.deliveryCharge = 0;
+                                _cartModel.discount = 0;
+                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _dineInChangedOrder = true;
+                                setState(() {});
+                              }
+                            }
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child:Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment: MainAxisAlignment.center,
 
@@ -2680,84 +2852,35 @@ class _OrderScreenState extends State<OrderScreen> {
                                   ),
                                 ],
                               ),
-                            ),
-                          ),
                         ),
-                      const VerticalDivider(
-                        width: 1,
-                        thickness: 2,
                       ),
-                      if (widget.type == OrderType.takeAway)
-                        Visibility(
-                          visible: false,
-                          child: Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                if (_cartModel.items.isNotEmpty) {
-                                  _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
-                                  _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
-                                  setState(() {});
-                                } else {
-                                  Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
-                                }
-                              },
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: double.infinity,
-                                child: Center(
-                                  child: Text(
-                                    'Delivery'.tr,
-                                    textAlign: TextAlign.center,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    style: kStyleTextDefault,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (widget.type == OrderType.takeAway)
-                        const VerticalDivider(
-                          width: 1,
-                          thickness: 2,
-                        ),
-                      if (mySharedPreferences.employee.hasLineDiscPermission)
-                        Visibility(visible: false,
-                          child: Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                if (_indexItemSelect != -1) {
-                                  if (_cartModel.items[_indexItemSelect].discountAvailable) {
-                                    var result = await _showDiscountDialog(
-                                      discount: _cartModel.items[_indexItemSelect].lineDiscount,
-                                      price: _cartModel.items[_indexItemSelect].priceChange,
-                                      type: _cartModel.items[_indexItemSelect].lineDiscountType,
-                                    );
-                                    _cartModel.items[_indexItemSelect].lineDiscount = result['discount'];
-                                    _cartModel.items[_indexItemSelect].lineDiscountType = result['type'];
-                                    _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
-                                    _dineInChangedOrder = true;
-                                    setState(() {});
-                                  } else {
-                                    Fluttertoast.showToast(msg: 'Line discount is not available for this item'.tr);
-                                  }
-                                } else {
-                                  Fluttertoast.showToast(msg: 'Please select the item you want to line discount'.tr);
-                                }
-                              },
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: double.infinity,
-                                child: Center(
-                                  child: Text(
-                                    'Line Discount'.tr,
-                                    textAlign: TextAlign.center,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    style: kStyleTextDefault,
-                                  ),
-                                ),
+                    ),
+                    const VerticalDivider(
+                      width: 1,
+                      thickness: 2,
+                    ),
+                    if (widget.type == OrderType.takeAway)
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            if (_cartModel.items.isNotEmpty) {
+                              _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
+                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                              setState(() {});
+                            } else {
+                              Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
+                            }
+                          },
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: double.infinity,
+                            child: Center(
+                              child: Text(
+                                'Delivery'.tr,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: kStyleTextDefault,
                               ),
                             ),
                           ),
@@ -2766,9 +2889,9 @@ class _OrderScreenState extends State<OrderScreen> {
                         width: 1,
                         thickness: 2,
                       ),
-                      if (mySharedPreferences.employee.hasDiscPermission)
-                        Container(
-                          width: 70.w,
+
+                    Container(
+                      width: 70.w,
                           height: 40.h,
                           decoration:  BoxDecoration(
                             border: Border.all(color: ColorsApp.orange_2),
@@ -2777,24 +2900,99 @@ class _OrderScreenState extends State<OrderScreen> {
 
     ),
                           ),
-                          child: InkWell(
-                            onTap: () async {
-                              if (_cartModel.items.any((element) => element.discountAvailable)) {
+                      child: InkWell(
+                        onTap: () async {
+                          var permission = false;
+                          if (mySharedPreferences.employee.hasLineDiscPermission) {
+                            permission = true;
+                          } else {
+                            EmployeeModel? employee = await Utils.showLoginDialog();
+                            if (employee != null) {
+                              if (employee.hasLineDiscPermission) {
+                                permission = true;
+                              } else {
+                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                              }
+                            }
+                          }
+                          if (permission) {
+                            if (_indexItemSelect != -1) {
+                              if (_cartModel.items[_indexItemSelect].discountAvailable) {
                                 var result = await _showDiscountDialog(
                                   discount: _cartModel.discount,
                                   price: _cartModel.total,
                                   type: _cartModel.discountType,
                                 );
-                                _cartModel.discount = result['discount'];
-                                _cartModel.discountType = result['type'];
-                                _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
+
+                                _cartModel.items[_indexItemSelect].lineDiscount = result['discount'];
+                                _cartModel.items[_indexItemSelect].lineDiscountType = result['type'];
+                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
                                 _dineInChangedOrder = true;
                                 setState(() {});
                               } else {
                                 Fluttertoast.showToast(msg: 'No items accept discount in order'.tr);
                               }
-                            },
-                            child: Row(
+                            } else {
+                              Fluttertoast.showToast(msg: 'Please select the item you want to line discount'.tr);
+                            }
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Line Discount'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const VerticalDivider(
+                      width: 1,
+                      thickness: 2,
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          var permission = false;
+                          if (mySharedPreferences.employee.hasDiscPermission) {
+                            permission = true;
+                          } else {
+                            EmployeeModel? employee = await Utils.showLoginDialog();
+                            if (employee != null) {
+                              if (employee.hasDiscPermission) {
+                                permission = true;
+                              } else {
+                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                              }
+                            }
+                          }
+                          if (permission) {
+                            if (_cartModel.items.any((element) => element.discountAvailable)) {
+                              var result = await _showDiscountDialog(
+                                discount: _cartModel.discount,
+                                price: _cartModel.total,
+                                type: _cartModel.discountType,
+                              );
+                              _cartModel.discount = result['discount'];
+                              _cartModel.discountType = result['type'];
+                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                              _dineInChangedOrder = true;
+                              setState(() {});
+                            } else {
+                              Fluttertoast.showToast(msg: 'No items accept discount in order'.tr);
+                            }
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.center,
 
@@ -2813,72 +3011,89 @@ class _OrderScreenState extends State<OrderScreen> {
                                   height: 30.h,
                                 ),
                               ],
-                            ),
                           ),
                         ),
                       const VerticalDivider(
                         width: 1,
                         thickness: 2,
                       ),
-                      // if (widget.type == OrderType.dineIn)
-                      //   Expanded(
-                      //     child: InkWell(
-                      //       onTap: () {},
-                      //       child: SizedBox(
-                      //         width: double.infinity,
-                      //         height: double.infinity,
-                      //         child: Center(
-                      //           child: Text(
-                      //             'Split'.tr,
-                      //             textAlign: TextAlign.center,
-                      //             overflow: TextOverflow.ellipsis,
-                      //             maxLines: 1,
-                      //             style: kStyleTextDefault,
-                      //           ),
-                      //         ),
-                      //       ),
-                      //     ),
-                      //   ),
-                      // const VerticalDivider(
-                      //   width: 1,
-                      //   thickness: 2,
-                      // ),
-                      if (mySharedPreferences.employee.hasPriceChangePermission)
-                        Visibility(visible: false,
-                          child: Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                if (_indexItemSelect != -1) {
-                                  if (_cartModel.items[_indexItemSelect].openPrice) {
-                                    _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
-                                    _cartModel = calculateOrder(cart: _cartModel, orderType: widget.type);
-                                    _dineInChangedOrder = true;
-                                    setState(() {});
-                                  } else {
-                                    Fluttertoast.showToast(msg: 'Price change is not available for this item'.tr);
-                                  }
-                                } else {
-                                  Fluttertoast.showToast(msg: 'Please select the item you want to price change'.tr);
-                                }
-                              },
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: double.infinity,
-                                child: Center(
-                                  child: Text(
-                                    'Price Change'.tr,
-                                    textAlign: TextAlign.center,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    style: kStyleTextDefault,
-                                  ),
-                                ),
-                              ),
+
+                    ),
+                    const VerticalDivider(
+                      width: 1,
+                      thickness: 2,
+                    ),
+                    // if (widget.type == OrderType.dineIn)
+                    //   Expanded(
+                    //     child: InkWell(
+                    //       onTap: () {},
+                    //       child: SizedBox(
+                    //         width: double.infinity,
+                    //         height: double.infinity,
+                    //         child: Center(
+                    //           child: Text(
+                    //             'Split'.tr,
+                    //             textAlign: TextAlign.center,
+                    //             overflow: TextOverflow.ellipsis,
+                    //             maxLines: 1,
+                    //             style: kStyleTextDefault,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // const VerticalDivider(
+                    //   width: 1,
+                    //   thickness: 2,
+                    // ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          var permission = false;
+                          if (mySharedPreferences.employee.hasPriceChangePermission) {
+                            permission = true;
+                          } else {
+                            EmployeeModel? employee = await Utils.showLoginDialog();
+                            if (employee != null) {
+                              if (employee.hasPriceChangePermission) {
+                                permission = true;
+                              } else {
+                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                              }
+                            }
+                          }
+                          if (permission) {
+                            if (_indexItemSelect != -1) {
+                              if (_cartModel.items[_indexItemSelect].openPrice) {
+                                _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
+                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                _dineInChangedOrder = true;
+                                setState(() {});
+                              } else {
+                                Fluttertoast.showToast(msg: 'Price change is not available for this item'.tr);
+                              }
+                            } else {
+                              Fluttertoast.showToast(msg: 'Please select the item you want to price change'.tr);
+                            }
+                          }
+                        },
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Price Change'.tr,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: kStyleTextDefault,
                             ),
                           ),
                         ),
-                    ],
-                  ),
+                      ),
+                    ),
+                  ],
+
                 ),
               ),
             ],

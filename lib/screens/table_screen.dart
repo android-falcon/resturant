@@ -7,9 +7,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
+import 'package:restaurant_system/models/printer_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
+import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
@@ -25,6 +28,9 @@ import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
+import 'package:screenshot/screenshot.dart';
+
+import '../models/all_data/employee_model.dart';
 
 class TableScreen extends StatefulWidget {
   const TableScreen({Key? key}) : super(key: key);
@@ -49,15 +55,39 @@ class _TableScreenState extends State<TableScreen> {
       HomeMenu(
         name: 'Move'.tr,
         onTab: () async {
-          await _showMoveDialog();
-          setState(() {});
+          if (mySharedPreferences.employee.hasMoveTablePermission) {
+            await _showMoveDialog();
+            setState(() {});
+          } else {
+            EmployeeModel? employee = await Utils.showLoginDialog();
+            if (employee != null) {
+              if (employee.hasMoveTablePermission) {
+                await _showMoveDialog();
+                setState(() {});
+              } else {
+                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+              }
+            }
+          }
         },
       ),
       HomeMenu(
         name: 'Merge'.tr,
         onTab: () async {
-          await _showMargeDialog();
-          setState(() {});
+          if (mySharedPreferences.employee.hasMergeTablePermission) {
+            await _showMargeDialog();
+            setState(() {});
+          } else {
+            EmployeeModel? employee = await Utils.showLoginDialog();
+            if (employee != null) {
+              if (employee.hasMergeTablePermission) {
+                await _showMargeDialog();
+                setState(() {});
+              } else {
+                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+              }
+            }
+          }
         },
       ),
       // HomeMenu(
@@ -71,8 +101,46 @@ class _TableScreenState extends State<TableScreen> {
       //   },
       // ),
       HomeMenu(
+        name: 'Print'.tr,
+        onTab: () async {
+          await _showPrintTablesDialog();
+          setState(() {});
+        },
+      ),
+      HomeMenu(
         name: 'Cash Drawer'.tr,
-        onTab: () {},
+        onTab: () async {
+          var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
+          if (indexPrinter != -1) {
+            Printer.openCash(allDataModel.printers[indexPrinter].ipAddress, allDataModel.printers[indexPrinter].port);
+          }
+        },
+      ),
+      HomeMenu(
+        name: 'Change User'.tr,
+        onTab: () async {
+          if (mySharedPreferences.employee.hasChangeTableCaptinPermission) {
+            await _showChangeUserDialog();
+            setState(() {});
+          } else {
+            EmployeeModel? employee = await Utils.showLoginDialog();
+            if (employee != null) {
+              if (employee.hasChangeTableCaptinPermission) {
+                await _showChangeUserDialog();
+                setState(() {});
+              } else {
+                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+              }
+            }
+          }
+        },
+      ),
+      HomeMenu(
+        name: 'Report Tables'.tr,
+        onTab: () async {
+          await _showReportTablesDialog();
+          setState(() {});
+        },
       ),
       HomeMenu(
         name: 'Close'.tr,
@@ -87,9 +155,9 @@ class _TableScreenState extends State<TableScreen> {
   }
 
   _initData(bool enableTimer) async {
-    showLoadingDialog();
+    Utils.showLoadingDialog();
     await _getTables();
-    hideLoadingDialog();
+    Utils.hideLoadingDialog();
     if (enableTimer) {
       _timer = Timer.periodic(
           const Duration(seconds: 3), (Timer t) async => await _getTables());
@@ -117,6 +185,7 @@ class _TableScreenState extends State<TableScreen> {
       }
       return DineInModel(
         isOpen: e.isOpened == 1,
+        isPrinted: e.isPrinted == 1,
         isReservation: false,
         userId: e.userId,
         tableId: e.id,
@@ -126,6 +195,459 @@ class _TableScreenState extends State<TableScreen> {
       );
     }).toList();
     setState(() {});
+  }
+
+  Future<void> _showPrintTablesDialog() async {
+    int? _selectTableId;
+    int? _selectFloor = floors.first;
+    await Get.dialog(
+      CustomDialog(
+        enableScroll: false,
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text('Table'.tr),
+                        const Divider(),
+                        Container(
+                          width: double.infinity,
+                          height: 35.h,
+                          color: Colors.grey,
+                          child: Row(
+                              children: floors
+                                  .map(
+                                    (e) => Expanded(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Container(
+                                              height: 35.h,
+                                              color: _selectFloor == e ? ColorsApp.accentColor : null,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  _selectFloor = e;
+                                                  setState(() {});
+                                                },
+                                                child: Center(
+                                                  child: Text(
+                                                    '$e ${'Floor'.tr}',
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: kStyleTextDefault,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (floors.last != e) const VerticalDivider(color: Colors.white, width: 1, thickness: 2),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                  .toList()),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: StaggeredGrid.count(
+                              crossAxisCount: 4,
+                              children: dineInSaved
+                                  .where((element) => element.isOpen && element.floorNo == _selectFloor && element.userId == mySharedPreferences.employee.id)
+                                  .map((e) => Container(
+                                        margin: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          border: _selectTableId == e.tableId ? Border.all(color: Colors.black) : null,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        child: InkWell(
+                                          radius: 10,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                          onTap: () {
+                                            _selectTableId = e.tableId;
+                                            setState(() {});
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Center(
+                                                child: Text(
+                                                  '${e.tableNo}',
+                                                  style: kStyleTextTable,
+                                                ),
+                                              ),
+                                              Image.asset(
+                                                'assets/images/table.png',
+                                                height: 80.h,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomButton(
+                  fixed: true,
+                  child: Text('Print'.tr),
+                  onPressed: () async {
+                    if (_selectTableId == null) {
+                      Fluttertoast.showToast(msg: 'Please select a table'.tr);
+                    } else {
+                      var result = await Utils.showAreYouSureDialog(title: 'Print Order'.tr);
+                      if (result) {
+                        Utils.showLoadingDialog();
+                        var indexTable = dineInSaved.indexWhere((element) => element.tableId == _selectTableId);
+                        dineInSaved[indexTable].isPrinted = true;
+                        await RestApi.printTable(dineInSaved[indexTable].tableId);
+                        Utils.hideLoadingDialog();
+                        Get.back();
+
+                        Printer.printInvoicesDialog(
+                          cart: dineInSaved[indexTable].cart,
+                          showPrintButton: true,
+                          kitchenPrinter: false,
+                          showInvoiceNo: false,
+                        );
+                      }
+                    }
+                  },
+                ),
+                SizedBox(width: 10.w),
+                CustomButton(
+                  fixed: true,
+                  child: Text('Close'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+
+  Future<void> _showReportTablesDialog() async {
+    int? _selectFloor = floors.first;
+    await Get.dialog(
+      CustomDialog(
+        enableScroll: false,
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text('Table'.tr),
+                        const Divider(),
+                        Container(
+                          width: double.infinity,
+                          height: 35.h,
+                          color: Colors.grey,
+                          child: Row(
+                              children: floors
+                                  .map(
+                                    (e) => Expanded(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Container(
+                                              height: 35.h,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  _selectFloor = e;
+                                                  setState(() {});
+                                                },
+                                                child: Center(
+                                                  child: Text(
+                                                    '$e ${'Floor'.tr}',
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: kStyleTextDefault,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (floors.last != e) const VerticalDivider(color: Colors.white, width: 1, thickness: 2),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                  .toList()),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: StaggeredGrid.count(
+                              crossAxisCount: 4,
+                              children: dineInSaved
+                                  .where((element) => element.isOpen && element.floorNo == _selectFloor)
+                                  .map((e) => Container(
+                                        margin: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.black),
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Center(
+                                              child: Text(
+                                                '${e.tableNo} (${allDataModel.employees.firstWhereOrNull((element) => element.id == e.userId)?.empName ?? ''})',
+                                                style: kStyleTextTable,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Image.asset(
+                                              'assets/images/table.png',
+                                              height: 80.h,
+                                            )
+                                          ],
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            CustomButton(
+              fixed: true,
+              child: Text('Close'.tr),
+              onPressed: () {
+                Get.back();
+              },
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  Future<void> _showChangeUserDialog() async {
+    int? _selectUserId;
+    int? _selectTableId;
+    int? _selectFloor = floors.first;
+    await Get.dialog(
+      CustomDialog(
+        enableScroll: false,
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text('Table'.tr),
+                        const Divider(),
+                        Container(
+                          width: double.infinity,
+                          height: 35.h,
+                          color: Colors.grey,
+                          child: Row(
+                              children: floors
+                                  .map(
+                                    (e) => Expanded(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Container(
+                                              height: 35.h,
+                                              color: _selectFloor == e ? ColorsApp.accentColor : null,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  _selectFloor = e;
+                                                  setState(() {});
+                                                },
+                                                child: Center(
+                                                  child: Text(
+                                                    '$e ${'Floor'.tr}',
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: kStyleTextDefault,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (floors.last != e) const VerticalDivider(color: Colors.white, width: 1, thickness: 2),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                  .toList()),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: StaggeredGrid.count(
+                              crossAxisCount: 4,
+                              children: dineInSaved
+                                  .where((element) => element.isOpen && element.floorNo == _selectFloor && element.userId == mySharedPreferences.employee.id)
+                                  .map((e) => Container(
+                                        margin: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          border: _selectTableId == e.tableId ? Border.all(color: Colors.black) : null,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        child: InkWell(
+                                          radius: 10,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                          onTap: () {
+                                            _selectTableId = e.tableId;
+                                            setState(() {});
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Center(
+                                                child: Text(
+                                                  '${e.tableNo}',
+                                                  style: kStyleTextTable,
+                                                ),
+                                              ),
+                                              Image.asset(
+                                                'assets/images/table.png',
+                                                height: 80.h,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  const VerticalDivider(thickness: 2),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text('Users'.tr),
+                        const Divider(),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: StaggeredGrid.count(
+                              crossAxisCount: 4,
+                              children: allDataModel.employees
+                                  .where((element) => element.id != mySharedPreferences.employee.id)
+                                  .map((e) => Container(
+                                        margin: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          border: _selectUserId == e.id ? Border.all(color: Colors.black) : null,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        child: InkWell(
+                                          radius: 10,
+                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                          onTap: () {
+                                            _selectUserId = e.id;
+                                            setState(() {});
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Center(
+                                                child: Text(
+                                                  '${e.empName} (${e.id})',
+                                                  style: kStyleTextTable,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                              Image.asset(
+                                                'assets/images/user.png',
+                                                height: 80.h,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomButton(
+                  fixed: true,
+                  child: Text('Change User'.tr),
+                  onPressed: () async {
+                    if (_selectUserId == null) {
+                      Fluttertoast.showToast(msg: 'Please select a user'.tr);
+                    } else if (_selectTableId == null) {
+                      Fluttertoast.showToast(msg: 'Please select a table'.tr);
+                    } else {
+                      var result = await Utils.showAreYouSureDialog(title: 'Change User'.tr);
+                      if (result) {
+                        Utils.showLoadingDialog();
+                        var resultApi = await RestApi.changeUserTable(_selectTableId!, mySharedPreferences.employee.id, _selectUserId!);
+                        if (resultApi) {
+                          var indexTable = dineInSaved.indexWhere((element) => element.tableId == _selectTableId);
+                          dineInSaved[indexTable].userId = _selectUserId!;
+                          await RestApi.saveTableOrder(cart: dineInSaved[indexTable].cart);
+                        }
+                        Utils.hideLoadingDialog();
+                        Get.back();
+                      }
+                    }
+                  },
+                ),
+                SizedBox(width: 10.w),
+                CustomButton(
+                  fixed: true,
+                  child: Text('Close'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   Future<void> _showMoveDialog() async {
@@ -420,6 +942,55 @@ class _TableScreenState extends State<TableScreen> {
                 ],
               ),
             ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomButton(
+                  fixed: true,
+                  child: Text('Move'.tr),
+                  onPressed: () async {
+                    if (_selectFromTableId == null || _selectToTableId == null) {
+                      Fluttertoast.showToast(msg: 'Please select a table'.tr);
+                    } else {
+                      var result = await Utils.showAreYouSureDialog(title: 'Move'.tr);
+                      if (result) {
+                        Utils.showLoadingDialog();
+                        var resultApi = await RestApi.moveTable(_selectFromTableId!, _selectToTableId!);
+                        if (resultApi) {
+                          var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
+                          var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
+                          dineInSaved[indexTo].userId = dineInSaved[indexFrom].userId;
+                          dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
+                          dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
+                          dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
+                          dineInSaved[indexTo].cart.tableId = _selectToTableId!;
+                          dineInSaved[indexFrom].isOpen = false;
+                          dineInSaved[indexFrom].isReservation = false;
+                          dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
+                          dineInSaved[indexTo].cart = Utils.calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
+
+                          await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
+                        }
+                        Utils.hideLoadingDialog();
+                        Get.back();
+                      }
+                    }
+                  },
+                ),
+                SizedBox(width: 10.w),
+                CustomButton(
+                  fixed: true,
+                  child: Text('Close'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
       barrierDismissible: false,
     );
@@ -675,53 +1246,57 @@ class _TableScreenState extends State<TableScreen> {
                       ),
                     ],
                   ),
-                ),
+
+                ],
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
                 CustomButton(
-                  width: 50.w,
-                  backgroundColor: ColorsApp.orange_2,
+                          width: 50.w,
+                              backgroundColor: ColorsApp.orange_2,
                   fixed: true,
-                  child: Text('Marge'.tr,style: kStyleTextTable.copyWith(color: ColorsApp.backgroundDialog),),
+                child: Text('Marge'.tr,style: kStyleTextTable.copyWith(color: ColorsApp.backgroundDialog),),
                   onPressed: () async {
-                    if (_selectFromTableId == null ||
-                        _selectToTableId == null) {
+                    if (_selectFromTableId == null || _selectToTableId == null) {
                       Fluttertoast.showToast(msg: 'Please select a table'.tr);
                     } else {
-                      var result = await showAreYouSureDialog(
-                          title: 'Marge'.tr);
+                      var result = await Utils.showAreYouSureDialog(title: 'Marge'.tr);
                       if (result) {
-                        var resultApi = await RestApi.mergeTable(
-                            _selectFromTableId!, _selectToTableId!);
+                        var resultApi = await RestApi.mergeTable(_selectFromTableId!, _selectToTableId!);
                         if (resultApi) {
-                          var indexFrom = dineInSaved.indexWhere((element) =>
-                          element.tableId == _selectFromTableId);
-                          var indexTo = dineInSaved.indexWhere((
-                              element) => element.tableId == _selectToTableId);
-                          dineInSaved[indexTo].cart.items.addAll(
-                              dineInSaved[indexFrom].cart.items);
-                          dineInSaved[indexTo].cart.totalSeats +=
-                              dineInSaved[indexFrom].cart.totalSeats;
-                          dineInSaved[indexTo].cart.seatsFemale +=
-                              dineInSaved[indexFrom].cart.seatsFemale;
-                          dineInSaved[indexTo].cart.seatsMale +=
-                              dineInSaved[indexFrom].cart.seatsMale;
+                          var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
+                          var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
+                          dineInSaved[indexTo].cart.items.addAll(dineInSaved[indexFrom].cart.items);
+                          dineInSaved[indexTo].cart.totalSeats += dineInSaved[indexFrom].cart.totalSeats;
+                          dineInSaved[indexTo].cart.seatsFemale += dineInSaved[indexFrom].cart.seatsFemale;
+                          dineInSaved[indexTo].cart.seatsMale += dineInSaved[indexFrom].cart.seatsMale;
                           dineInSaved[indexFrom].isOpen = false;
                           dineInSaved[indexFrom].isReservation = false;
-                          dineInSaved[indexFrom].cart =
-                              CartModel.init(orderType: OrderType.dineIn);
-                          dineInSaved[indexTo].cart = calculateOrder(
-                              cart: dineInSaved[indexTo].cart,
-                              orderType: OrderType.dineIn);
-                          await RestApi.saveTableOrder(
-                              cart: dineInSaved[indexTo].cart);
-                          hideLoadingDialog();
-                          // Get.back();
+                          dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
+                          dineInSaved[indexTo].cart = Utils.calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
+                          await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
                         }
+                        Utils.hideLoadingDialog();
+                        Get.back();
                       }
                     }
                   },
-                )
+                ),
+                SizedBox(width: 10.w),
+                CustomButton(
+                  fixed: true,
+                  child: Text('Close'.tr),
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
               ],
             ),
+          ],
+        ),
       ),
       barrierDismissible: false,
     );
@@ -1502,40 +2077,38 @@ class _TableScreenState extends State<TableScreen> {
                             child: StaggeredGrid.count(
                               crossAxisCount: 4,
                               children: dineInSaved
-                                  .where((element) =>
-                              element.floorNo == _selectFloor)
-                                  .map((e) =>
-                                  InkWell(
-                                    onTap: () async {
-                                      if (e.isOpen) {
-                                        if (mySharedPreferences.employee.id ==
-                                            e.userId) {
-                                          Get.to(() => OrderScreen(
-                                              type: OrderType.dineIn,
-                                              dineIn: e))!.then((value) {
-                                            _initData(false);
-                                          });
-                                        }
-                                      } else {
-                                        var totalSeats = await _showNumberSeatsDialog();
-                                        if (totalSeats != null) {
-                                          showLoadingDialog();
-                                          bool isOpened = await RestApi
-                                              .openTable(e.tableId);
-                                          hideLoadingDialog();
-                                          if (isOpened) {
-                                            e.isOpen = true;
-                                            e.cart.totalSeats =
-                                            totalSeats['number_seats'];
-                                            e.cart.seatsMale =
-                                            totalSeats['male'];
-                                            e.cart.seatsFemale =
-                                            totalSeats['female'];
-                                            Get.to(() => OrderScreen(
-                                                type: OrderType.dineIn,
-                                                dineIn: e))!.then((value) {
-                                              _initData(false);
-                                            });
+                                  .where((element) => element.floorNo == _selectFloor)
+                                  .map((e) => InkWell(
+                                        onTap: () async {
+                                          if (e.isOpen) {
+                                            if (mySharedPreferences.employee.id == e.userId) {
+                                              Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
+                                                RestApi.unlockTable(e.tableId);
+                                                _initData(false);
+                                              });
+                                            } else {
+                                              Fluttertoast.showToast(msg: 'A table opened by another user'.tr);
+                                            }
+                                          } else {
+                                            var totalSeats = await _showNumberSeatsDialog();
+                                            if (totalSeats != null) {
+                                              Utils.showLoadingDialog();
+                                              bool isOpened = await RestApi.openTable(e.tableId);
+                                              Utils.hideLoadingDialog();
+                                              if (isOpened) {
+                                                mySharedPreferences.orderNo++;
+                                                e.isOpen = true;
+                                                e.cart.orderNo = mySharedPreferences.orderNo;
+                                                e.cart.totalSeats = totalSeats['number_seats'];
+                                                e.cart.seatsMale = totalSeats['male'];
+                                                e.cart.seatsFemale = totalSeats['female'];
+                                                Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
+                                                   RestApi.unlockTable(e.tableId);
+                                                  _initData(false);
+                                                });
+                                              }
+                                            }
+
                                           }
                                         }
                                       }
@@ -1584,6 +2157,7 @@ class _TableScreenState extends State<TableScreen> {
                                               ),
 
                                             ),
+/*<<<<<<< design
                                             Opacity(
                                               opacity: 0.8,
                                               child:
@@ -1603,6 +2177,25 @@ class _TableScreenState extends State<TableScreen> {
                                                               .backgroundDialog),
                                                       borderRadius: BorderRadius
                                                           .circular(5.r),
+
+=======*/
+                                            Stack(
+                                              children: [
+                                                Container(
+                                                  height: 80.h,
+                                                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                                                  decoration: BoxDecoration(
+                                                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(150), topRight: Radius.circular(150), bottomLeft: Radius.circular(150), bottomRight: Radius.circular(150)),
+                                                    boxShadow: [
+                                                      if (e.isOpen) //  && mySharedPreferences.employee.id == e.userId
+                                                        BoxShadow(
+                                                          color: e.isPrinted ? Colors.yellow.withOpacity(0.5) : Colors.green.withOpacity(0.5),
+                                                          spreadRadius: 1,
+                                                          blurRadius: 20,
+                                                        ),
+                                                    ],
+                                                    image: const DecorationImage(
+                                                      image: AssetImage('assets/images/table.png'),
 
                                                     ),
                                                     child: Column(children: [

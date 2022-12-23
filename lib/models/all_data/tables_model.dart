@@ -15,6 +15,7 @@ class TablesModel {
     required this.tableNo,
     required this.floorNo,
     required this.isOpened,
+    required this.isPrinted,
     required this.height,
     required this.width,
     required this.marginLeft,
@@ -27,6 +28,7 @@ class TablesModel {
   int tableNo;
   int floorNo;
   int isOpened;
+  int isPrinted;
   double height;
   double width;
   double marginLeft;
@@ -39,6 +41,7 @@ class TablesModel {
         tableNo: json["TableNo"] ?? 0,
         floorNo: json["FloorNo"] ?? 0,
         isOpened: json["IsOpened"] ?? 0,
+        isPrinted: json["FinishSoon"] ?? 0,
         height: json["Height"]?.toDouble() ?? 0,
         width: json["Width"]?.toDouble() ?? 0,
         marginLeft: json["MarginLeft"]?.toDouble() ?? 0,
@@ -52,6 +55,7 @@ class TablesModel {
         "TableNo": tableNo,
         "FloorNo": floorNo,
         "IsOpened": isOpened,
+        "FinishSoon": isPrinted,
         "Height": height,
         "Width": width,
         "MarginLeft": marginLeft,

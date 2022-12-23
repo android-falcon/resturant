@@ -15,6 +15,7 @@ class PrinterModel {
     required this.ipAddress,
     required this.port,
     required this.cashNo,
+    required this.isCashPrinter,
   });
 
   int id;
@@ -22,6 +23,7 @@ class PrinterModel {
   String ipAddress;
   int port;
   int cashNo;
+  bool isCashPrinter;
 
   factory PrinterModel.fromJson(Map<String, dynamic> json) => PrinterModel(
     id: json["Id"] ?? 0,
@@ -29,6 +31,7 @@ class PrinterModel {
     ipAddress: json["IPAddress"] ?? "",
     port: json["PortNo"] ?? 9100,
     cashNo: json["CashNo"] ?? 0,
+    isCashPrinter: json["IsCashPrinter"] ?? false,
   );
 
   Map<String, dynamic> toJson() => {
@@ -37,5 +40,6 @@ class PrinterModel {
     "IPAddress": ipAddress,
     "Port": port,
     "CashNo": cashNo,
+    "IsCashPrinter": isCashPrinter,
   };
 }

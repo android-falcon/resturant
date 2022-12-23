@@ -46,6 +46,7 @@ class CartModel extends Equatable {
     this.totalSeats = 0,
     this.seatsFemale = 0,
     this.seatsMale = 0,
+    this.orderNo = 0,
   });
 
   OrderType orderType;
@@ -85,6 +86,7 @@ class CartModel extends Equatable {
   int seatsFemale;
   int seatsMale;
   String parkName;
+  int orderNo;
 
   factory CartModel.init({required OrderType orderType, int? tableId}) => CartModel(
         orderType: orderType,
@@ -103,6 +105,7 @@ class CartModel extends Equatable {
         amountDue: 0,
         items: [],
         tableId: tableId ?? 0,
+        orderNo: 0,
       );
 
   factory CartModel.fromJson(Map<String, dynamic> json) => CartModel(
@@ -143,6 +146,7 @@ class CartModel extends Equatable {
         totalSeats: json['totalSeats'] ?? 0,
         seatsFemale: json['seatsFemale'] ?? 0,
         seatsMale: json['seatsMale'] ?? 0,
+        orderNo: json['orderNo'] ?? 0,
       );
 
   factory CartModel.fromJsonServer(Map<String, dynamic> json) => CartModel(
@@ -179,6 +183,7 @@ class CartModel extends Equatable {
         payCompanyId: 0,
         deliveryCompanyId: 0,
         parkName: '',
+        orderNo: 0,
       );
 
   Map<String, dynamic> toJson() => {
@@ -219,6 +224,7 @@ class CartModel extends Equatable {
         'totalSeats': totalSeats,
         'seatsFemale': seatsFemale,
         'seatsMale': seatsMale,
+        'orderNo': orderNo,
       };
 
   Map<String, dynamic> toInvoice() => {
@@ -314,7 +320,7 @@ class CartModel extends Equatable {
 
   @override
   // TODO: implement props
-  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableId, note, payCompanyId, deliveryCompanyId, parkName];
+  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableId, note, payCompanyId, deliveryCompanyId, parkName, orderNo];
 }
 
 class CartItemModel extends Equatable {
@@ -438,7 +444,7 @@ class CartItemModel extends Equatable {
         dineInSavedOrder: e["DineInSavedOrder"] ?? false,
         note: e["ItemRemark"] ?? "",
         id: e["ItemId"] ?? 0,
-        qty: e["Qty"]?.toInt() ?? 0,
+        qty: e["Qty"]?.toDouble() ?? 0,
         priceChange: e["Price"]?.toDouble() ?? 0,
         price: e["OrgPrice"]?.toDouble() ?? 0,
         discount: e["InvDisc"]?.toDouble() ?? 0,
@@ -449,7 +455,7 @@ class CartItemModel extends Equatable {
         tax: e["ItemTaxVal"]?.toDouble() ?? 0,
         totalLineDiscount: e["LineDisc"]?.toDouble() ?? 0,
         total: e["NetTotal"]?.toDouble() ?? 0,
-        returnedQty: e["ReturnedQty"]?.toInt() ?? 0,
+        returnedQty: e["ReturnedQty"]?.toDouble() ?? 0,
         uuid: e["UUID"] ?? '',
         parentUuid: e["ParentUUID"] ?? '',
         categoryId: 0,

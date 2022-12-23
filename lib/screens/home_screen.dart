@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/all_data/item_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/end_cash_model.dart';
@@ -53,8 +54,180 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
 
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      _menu = <HomeMenu>[
+        // HomeMenu(
+        //   name: 'Time Card'.tr,
+        //   onTab: () {
+        //     _showTimeCardDialog();
+        //   },
+        // ),
+        // HomeMenu(
+        //   name: 'Cash In'.tr,
+        //   onTab: () {
+        //     _showInOutDialog(type: InOutType.cashIn);
+        //   },
+        // ),
+        // HomeMenu(
+        //   name: 'Cash Out'.tr,
+        //   onTab: () {
+        //     _showInOutDialog(type: InOutType.cashOut);
+        //   },
+        // ),
+        HomeMenu(
+          name: 'Pay In'.tr,
+          onTab: () async {
+            if (mySharedPreferences.employee.hasCashInOutPermission) {
+              _showInOutDialog(type: InOutType.payIn);
+            } else {
+              EmployeeModel? employee = await Utils.showLoginDialog();
+              if (employee != null) {
+                if (employee.hasCashInOutPermission) {
+                  _showInOutDialog(type: InOutType.payIn);
+                } else {
+                  Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                }
+              }
+            }
+          },
+        ),
+        HomeMenu(
+          name: 'Pay Out'.tr,
+          onTab: () async {
+            if (mySharedPreferences.employee.hasCashInOutPermission) {
+              _showInOutDialog(type: InOutType.payOut);
+            } else {
+              EmployeeModel? employee = await Utils.showLoginDialog();
+              if (employee != null) {
+                if (employee.hasCashInOutPermission) {
+                  _showInOutDialog(type: InOutType.payOut);
+                } else {
+                  Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                }
+              }
+            }
+          },
+        ),
+        HomeMenu(
+          name: 'End Cash'.tr,
+          onTab: () async {
+            EndCashModel? model = await RestApi.getEndCash();
+            if (model != null) {
+              _showEndCashDialog(endCash: model);
+            }
+          },
+        ),
+        HomeMenu(
+          name: 'Refund'.tr,
+          onTab: () async {
+            if (mySharedPreferences.employee.hasRefundPermission) {
+              _showRefundDialog();
+            } else {
+              EmployeeModel? employee = await Utils.showLoginDialog();
+              if (employee != null) {
+                if (employee.hasRefundPermission) {
+                  _showRefundDialog();
+                } else {
+                  Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                }
+              }
+            }
+          },
+        ),
+        HomeMenu(
+          name: 'Reprint Invoice'.tr,
+          onTab: () {
+            _showReprintInvoiceDialog();
+          },
+        ),
+        HomeMenu(
+          name: 'Cash Drawer'.tr,
+          onTab: () async {
+            var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
+            if (indexPrinter != -1) {
+              Printer.openCash(allDataModel.printers[indexPrinter].ipAddress, allDataModel.printers[indexPrinter].port);
+            }
+          },
+        ),
+        HomeMenu(
+          name: 'Daily Close'.tr,
+          onTab: () async {
+            if (mySharedPreferences.employee.isMaster) {
+              _showDailyCloseDialog();
+            } else {
+              EmployeeModel? employee = await Utils.showLoginDialog();
+              if (employee != null) {
+                if (employee.isMaster) {
+                  _showDailyCloseDialog();
+                } else {
+                  Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                }
+              }
+            }
+          },
+        ),
+        HomeMenu(
+          name: 'Rest Order No'.tr,
+          onTab: () async {
+            var result = await Utils.showAreYouSureDialog(title: 'Rest Order No'.tr);
+            if (result) {
+              RestApi.resetPOSOrderNo();
+              mySharedPreferences.orderNo = 1;
+            }
+          },
+        ),
+        HomeMenu(
+          name: 'Refresh Data'.tr,
+          onTab: () async {
+            RestApi.getData();
+          },
+        ),
+        HomeMenu(
+          name: 'Exit'.tr,
+          onTab: () async {
+            var result = await Utils.showAreYouSureDialog(title: 'Close App'.tr);
+            if (result) {
+              if (Platform.isAndroid) {
+                SystemNavigator.pop();
+              } else if (Platform.isIOS) {
+                exit(0);
+              }
+            }
+          },
+        ),
+      ];
+      setState(() {});
+    });
   }
 
+  _showDailyCloseDialog() {
+    Get.defaultDialog(
+      title: 'Daily Close'.tr,
+      titleStyle: kStyleTextTitle,
+      content: Column(
+        children: [
+          Text('Are you sure?'.tr),
+          Text('${'Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}'),
+          Text('${'New Daily Close Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose.add(const Duration(days: 1)))}'),
+        ],
+      ),
+      textCancel: 'Cancel'.tr,
+      textConfirm: 'Confirm'.tr,
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        if (mySharedPreferences.park.isNotEmpty) {
+          Fluttertoast.showToast(msg: 'Daily closing cannot be done due to order park'.tr);
+        } else {
+          await RestApi.posDailyClose(closeDate: mySharedPreferences.dailyClose.add(const Duration(days: 1)));
+          setState(() {});
+        }
+      },
+    );
+  }
+
+  _showTimeCardDialog() {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    TextEditingController _controllerEmployeeId = TextEditingController();
 
   Future<double> _showQtyDialog({TextEditingController? controller, double? maxQty, double minQty = 0, required double rQty}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
@@ -95,8 +268,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: numPadWidget(
-                        controller,
+
+                      child: Utils.numPadWidget(
+                        _controllerEmployeeId,
                         setState,
                         onSubmit: () {
                           if (_keyForm.currentState!.validate()) {
@@ -120,20 +294,304 @@ class _HomeScreenState extends State<HomeScreen> {
     return double.parse(qty);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-       appBar: AppBar(
-         backgroundColor: UMNIA_FALG==1?ColorsApp.black:ColorsApp.backgroundDialog,
-         iconTheme: IconThemeData(color: UMNIA_FALG==1?ColorsApp.orange_2:ColorsApp.black),
-         title: Text( getTitleText(),
-         textAlign: TextAlign.center,
-         overflow: TextOverflow.ellipsis,
-         maxLines: 1,
-         style: UMNIA_FALG==1?kStyleTextButton:kStyleTextDefault,),
-         centerTitle: true,
+
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    TextEditingController _controllerManual = TextEditingController(text: '0');
+    TextEditingController _controllerRemark = TextEditingController();
+    TextEditingController? _controllerSelectEdit = _controllerManual;
+    int _typeInputCash = 1;
+    double moneyCount = 0;
+
+    bool result = await Get.dialog(
+      CustomDialog(
+        gestureDetectorOnTap: () {
+          _controllerSelectEdit = null;
+        },
+        builder: (context, setState, constraints) {
+          moneyCount = MoneyCount.moneyCount.fold(0.0, (previousValue, element) => (previousValue) + ((element.value * element.rate) * double.parse(element.qty.text)));
+          return Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
+                      style: kStyleTextDefault,
+                    ),
+                  ),
+                  Text(
+                    type == InOutType.payIn
+                        ? 'Pay In'.tr
+                        : type == InOutType.payOut
+                            ? 'Pay Out'.tr
+                            : type == InOutType.cashIn
+                                ? 'Cash In'
+                                : type == InOutType.cashOut
+                                    ? 'Cash Out'
+                                    : '',
+                    style: kStyleTextTitle,
+                  ),
+                  Expanded(
+                    child: Text(
+                      '', //'${'Transaction Number'.tr} : ',
+                      textAlign: TextAlign.end,
+                      style: kStyleTextDefault,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              const Divider(
+                thickness: 1,
+                height: 1,
+              ),
+              Form(
+                key: _keyForm,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: RadioListTile(
+                                  value: 1,
+                                  groupValue: _typeInputCash,
+                                  onChanged: (value) {
+                                    _typeInputCash = value as int;
+                                    MoneyCount.clear();
+                                    _controllerSelectEdit = _controllerManual;
+                                    setState(() {});
+                                  },
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    'Manual'.tr,
+                                    style: kStyleTextDefault,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: RadioListTile(
+                                  value: 2,
+                                  groupValue: _typeInputCash,
+                                  onChanged: (value) {
+                                    _controllerManual.text = "0";
+                                    _typeInputCash = value as int;
+                                    MoneyCount.init();
+                                    _controllerSelectEdit = null;
+                                    setState(() {});
+                                  },
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    'Money Count'.tr,
+                                    style: kStyleTextDefault,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_typeInputCash == 1)
+                            CustomTextField(
+                              controller: _controllerManual,
+                              label: Text('Value'.tr),
+                              fillColor: Colors.white,
+                              maxLines: 1,
+                              inputFormatters: [
+                                EnglishDigitsTextInputFormatter(decimal: true),
+                              ],
+                              validator: (value) {
+                                return Validation.isRequired(value);
+                              },
+                              enableInteractiveSelection: false,
+                              keyboardType: const TextInputType.numberWithOptions(),
+                              onTap: () {
+                                FocusScope.of(context).requestFocus(FocusNode());
+                                _controllerSelectEdit = _controllerManual;
+                              },
+                            ),
+                          CustomTextField(
+                            controller: _controllerRemark,
+                            label: Text('Remark'.tr),
+                            fillColor: Colors.white,
+                            maxLines: 1,
+                          ),
+                          if (_typeInputCash == 2)
+                            Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Cash'.tr,
+                                      textAlign: TextAlign.center,
+                                      style: kStyleTextDefault,
+                                    ),
+                                  ],
+                                ),
+                                const Divider(),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Total'.tr,
+                                      textAlign: TextAlign.center,
+                                      style: kStyleTextDefault,
+                                    ),
+                                    Text(
+                                      moneyCount.toStringAsFixed(3),
+                                      textAlign: TextAlign.center,
+                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red),
+                                    ),
+                                  ],
+                                ),
+                                const Divider(),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        'Qty'.tr,
+                                        textAlign: TextAlign.center,
+                                        style: kStyleTextDefault,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        'Total'.tr,
+                                        textAlign: TextAlign.center,
+                                        style: kStyleTextDefault,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                ListView.builder(
+                                  itemCount: MoneyCount.moneyCount.length,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    return Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 2,
+                                          child: InkWell(
+                                            onTap: () {
+                                              setState(() {
+                                                MoneyCount.moneyCount[index].qty.text = '${int.parse(MoneyCount.moneyCount[index].qty.text) + 1}';
+                                              });
+                                            },
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 4.h),
+                                              child: Row(
+                                                children: [
+                                                  CachedNetworkImage(
+                                                    imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Currencies')?.imgPath ?? ''}${MoneyCount.moneyCount[index].icon}',
+                                                    height: 20.h,
+                                                    fit: BoxFit.contain,
+                                                    placeholder: (context, url) => Container(),
+                                                    errorWidget: (context, url, error) => Container(),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      MoneyCount.moneyCount[index].name,
+                                                      textAlign: TextAlign.center,
+                                                      style: kStyleTextDefault,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: CustomTextFieldNum(
+                                            enableInteractiveSelection: false,
+                                            controller: MoneyCount.moneyCount[index].qty,
+                                            fillColor: _controllerSelectEdit == MoneyCount.moneyCount[index].qty ? ColorsApp.primaryColor.withOpacity(0.2) : null,
+                                            onTap: () {
+                                              FocusScope.of(context).requestFocus(FocusNode());
+                                              _controllerSelectEdit = MoneyCount.moneyCount[index].qty;
+                                              setState(() {});
+                                            },
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            ((MoneyCount.moneyCount[index].value * MoneyCount.moneyCount[index].rate) * double.parse(MoneyCount.moneyCount[index].qty.text)).toStringAsFixed(3),
+                                            textAlign: TextAlign.center,
+                                            style: kStyleTextDefault,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Utils.numPadWidget(
+                          _controllerSelectEdit,
+                          setState,
+                          onExit: () async {
+                            var result = await Utils.showAreYouSureDialog(title: 'Exit'.tr);
+                            if (result) {
+                              Get.back(result: false);
+                            }
+                          },
+                          onSubmit: () async {
+                            var result = await Utils.showAreYouSureDialog(title: 'Save'.tr);
+                            if (result) {
+                              if (_typeInputCash == 1 ? double.parse(_controllerManual.text) > 0 : moneyCount > 0) {
+                                switch (type) {
+                                  case InOutType.payIn:
+                                    RestApi.payInOut(
+                                      value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
+                                      remark: _controllerRemark.text,
+                                      type: 1,
+                                    );
+                                    break;
+                                  case InOutType.payOut:
+                                    RestApi.payInOut(
+                                      value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
+                                      remark: _controllerRemark.text,
+                                      type: 2,
+                                    );
+                                    break;
+                                  case InOutType.cashIn:
+                                    break;
+                                  case InOutType.cashOut:
+                                    break;
+                                }
+                                Get.back(result: true);
+                              } else {
+                                Fluttertoast.showToast(msg: 'The value must be greater than zero'.tr);
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+      barrierDismissible: false,
+    );
 
 
        ),
@@ -159,10 +617,146 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
+
+                    child: Text(
+                      '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
+                      style: kStyleTextDefault,
+                    ),
+                  ),
+                  Text(
+                    'End Cash'.tr,
+                    style: kStyleTextTitle,
+                  ),
+                  Expanded(
+                    child: Text(
+                      '', //'${'Transaction Number'.tr} : ',
+                      textAlign: TextAlign.end,
+                      style: kStyleTextDefault,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              const Divider(
+                thickness: 1,
+                height: 1,
+              ),
+              Form(
+                key: _keyForm,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          CustomTextField(
+                            controller: _controllerTotalCash,
+                            label: Text('Total Cash'.tr),
+                            fillColor: Colors.white,
+                            maxLines: 1,
+                            inputFormatters: [
+                              EnglishDigitsTextInputFormatter(decimal: true),
+                            ],
+                            validator: (value) {
+                              return Validation.isRequired(value);
+                            },
+                            enableInteractiveSelection: false,
+                            keyboardType: const TextInputType.numberWithOptions(),
+                            onTap: () {
+                              FocusScope.of(context).requestFocus(FocusNode());
+                              _controllerSelectEdit = _controllerTotalCash;
+                              setState(() {});
+                            },
+                          ),
+                          CustomTextField(
+                            controller: _controllerTotalCreditCard,
+                            label: Text('Total Credit Card'.tr),
+                            fillColor: Colors.white,
+                            maxLines: 1,
+                            inputFormatters: [
+                              EnglishDigitsTextInputFormatter(decimal: true),
+                            ],
+                            validator: (value) {
+                              return Validation.isRequired(value);
+                            },
+                            enableInteractiveSelection: false,
+                            keyboardType: const TextInputType.numberWithOptions(),
+                            onTap: () {
+                              FocusScope.of(context).requestFocus(FocusNode());
+                              _controllerSelectEdit = _controllerTotalCreditCard;
+                              setState(() {});
+                            },
+                          ),
+                          // CustomTextField(
+                          //   controller: _controllerTotalCredit,
+                          //   label: Text('Total Credit'.tr),
+                          //   fillColor: Colors.white,
+                          //   maxLines: 1,
+                          //   inputFormatters: [
+                          //     EnglishDigitsTextInputFormatter(decimal: true),
+                          //   ],
+                          //   validator: (value) {
+                          //     return Validation.isRequired(value);
+                          //   },
+                          //   enableInteractiveSelection: false,
+                          //   keyboardType: const TextInputType.numberWithOptions(),
+                          //   onTap: () {
+                          //     FocusScope.of(context).requestFocus(FocusNode());
+                          //     _controllerSelectEdit = _controllerTotalCredit;
+                          //     setState(() {});
+                          //   },
+                          // ),
+                          CustomTextField(
+                            controller: _controllerNetTotal,
+                            label: Text('Net Total'.tr),
+                            fillColor: Colors.white,
+                            maxLines: 1,
+                            readOnly: true,
+                            enabled: false,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Utils.numPadWidget(
+                          _controllerSelectEdit,
+                          setState,
+                          onExit: () async {
+                            var result = await Utils.showAreYouSureDialog(title: 'Exit'.tr);
+                            if (result) {
+                              Get.back();
+                            }
+                          },
+                          onSubmit: () async {
+                            var result = await Utils.showAreYouSureDialog(title: 'Save'.tr);
+                            if (result) {
+                              var resultEndCash = await RestApi.endCash(
+                                totalCash: double.parse(_controllerTotalCash.text),
+                                totalCreditCard: double.parse(_controllerTotalCreditCard.text),
+                                totalCredit: double.parse(_controllerTotalCredit.text),
+                                netTotal: double.parse(_controllerNetTotal.text),
+                              );
+                              if (resultEndCash) {
+                                Get.back(result: true);
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+      barrierDismissible: false,
+    );
+
 
                         SizedBox(height: 20.h),
 
@@ -196,119 +790,668 @@ class _HomeScreenState extends State<HomeScreen> {
                                     },
                                     child: Container(
 
-                                      width: 70.w,
-                                      decoration:BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            15.0,
 
-                                          ),
-                                          border: Border.all(color: ColorsApp.orange_2)
-                                      ),
-                                      child: Column(
+  _showReprintInvoiceDialog() async {
+    TextEditingController _controllerVoucherNumber = TextEditingController();
+    CartModel? _reprintModel;
+    bool result = await Get.dialog(
+      CustomDialog(
+        gestureDetectorOnTap: () {},
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Container(
+              width: 1.sw,
+              constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3.r),
+                border: Border.all(width: 2, color: ColorsApp.blue),
+                gradient: const LinearGradient(
+                  colors: [
+                    ColorsApp.primaryColor,
+                    ColorsApp.accentColor,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'Voucher Number'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              Expanded(
+                                child: CustomTextFieldNum(
+                                  controller: _controllerVoucherNumber,
+                                  fillColor: Colors.white,
+                                  decimal: false,
+                                  validator: (value) {
+                                    return Validation.isRequired(value);
+                                  },
+                                  onChanged: (value) {
+                                    _reprintModel = null;
+                                    setState(() {});
+                                  },
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'Original Data'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  _reprintModel == null ? '' : DateFormat('yyyy-MM-dd').format(DateTime.parse(_reprintModel!.invDate)),
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'Original Time'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  _reprintModel == null ? '' : DateFormat('hh:mm:ss a').format(DateTime.parse(_reprintModel!.invDate)),
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    CustomButton(
+                      fixed: true,
+                      child: Text('Show'.tr),
+                      backgroundColor: ColorsApp.orange,
+                      onPressed: () async {
+                        FocusScope.of(context).requestFocus(FocusNode());
+                        _reprintModel = await RestApi.getInvoice(invNo: int.parse(_controllerVoucherNumber.text));
+                        _reprintModel = Utils.calculateOrder(cart: _reprintModel!, orderType: _reprintModel!.orderType, invoiceKind: InvoiceKind.invoicePay);
+                        setState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(width: 50.w),
+                Expanded(
+                  child: CustomButton(
+                    fixed: true,
+                    backgroundColor: ColorsApp.red,
+                    child: Text(
+                      'Exit'.tr,
+                      style: kStyleTextButton,
+                    ),
+                    onPressed: () {
+                      Get.back(result: false);
+                    },
+                  ),
+                ),
+                SizedBox(width: 5.w),
+                Expanded(
+                  child: CustomButton(
+                    fixed: true,
+                    backgroundColor: ColorsApp.green,
+                    child: Text(
+                      'Print'.tr,
+                      style: kStyleTextButton,
+                    ),
+                    onPressed: _reprintModel == null
+                        ? null
+                        : () async {
+                            Get.back(result: true);
+                          },
+                  ),
+                ),
+                SizedBox(width: 50.w),
+              ],
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    if (result) {
+      await Printer.printInvoicesDialog(cart: _reprintModel!, reprint: true, kitchenPrinter: false, showOrderNo: false, invNo: '${_reprintModel!.invNo}');
+    }
+  }
 
-                                        children: [
-                                          Image.asset(
-                                            'assets/images/take_away_.png',
-                                            height: 130.h,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: Text(
-                                              'Take Away'.tr,
-                                              style: kStyleButtonPayment,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+  _showRefundDialog() {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    TextEditingController _controllerVoucherNumber = TextEditingController();
+    CartModel? _refundModel;
+    TextEditingController? _controllerSelectEdit;
+    Get.dialog(
+      CustomDialog(
+        gestureDetectorOnTap: () {
+          _controllerSelectEdit = null;
+        },
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Container(
+              width: 1.sw,
+              constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3.r),
+                border: Border.all(width: 2, color: ColorsApp.blue),
+                gradient: const LinearGradient(
+                  colors: [
+                    ColorsApp.primaryColor,
+                    ColorsApp.accentColor,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'Voucher Number'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                  style: kStyleTextDefault,
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal:6.w),
-                                  child: InkWell(
-                                    onTap: () {
-                                      Get.to(() => TableScreen());
-                                    },
-                                    child: Container(
-                                      width: 70.w,
-                                      decoration:BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            15.0,
-                                          ),
-                                          border: Border.all(color: ColorsApp.orange_2)
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Image.asset(
-                                            'assets/images/dine_in_.png',
-                                            height: 130.h,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: Text(
-                                              'Dine In'.tr,
-                                              style: kStyleButtonPayment,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                              ),
+                              Expanded(
+                                child: CustomTextFieldNum(
+                                  controller: _controllerVoucherNumber,
+                                  fillColor: Colors.white,
+                                  decimal: false,
+                                  validator: (value) {
+                                    return Validation.isRequired(value);
+                                  },
+                                  onChanged: (value) {
+                                    _refundModel = null;
+                                    setState(() {});
+                                  },
                                 ),
-                              ],
-                            ),
-                          ],
-                        )
-                        ]
-                    )
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'POS No'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  '${mySharedPreferences.posNo}',
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'Original Data'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  _refundModel == null ? '' : DateFormat('yyyy-MM-dd').format(DateTime.parse(_refundModel!.invDate)),
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'Original Time'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  _refundModel == null ? '' : DateFormat('hh:mm:ss a').format(DateTime.parse(_refundModel!.invDate)),
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'Table No'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  '',
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'Customer'.tr} : ',
+                                  textAlign: TextAlign.end,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  '',
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    CustomButton(
+                      fixed: true,
+                      child: Text('Show'.tr),
+                      backgroundColor: ColorsApp.orange,
+                      onPressed: () async {
+                        FocusScope.of(context).requestFocus(FocusNode());
+                        _refundModel = await RestApi.getRefundInvoice(invNo: int.parse(_controllerVoucherNumber.text));
+                        _refundModel = Utils.calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
+                        setState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 4.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(),
+                borderRadius: BorderRadius.circular(3.r),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Serial'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 5,
+                          child: Text(
+                            'Item'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Qty'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Price'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            'R.Qty'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'R.Total'.tr,
+                            style: kStyleHeaderTable,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  // Container(
-                  //   height: 1.sh,
-                  //   width: 80.w,
-                  //   constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
-                  //   decoration: BoxDecoration(
-                  //     borderRadius: BorderRadius.circular(3.r),
-                  //     border: Border.all(width: 2, color: ColorsApp.blue),
-                  //     gradient: const LinearGradient(
-                  //       colors: [
-                  //         ColorsApp.primaryColor,
-                  //         ColorsApp.accentColor,
-                  //       ],
-                  //       begin: Alignment.centerLeft,
-                  //       end: Alignment.centerRight,
-                  //     ),
-                  //   ),
-                  //   child: ListView.separated(
-                  //     itemCount: _menu.length,
-                  //     shrinkWrap: true,
-                  //     separatorBuilder: (context, index) => Divider(
-                  //       height: 1.h,
-                  //       thickness: 2,
-                  //     ),
-                  //     itemBuilder: (context, index) => InkWell(
-                  //       onTap: _menu[index].onTab,
-                  //       child: Container(
-                  //         padding: EdgeInsets.all(6.w),
-                  //         width: double.infinity,
-                  //         child: Text(
-                  //           _menu[index].name,
-                  //           style: kStyleTextTitle,
-                  //           textAlign: TextAlign.center,
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
+                  const Divider(color: Colors.black, height: 1),
+                  if (_refundModel != null)
+                    ListView.separated(
+                      itemCount: _refundModel!.items.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      separatorBuilder: (context, index) => _refundModel!.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
+                      itemBuilder: (context, index) {
+                        if (_refundModel!.items[index].parentUuid.isNotEmpty) {
+                          return Container();
+                        } else {
+                          var subItem = _refundModel!.items.where((element) => element.parentUuid.isNotEmpty && element.parentUuid == _refundModel!.items[index].uuid).toList();
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '${_refundModel!.items[index].id}',
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 5,
+                                      child: Text(
+                                        _refundModel!.items[index].name,
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        '${_refundModel!.items[index].qty}',
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        (_refundModel!.items[index].returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(3),
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: InkWell(
+                                        onTap: () async {
+                                          _refundModel!.items[index].returnedQty = await _showQtyDialog(decimal: false, rQty: _refundModel!.items[index].returnedQty, maxQty: _refundModel!.items[index].qty);
+                                          for (var element in subItem) {
+                                            element.returnedQty = _refundModel!.items[index].returnedQty;
+                                          }
+                                          _refundModel = Utils.calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
+                                          setState(() {});
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              '${_refundModel!.items[index].returnedQty}',
+                                              style: kStyleDataTable,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            const Icon(Icons.edit),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        (_refundModel!.items[index].returnedTotal + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal)).toStringAsFixed(3),
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                child: Column(
+                                  children: [
+                                    if (subItem.isNotEmpty)
+                                      ListView.builder(
+                                        itemCount: subItem.length,
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        itemBuilder: (context, indexSubItem) {
+                                          return Row(
+                                            children: [
+                                              Expanded(child: Container()),
+                                              Expanded(
+                                                flex: 5,
+                                                child: Text(
+                                                  subItem[indexSubItem].name,
+                                                  style: kStyleDataTableModifiers,
+                                                  textAlign: TextAlign.center,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              Expanded(child: Container()),
+                                              Expanded(child: Container()),
+                                              Expanded(flex: 2, child: Container()),
+                                              Expanded(child: Container()),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          );
+                        }
+                      },
+                    ),
                 ],
               ),
             ),
+            // Padding(
+            //   padding: EdgeInsets.symmetric(vertical: 4.h),
+            //   child: CustomDataTable(
+            //     minWidth: constraints.minWidth,
+            //     rows: _refundModel == null
+            //         ? []
+            //         : _refundModel!.items.where((element) => element.parentUuid.isEmpty).map(
+            //             (e) {
+            //               var subItem = _refundModel!.items.where((element) => element.parentUuid == e.uuid).toList();
+            //               return DataRow(
+            //                 cells: [
+            //                   DataCell(Text('${e.id}')),
+            //                   DataCell(Column(
+            //                     mainAxisSize: MainAxisSize.min,
+            //                     children: [
+            //                       Text(e.name),
+            //                       if (subItem.isNotEmpty)
+            //                         ...subItem.map(
+            //                           (e) => Text(
+            //                             e.name,
+            //                             style: kStyleDataTableModifiers,
+            //                             textAlign: TextAlign.center,
+            //                             maxLines: 1,
+            //                             overflow: TextOverflow.ellipsis,
+            //                           ),
+            //                         ),
+            //                     ],
+            //                   )),
+            //                   DataCell(Text('${e.qty}')),
+            //                   DataCell(Text((e.returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(3))),
+            //                   DataCell(
+            //                     Text('${e.returnedQty}'),
+            //                     showEditIcon: true,
+            //                     onTap: () async {
+            //                       e.returnedQty = await _showQtyDialog(rQty: e.returnedQty, maxQty: e.qty);
+            //                       for (var element in subItem) {
+            //                         element.returnedQty = e.returnedQty;
+            //                       }
+            //                       _refundModel = Utils.calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
+            //                       setState(() {});
+            //                     },
+            //                   ),
+            //                   DataCell(Text((e.returnedTotal + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal)).toStringAsFixed(3))),
+            //                 ],
+            //               );
+            //             },
+            //           ).toList(),
+            //     columns: [
+            //       DataColumn(label: Text('Serial'.tr)),
+            //       DataColumn(label: Text('Item'.tr)),
+            //       DataColumn(label: Text('Qty'.tr)),
+            //       DataColumn(label: Text('Price'.tr)),
+            //       DataColumn(label: Text('R.Qty'.tr)),
+            //       DataColumn(label: Text('R.Total'.tr)),
+            //     ],
+            //   ),
+            // ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${'Return Total'.tr} : ',
+                          textAlign: TextAlign.end,
+                          style: kStyleTextTitle,
+                        ),
+                      ],
+                    ),
+                    if (_refundModel != null)
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            _refundModel!.items.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal).toStringAsFixed(3),
+                            style: kStyleTextTitle,
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(width: 50.w),
+                Expanded(
+                  child: CustomButton(
+                    fixed: true,
+                    backgroundColor: ColorsApp.red,
+                    child: Text(
+                      'Exit'.tr,
+                      style: kStyleTextButton,
+                    ),
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                ),
+                SizedBox(width: 5.w),
+                Expanded(
+                  child: CustomButton(
+                    fixed: true,
+                    backgroundColor: ColorsApp.green,
+                    child: Text(
+                      'Ok'.tr,
+                      style: kStyleTextButton,
+                    ),
+                    onPressed: _refundModel == null
+                        ? null
+                        : () async {
+                            var result = await Utils.showAreYouSureDialog(title: 'Refund'.tr);
+                            if (result) {
+                              if (_refundModel!.items.any((element) => element.returnedQty > 0)) {
+                                _refundModel!.items.removeWhere((element) => element.returnedQty == 0);
+                                RestApi.invoice(cart: _refundModel!, invoiceKind: InvoiceKind.invoiceReturn);
+                                RestApi.returnInvoiceQty(invNo: int.parse(_controllerVoucherNumber.text), refundModel: _refundModel!);
+                                Get.back();
+                              }
+                            }
+                          },
+                  ),
+                ),
+                SizedBox(width: 50.w),
+              ],
+            ),
+
           ],
         ),
       ),
     );
   }
+
 
   String getTitleText() {
    var today= DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose);
@@ -320,7 +1463,232 @@ class _HomeScreenState extends State<HomeScreen> {
     return   Image.asset(
       'assets/images/choose109.png',
       height: 40.h,
-      width: 100.w,
+      width: 100.w,);}
+
+  Future<double> _showQtyDialog({TextEditingController? controller, double? maxQty, double minQty = 0, required double rQty, bool decimal = true}) async {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    controller ??= TextEditingController(text: '${decimal ? rQty : rQty.toInt()}');
+    var qty = await Get.dialog(
+      CustomDialog(
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Form(
+              key: _keyForm,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        CustomTextField(
+                          controller: controller,
+                          label: Text('${'Qty'.tr} ${maxQty != null ? '($maxQty)' : ''}'),
+                          fillColor: Colors.white,
+                          maxLines: 1,
+                          inputFormatters: [
+                            EnglishDigitsTextInputFormatter(decimal: true),
+                          ],
+                          validator: (value) {
+                            return Validation.qty(value, minQty, maxQty);
+                          },
+                          enableInteractiveSelection: false,
+                          keyboardType: const TextInputType.numberWithOptions(),
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Utils.numPadWidget(
+                        controller,
+                        setState,
+                        decimal: decimal,
+                        onSubmit: () {
+                          if (_keyForm.currentState!.validate()) {
+                            Get.back(result: controller!.text);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    if (qty == null) {
+      return rQty;
+    }
+    return double.parse(qty);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        body: CustomSingleChildScrollView(
+          child: Stack(
+            children: [
+              Image.asset(
+                'assets/images/background_home.png',
+                width: 1.sw,
+                height: 1.sh,
+                fit: BoxFit.cover,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 50.h,
+                          color: Colors.white,
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 20),
+                              CachedNetworkImage(
+                                imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'COMPANY_LOGO')?.imgPath ?? ''}${allDataModel.companyConfig.first.companyLogo}',
+                                fit: BoxFit.contain,
+                                placeholder: (context, url) => Container(),
+                                errorWidget: (context, url, error) => Container(),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  '${'Branch'.tr}: ${allDataModel.companyConfig.first.companyName}',
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              const VerticalDivider(),
+                              Expanded(
+                                child: Text(
+                                  DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                              const VerticalDivider(),
+                              Expanded(
+                                child: Text(
+                                  '${'Version'.tr}: ${packageInfo.version}+${packageInfo.buildNumber}',
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: kStyleTextDefault,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 40.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              child: InkWell(
+                                onTap: () {
+                                  Get.to(() => OrderScreen(type: OrderType.takeAway));
+                                },
+                                child: Column(
+                                  children: [
+                                    Image.asset(
+                                      'assets/images/take_away.png',
+                                      height: 150.h,
+                                    ),
+                                    Text(
+                                      'Take Away'.tr,
+                                      style: kStyleTextTitle,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              child: InkWell(
+                                onTap: () {
+                                  Get.to(() => TableScreen());
+                                },
+                                child: Column(
+                                  children: [
+                                    Image.asset(
+                                      'assets/images/dine_in.png',
+                                      height: 150.h,
+                                    ),
+                                    Text(
+                                      'Dine In'.tr,
+                                      style: kStyleTextTitle,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: 1.sh,
+                    width: 80.w,
+                    constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3.r),
+                      border: Border.all(width: 2, color: ColorsApp.blue),
+                      gradient: const LinearGradient(
+                        colors: [
+                          ColorsApp.primaryColor,
+                          ColorsApp.accentColor,
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                    ),
+                    child: ListView.separated(
+                      itemCount: _menu.length,
+                      shrinkWrap: true,
+                      separatorBuilder: (context, index) => Divider(
+                        height: 1.h,
+                        thickness: 2,
+                      ),
+                      itemBuilder: (context, index) => InkWell(
+                        onTap: _menu[index].onTab,
+                        child: Container(
+                          padding: EdgeInsets.all(6.w),
+                          width: double.infinity,
+                          child: Text(
+                            _menu[index].name,
+                            style: kStyleTextTitle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

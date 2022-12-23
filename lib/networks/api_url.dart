@@ -18,6 +18,10 @@ class ApiUrl{
   // ignore: non_constant_identifier_names
   static String CLOSE_TABLE = "/api/postData/CLOSETABLE";
   // ignore: non_constant_identifier_names
+  static String CHANGE_USER_TABLE = "/api/postData/ChangeCaptinOrder";
+  // ignore: non_constant_identifier_names
+  static String PRINT_TABLE = "/api/postData/FinishSoon";
+  // ignore: non_constant_identifier_names
   static String MOVE_TABLE = "/api/postData/MoveTable";
   // ignore: non_constant_identifier_names
   static String MERGE_TABLE = "/api/postData/MergeTable";
@@ -26,7 +30,7 @@ class ApiUrl{
   // ignore: non_constant_identifier_names
   static String LOCK_TABLE = "/api/postData/LOCKTABLE";
   // ignore: non_constant_identifier_names
-  static String UNLOCK_TABLE = "/api/postData/UNLOCKTABLE";
+  static String UNLOCK_TABLE = "/api/postData/UnLockTable";
   // ignore: non_constant_identifier_names
   static String SET_TABLE_CONFIG = "/api/postData/SetTableConfig";
   // ignore: non_constant_identifier_names
