@@ -1,13 +1,4 @@
 const Map<String, String> en = {
-  'Merge Table':'Merge Table',
-  'Move Tables':'Move Tables',
-  'Multi Pay':'Multi Pay',
-  'Park List':'Park List',
-  'Add + ':'Add + ',
-  'View Items':'View Items',
-  'clarify':'Resturant Management Syatem .',
-  'Welcom':'ome to \nFalcons Restaurant.',
-  'Log In': 'Log In',
   'Username': 'Username',
   'Password': 'Password',
   'Sign In': 'Sign In',
