@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(kLoginBackground),
+                    image: AssetImage(kAssetsLoginBackground),
                     fit: BoxFit.fill,
                   ),
                 ),
@@ -163,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(kLoginBack),
+                    image: AssetImage(kAssetsLoginBack),
                     fit: BoxFit.fill,
                   ),
                 ),

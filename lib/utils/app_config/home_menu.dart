@@ -1,9 +1,9 @@
+import 'package:flutter/material.dart';
 
-import 'package:get/get.dart';
-
-class HomeMenu{
+class HomeMenu {
   String name;
+  Widget? icon;
   Function()? onTab;
 
-  HomeMenu({required this.name, this.onTab});
+  HomeMenu({required this.name, this.icon, this.onTab});
 }

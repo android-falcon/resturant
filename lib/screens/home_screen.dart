@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -10,7 +9,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
-import 'package:restaurant_system/models/all_data/item_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/end_cash_model.dart';
 import 'package:restaurant_system/models/printer_image_model.dart';
@@ -20,13 +18,14 @@ import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/screens/table_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
-import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
+import 'package:restaurant_system/screens/widgets/custom_drawer.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field_num.dart';
 import 'package:restaurant_system/utils/app_config/home_menu.dart';
 import 'package:restaurant_system/utils/app_config/money_count.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/enums/enum_company_type.dart';
 import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/enums/enum_in_out_type.dart';
@@ -73,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // ),
         HomeMenu(
           name: 'Pay In'.tr,
+          icon: Icon(Icons.money, color: ColorsApp.orange_2),
           onTab: () async {
             if (mySharedPreferences.employee.hasCashInOutPermission) {
               _showInOutDialog(type: InOutType.payIn);
@@ -90,6 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         HomeMenu(
           name: 'Pay Out'.tr,
+          icon: const Icon(Icons.monetization_on_outlined, color: ColorsApp.gray),
           onTab: () async {
             if (mySharedPreferences.employee.hasCashInOutPermission) {
               _showInOutDialog(type: InOutType.payOut);
@@ -107,6 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         HomeMenu(
           name: 'End Cash'.tr,
+          icon: const Icon(Icons.pin_end_rounded, color: ColorsApp.gray),
           onTab: () async {
             EndCashModel? model = await RestApi.getEndCash();
             if (model != null) {
@@ -116,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         HomeMenu(
           name: 'Refund'.tr,
+          icon: const Icon(Icons.receipt_long, color: ColorsApp.gray),
           onTab: () async {
             if (mySharedPreferences.employee.hasRefundPermission) {
               _showRefundDialog();
@@ -133,12 +136,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         HomeMenu(
           name: 'Reprint Invoice'.tr,
+          icon: const Icon(Icons.print, color: ColorsApp.gray),
           onTab: () {
             _showReprintInvoiceDialog();
           },
         ),
         HomeMenu(
           name: 'Cash Drawer'.tr,
+          icon: const Icon(Icons.cable_sharp, color: ColorsApp.gray),
           onTab: () async {
             var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
             if (indexPrinter != -1) {
@@ -148,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         HomeMenu(
           name: 'Daily Close'.tr,
+          icon: const Icon(Icons.checklist_rtl, color: ColorsApp.gray),
           onTab: () async {
             if (mySharedPreferences.employee.isMaster) {
               _showDailyCloseDialog();
@@ -165,6 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         HomeMenu(
           name: 'Rest Order No'.tr,
+          icon: const Icon(Icons.clear, color: ColorsApp.gray),
           onTab: () async {
             var result = await Utils.showAreYouSureDialog(title: 'Rest Order No'.tr);
             if (result) {
@@ -175,12 +182,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         HomeMenu(
           name: 'Refresh Data'.tr,
+          icon: const Icon(Icons.refresh, color: ColorsApp.gray),
           onTab: () async {
             RestApi.getData();
           },
         ),
         HomeMenu(
           name: 'Exit'.tr,
+          icon: const Icon(Icons.logout_outlined, color: ColorsApp.gray),
           onTab: () async {
             var result = await Utils.showAreYouSureDialog(title: 'Close App'.tr);
             if (result) {
@@ -1225,14 +1234,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _showRefundDialog() {
-    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     TextEditingController _controllerVoucherNumber = TextEditingController();
     CartModel? _refundModel;
-    TextEditingController? _controllerSelectEdit;
     Get.dialog(
       CustomDialog(
         gestureDetectorOnTap: () {
-          _controllerSelectEdit = null;
         },
         builder: (context, setState, constraints) => Column(
           children: [
@@ -1791,158 +1797,138 @@ class _HomeScreenState extends State<HomeScreen> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        body: CustomSingleChildScrollView(
-          child: Stack(
-            children: [
-              Image.asset(
-                'assets/images/background_home.png',
-                width: 1.sw,
-                height: 1.sh,
-                fit: BoxFit.cover,
+        appBar: AppBar(
+          backgroundColor: companyType == CompanyType.umniah ? ColorsApp.black : ColorsApp.backgroundDialog,
+          iconTheme: IconThemeData(color: companyType == CompanyType.umniah ? ColorsApp.orange_2 : ColorsApp.black),
+          title: Text(
+            '${'Branch'.tr}: ${allDataModel.companyConfig.first.companyName}  \t\t\t${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: companyType == CompanyType.umniah ? kStyleTextButton : kStyleTextDefault,
+          ),
+          centerTitle: true,
+        ),
+        drawer: ClipPath(
+          // clipper: OvalRightBorderClipper(),
+          child: SizedBox(
+            width: 120.w,
+            child: Drawer(
+              child: CustomDrawer(
+                menu: _menu,
               ),
-              Row(
+            ),
+          ),
+        ),
+        body: Stack(
+          children: [
+            Container(
+              color: Colors.white,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Container(
-                          width: double.infinity,
-                          height: 50.h,
-                          color: Colors.white,
-                          child: Row(
+                        SizedBox(height: 20.h),
+                        Row(children: [
+                          SizedBox(
+                            width: 10.w,
+                          ),
+                          Image.asset(
+                            kAssetsHomeScreen,
+                            height: 250.h,
+                            width: 170.w,
+                          ),
+                          Column(
                             children: [
-                              const SizedBox(width: 20),
-                              CachedNetworkImage(
-                                imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'COMPANY_LOGO')?.imgPath ?? ''}${allDataModel.companyConfig.first.companyLogo}',
-                                fit: BoxFit.contain,
-                                placeholder: (context, url) => Container(),
-                                errorWidget: (context, url, error) => Container(),
+                              Image.asset(
+                                kAssetsChoose,
+                                height: 40.h,
+                                width: 100.w,
                               ),
-                              Expanded(
-                                child: Text(
-                                  '${'Branch'.tr}: ${allDataModel.companyConfig.first.companyName}',
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: kStyleTextDefault,
-                                ),
-                              ),
-                              const VerticalDivider(),
-                              Expanded(
-                                child: Text(
-                                  DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose),
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: kStyleTextDefault,
-                                ),
-                              ),
-                              const VerticalDivider(),
-                              Expanded(
-                                child: Text(
-                                  '${'Version'.tr}: ${packageInfo.version}+${packageInfo.buildNumber}',
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: kStyleTextDefault,
-                                ),
+                              SizedBox(height: 20.h),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 6.w),
+                                    child: InkWell(
+                                      onTap: () {
+                                        Get.to(() => const OrderScreen(type: OrderType.takeAway));
+                                      },
+                                      child: Container(
+                                        width: 70.w,
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              15.0,
+                                            ),
+                                            border: Border.all(color: ColorsApp.orange_2)),
+                                        child: Column(
+                                          children: [
+                                            Image.asset(
+                                              kAssetsTakeAway,
+                                              height: 130.h,
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(5.0),
+                                              child: Text(
+                                                'Take Away'.tr,
+                                                style: kStyleButtonPayment,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 6.w),
+                                    child: InkWell(
+                                      onTap: () {
+                                        Get.to(() => const TableScreen());
+                                      },
+                                      child: Container(
+                                        width: 70.w,
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              15.0,
+                                            ),
+                                            border: Border.all(color: ColorsApp.orange_2)),
+                                        child: Column(
+                                          children: [
+                                            Image.asset(
+                                              kAssetsDineIn,
+                                              height: 130.h,
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(5.0),
+                                              child: Text(
+                                                'Dine In'.tr,
+                                                style: kStyleButtonPayment,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
-                          ),
-                        ),
-                        SizedBox(height: 40.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.w),
-                              child: InkWell(
-                                onTap: () {
-                                  Get.to(() => OrderScreen(type: OrderType.takeAway));
-                                },
-                                child: Column(
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/take_away.png',
-                                      height: 150.h,
-                                    ),
-                                    Text(
-                                      'Take Away'.tr,
-                                      style: kStyleTextTitle,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.w),
-                              child: InkWell(
-                                onTap: () {
-                                  Get.to(() => TableScreen());
-                                },
-                                child: Column(
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/dine_in.png',
-                                      height: 150.h,
-                                    ),
-                                    Text(
-                                      'Dine In'.tr,
-                                      style: kStyleTextTitle,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
+                          )
+                        ])
                       ],
-                    ),
-                  ),
-                  Container(
-                    height: 1.sh,
-                    width: 80.w,
-                    constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3.r),
-                      border: Border.all(width: 2, color: ColorsApp.blue),
-                      gradient: const LinearGradient(
-                        colors: [
-                          ColorsApp.primaryColor,
-                          ColorsApp.accentColor,
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                    ),
-                    child: ListView.separated(
-                      itemCount: _menu.length,
-                      shrinkWrap: true,
-                      separatorBuilder: (context, index) => Divider(
-                        height: 1.h,
-                        thickness: 2,
-                      ),
-                      itemBuilder: (context, index) => InkWell(
-                        onTap: _menu[index].onTab,
-                        child: Container(
-                          padding: EdgeInsets.all(6.w),
-                          width: double.infinity,
-                          child: Text(
-                            _menu[index].name,
-                            style: kStyleTextTitle,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

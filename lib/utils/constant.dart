@@ -23,18 +23,33 @@ const placeholderImage = 'assets/images/logo.png';
 
 const companyType = CompanyType.falcons;
 
-String kLoginBackground = "";
-String kLoginBack = "";
+String kAssetsLoginBackground = "";
+String kAssetsLoginBack = "";
+String kAssetsDrawerHeader = "";
+String kAssetsHomeScreen = "";
+String kAssetsChoose = "";
+String kAssetsTakeAway = "";
+String kAssetsDineIn = "";
 
 loadAssets() {
   switch (companyType) {
     case CompanyType.falcons:
-      kLoginBackground = "assets/images/rectangle60.png";
-      kLoginBack = "assets/images/home_back.png";
+      kAssetsLoginBackground = "assets/images/rectangle60.png";
+      kAssetsLoginBack = "assets/images/home_back.png";
+      kAssetsDrawerHeader = "assets/images/rectangle60.png";
+      kAssetsHomeScreen = "assets/images/takeway108.png";
+      kAssetsChoose = "assets/images/choose109.png";
+      kAssetsTakeAway = "assets/images/choose109.png";
+      kAssetsDineIn = "assets/images/choose109.png";
       break;
     case CompanyType.umniah:
-      kLoginBackground = "assets/images/rectangle602.png";
-      kLoginBack = "assets/images/login_back_umnia.png";
+      kAssetsLoginBackground = "assets/images/rectangle602.png";
+      kAssetsLoginBack = "assets/images/login_back_umnia.png";
+      kAssetsDrawerHeader = "assets/images/logo_arabic.png";
+      kAssetsHomeScreen = "assets/images/takeway108.png";
+      kAssetsChoose = "assets/images/choose109.png";
+      kAssetsTakeAway = "assets/images/choose109.png";
+      kAssetsDineIn = "assets/images/choose109.png";
       break;
   }
 }
