@@ -13,7 +13,7 @@ class AppThemes {
         primaryColor: ColorsApp.primaryColor,
         // fontFamily: fontFamily,
         cardColor: Colors.white,
-        scaffoldBackgroundColor: const Color(0xFFDADADA),
+        scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFFF9F9F9),
           elevation: 0,

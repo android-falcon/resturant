@@ -1,0 +1,4 @@
+enum CompanyType {
+  falcons,
+  umniah,
+}
