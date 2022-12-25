@@ -36,8 +36,9 @@ import 'package:screenshot/screenshot.dart';
 class PayScreen extends StatefulWidget {
   final CartModel cart;
   final int? tableId;
+  final int? openTypeDialog;
 
-  const PayScreen({Key? key, required this.cart, this.tableId}) : super(key: key);
+  const PayScreen({Key? key, required this.cart, this.tableId, this.openTypeDialog}) : super(key: key);
 
   @override
   State<PayScreen> createState() => _PayScreenState();
@@ -373,11 +374,7 @@ class _PayScreenState extends State<PayScreen> {
                     onPressed: () {
                       Get.back();
                     },
-                    icon: const Icon(Icons.arrow_back),
-                  ),
-                  const VerticalDivider(
-                    width: 1,
-                    thickness: 2,
+                    icon: const Icon(Icons.arrow_back_ios),
                   ),
                   SizedBox(width: 4.w),
                   Expanded(
@@ -389,10 +386,6 @@ class _PayScreenState extends State<PayScreen> {
                       style: kStyleTextDefault,
                     ),
                   ),
-                  const VerticalDivider(
-                    width: 1,
-                    thickness: 2,
-                  ),
                   Expanded(
                     child: Text(
                       '${'Check'.tr} : ',
@@ -401,10 +394,6 @@ class _PayScreenState extends State<PayScreen> {
                       maxLines: 1,
                       style: kStyleTextDefault,
                     ),
-                  ),
-                  const VerticalDivider(
-                    width: 1,
-                    thickness: 2,
                   ),
                   Expanded(
                     child: Text(
@@ -415,13 +404,11 @@ class _PayScreenState extends State<PayScreen> {
                       style: kStyleTextDefault,
                     ),
                   ),
-                  const VerticalDivider(
-                    width: 1,
-                    thickness: 2,
-                  ),
-                  Image.asset(
-                    'assets/images/printer.png',
-                    height: 45.h,
+                  IconButton(
+                    onPressed: () {
+
+                    },
+                    icon:  Icon(Icons.print,color: ColorsApp.orange_2,size: 30,),
                   ),
                   SizedBox(width: 4.w),
                 ],
@@ -435,10 +422,14 @@ class _PayScreenState extends State<PayScreen> {
                     child: Column(
                       children: [
                         Container(
+                          margin: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5.r),
+                              border: Border.all(color: ColorsApp.orange_2)),
                           height: Get.height * 0.4,
                           padding: EdgeInsets.all(16.h),
                           child: Align(
-                            alignment: AlignmentDirectional.bottomCenter,
+                            alignment: AlignmentDirectional.center,
                             child: Text(
                               '${'Remaining'.tr} : ${remaining.toStringAsFixed(3)}',
                               style: kStyleTextTitle,
@@ -447,59 +438,68 @@ class _PayScreenState extends State<PayScreen> {
                         ),
                         Expanded(
                           child: Container(
-                            color: ColorsApp.grayLight,
+                            color: ColorsApp.backgroundDialog,
                             child: Column(
                               children: [
                                 Expanded(
                                   child: Row(
                                     children: [
-                                      Expanded(
-                                        child: CustomButton(
-                                          margin: EdgeInsets.all(8.h),
-                                          height: double.infinity,
-                                          child: Text(
-                                            widget.cart.cash == 0 ? 'Cash'.tr : '${'Cash'.tr} : ${widget.cart.cash.toStringAsFixed(3)}',
-                                            style: kStyleButtonPayment,
-                                            textAlign: TextAlign.center,
+                                      Visibility(
+                                        visible: (widget.openTypeDialog != 0),
+                                        child: Expanded(
+                                          child: CustomButton(
+                                            backgroundColor: ColorsApp.orange_2,
+                                            margin: EdgeInsets.all(10.h),
+                                            height: 50.h,
+                                            child: Text(
+                                              widget.cart.cash == 0 ? 'Cash'.tr : '${'Cash'.tr} : ${widget.cart.cash.toStringAsFixed(3)}',
+                                              style: kStyleButtonPayment,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            onPressed: () async {
+                                              var result = await _showPayDialog(balance: remaining + widget.cart.cash, received: widget.cart.cash, enableReturnValue: true);
+                                              widget.cart.cash = result['received'];
+                                              _calculateRemaining();
+                                              if (remaining == 0) {
+                                                _showFinishDialog();
+                                              }
+                                            },
                                           ),
-                                          onPressed: () async {
-                                            var result = await _showPayDialog(balance: remaining + widget.cart.cash, received: widget.cart.cash, enableReturnValue: true);
-                                            widget.cart.cash = result['received'];
-                                            _calculateRemaining();
-                                            if (remaining == 0) {
-                                              _showFinishDialog();
-                                            }
-                                          },
                                         ),
                                       ),
-                                      Expanded(
-                                        child: CustomButton(
-                                          margin: EdgeInsets.all(8.h),
-                                          height: double.infinity,
-                                          child: Text(
-                                            widget.cart.credit == 0 ? 'Credit Card'.tr : '${'Credit Card'.tr} : ${widget.cart.credit.toStringAsFixed(3)}',
-                                            style: kStyleButtonPayment,
-                                            textAlign: TextAlign.center,
+                                      Visibility(
+                                        visible: (widget.openTypeDialog != 1),
+                                        child: Expanded(
+                                          child: CustomButton(
+                                            backgroundColor: ColorsApp.blue_light,
+                                            margin: EdgeInsets.all(10.h),
+                                            height: 50.h,
+                                            child: Text(
+                                              widget.cart.credit == 0 ? 'Credit Card'.tr : '${'Credit Card'.tr} : ${widget.cart.credit.toStringAsFixed(3)}',
+                                              style: kStyleButtonPayment,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            onPressed: () async {
+                                              var result = await _showPayDialog(
+                                                balance: remaining + widget.cart.credit,
+                                                received: widget.cart.credit,
+                                                enableReturnValue: false,
+                                                controllerCreditCard: TextEditingController(text: widget.cart.creditCardNumber),
+                                                paymentCompany: widget.cart.payCompanyId == 0 ? null : widget.cart.payCompanyId,
+                                              );
+                                              widget.cart.credit = result['received'];
+                                              widget.cart.creditCardNumber = result['credit_card'];
+                                              widget.cart.creditCardType = result['credit_card_type'];
+                                              widget.cart.payCompanyId = result['payment_company'];
+                                              _calculateRemaining();
+                                              if (remaining == 0) {
+                                                _showFinishDialog();
+                                              }
+                                            },
                                           ),
-                                          onPressed: () async {
-                                            var result = await _showPayDialog(
-                                              balance: remaining + widget.cart.credit,
-                                              received: widget.cart.credit,
-                                              enableReturnValue: false,
-                                              controllerCreditCard: TextEditingController(text: widget.cart.creditCardNumber),
-                                              paymentCompany: widget.cart.payCompanyId == 0 ? null : widget.cart.payCompanyId,
-                                            );
-                                            widget.cart.credit = result['received'];
-                                            widget.cart.creditCardNumber = result['credit_card'];
-                                            widget.cart.creditCardType = result['credit_card_type'];
-                                            widget.cart.payCompanyId = result['payment_company'];
-                                            _calculateRemaining();
-                                            if (remaining == 0) {
-                                              _showFinishDialog();
-                                            }
-                                          },
                                         ),
                                       ),
+
                                       // Expanded(
                                       //   child: CustomButton(
                                       //     margin: EdgeInsets.all(8.h),
@@ -586,7 +586,7 @@ class _PayScreenState extends State<PayScreen> {
                             margin: EdgeInsets.symmetric(vertical: 4.h),
                             padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              border: Border.all(),
+                              border: Border.all(color: ColorsApp.orange_2),
                               borderRadius: BorderRadius.circular(3.r),
                             ),
                             child: Column(
@@ -714,7 +714,7 @@ class _PayScreenState extends State<PayScreen> {
                                     ),
                                     Text(
                                       widget.cart.amountDue.toStringAsFixed(3),
-                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
+                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red_light, fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -728,7 +728,7 @@ class _PayScreenState extends State<PayScreen> {
                                     ),
                                     Text(
                                       (widget.cart.cash + widget.cart.credit + widget.cart.cheque + widget.cart.gift + widget.cart.coupon + widget.cart.point).toStringAsFixed(3),
-                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
+                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red_light, fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -742,7 +742,7 @@ class _PayScreenState extends State<PayScreen> {
                                     ),
                                     Text(
                                       remaining.toStringAsFixed(3),
-                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red, fontWeight: FontWeight.bold),
+                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red_light, fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -758,7 +758,7 @@ class _PayScreenState extends State<PayScreen> {
                                             style: kStyleTextButton,
                                           ),
                                           fixed: true,
-                                          backgroundColor: ColorsApp.primaryColor,
+                                          backgroundColor: ColorsApp.orange_2,
                                           onPressed: () {
                                             _finishInvoice();
                                           },

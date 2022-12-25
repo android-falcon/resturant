@@ -22,11 +22,14 @@ import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
+import 'package:restaurant_system/screens/widgets/custom_drawer.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/screens/widgets/measure_size_widget.dart';
+import 'package:restaurant_system/utils/app_config/home_menu.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/enums/enum_company_type.dart';
 import 'package:restaurant_system/utils/enums/enum_device_type.dart';
 import 'package:restaurant_system/utils/enums/enum_discount_type.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
@@ -49,8 +52,11 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<HomeMenu> _menu = [];
   bool _dineInChangedOrder = false;
   bool _isShowItem = false;
+  bool _isShowTotal = false;
   int _selectedCategoryId = 0;
   late CartModel _cartModel;
   int _indexItemSelect = -1;
@@ -60,6 +66,52 @@ class _OrderScreenState extends State<OrderScreen> {
   @override
   initState() {
     super.initState();
+    _menu = <HomeMenu>[
+      if (widget.type == OrderType.takeAway)
+        HomeMenu(
+          name: 'Park List'.tr,
+          icon: Icon(Icons.local_parking_outlined, color: ColorsApp.orange_2),
+          onTab: () async {
+            if (_cartModel.items.isNotEmpty) {
+              Fluttertoast.showToast(msg: 'The cart must be emptied, in order to be able to get park'.tr);
+            } else {
+              var result = await _showParkDialog();
+              if (result != null) {
+                _cartModel = result;
+                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                setState(() {});
+              }
+            }
+          },
+        ),
+      if (widget.type == OrderType.takeAway)
+        HomeMenu(
+          name: 'Delivery Company'.tr,
+          icon: const Icon(Icons.delivery_dining_outlined, color: ColorsApp.gray),
+          onTab: () async {
+            if (_cartModel.items.isNotEmpty) {
+              Fluttertoast.showToast(msg: 'The cart must be emptied, in order to be able to change the delivery company'.tr);
+            } else {
+              await _showDeliveryCompanyDialog();
+              if (_cartModel.deliveryCompanyId == 0) {
+                for (var element in allDataModel.items) {
+                  element.companyPrice = 0;
+                }
+              } else {
+                for (var element in allDataModel.items) {
+                  var indexDeliveryCompanyItemPrice = allDataModel.deliveryCompanyItemPriceModel.indexWhere((elementDeliveryCompany) => elementDeliveryCompany.itemId == element.id && elementDeliveryCompany.deliveryCoId == _cartModel.deliveryCompanyId);
+                  if (indexDeliveryCompanyItemPrice != -1) {
+                    element.companyPrice = allDataModel.deliveryCompanyItemPriceModel[indexDeliveryCompanyItemPrice].price;
+                  } else {
+                    element.companyPrice = element.price;
+                  }
+                }
+              }
+              setState(() {});
+            }
+          },
+        ),
+    ];
     if (widget.type == OrderType.dineIn) {
       _cartModel = widget.dineIn!.cart;
     } else {
@@ -1168,6 +1220,177 @@ class _OrderScreenState extends State<OrderScreen> {
     return _selectedVoidReasonId == null ? null : allDataModel.voidReason.firstWhere((element) => element.id == _selectedVoidReasonId);
   }
 
+  Future<void> _actionPopUpItemSelected(String value, int index) async {
+    _indexItemSelect = index;
+    setState(() {});
+    switch (value) {
+      case 'Qty':
+        if (_indexItemSelect != -1) {
+          if (!_cartModel.items[_indexItemSelect].dineInSavedOrder) {
+            _cartModel.items[_indexItemSelect].qty = await _showQtyDialog(rQty: _cartModel.items[_indexItemSelect].qty, minQty: 0);
+            for (var element in _cartModel.items) {
+              if (_cartModel.items[_indexItemSelect].uuid == element.parentUuid) {
+                element.qty = _cartModel.items[_indexItemSelect].qty;
+              }
+            }
+            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+            setState(() {});
+          } else {
+            Fluttertoast.showToast(msg: 'The quantity of this item cannot be modified'.tr);
+          }
+        } else {
+          Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
+        }
+        break;
+      case 'Modifier':
+        if (_indexItemSelect != -1) {
+          var modifiersItem = allDataModel.itemWithModifires.where((element) => element.itemsId == _cartModel.items[_indexItemSelect].id).toList();
+          var modifiersCategory = allDataModel.categoryWithModifires.where((element) => element.categoryId == _cartModel.items[_indexItemSelect].categoryId).toList();
+          modifiersCategory.removeWhere((elementCategory) => modifiersItem.any((elementItem) => elementItem.modifiresId == elementCategory.modifireId));
+          modifiersCategory.removeWhere((elementCategory) => allDataModel.modifires.any((element) => element.id == elementCategory.modifireId && element.active == 0));
+          modifiersItem.removeWhere((elementItem) => allDataModel.modifires.any((element) => element.id == elementItem.modifiresId && element.active == 0));
+          if (modifiersItem.isNotEmpty || modifiersCategory.isNotEmpty) {
+            modifiersCategory.removeWhere((elementCategory) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementCategory.modifireId));
+            modifiersItem.removeWhere((elementItem) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementItem.modifiresId));
+            var modifiers = await _showModifierDialog(modifiersItem: modifiersItem, modifiersCategory: modifiersCategory, addedModifiers: _cartModel.items[_indexItemSelect].modifiers);
+            if (modifiers.isNotEmpty) {
+              _cartModel.items[_indexItemSelect].modifiers = modifiers;
+            }
+            setState(() {});
+          } else {
+            Fluttertoast.showToast(msg: 'This item cannot be modified'.tr);
+          }
+        } else {
+          Fluttertoast.showToast(msg: 'Please select the item you want to modifier'.tr);
+        }
+        break;
+      case 'Void':
+        var permission = false;
+        if (mySharedPreferences.employee.hasVoidPermission) {
+          permission = true;
+        } else {
+          EmployeeModel? employee = await Utils.showLoginDialog();
+          if (employee != null) {
+            if (employee.hasVoidPermission) {
+              permission = true;
+            } else {
+              Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+            }
+          }
+        }
+        if (permission) {
+          if (_indexItemSelect != -1) {
+            VoidReasonModel? result;
+            if (allDataModel.companyConfig[0].useVoidReason) {
+              result = await _showVoidReasonDialog();
+            } else {
+              var areYouSure = await Utils.showAreYouSureDialog(title: 'Void'.tr);
+              if (areYouSure) {
+                result = VoidReasonModel.fromJson({});
+              }
+            }
+            if (result != null) {
+              RestApi.saveVoidItem(item: _cartModel.items[_indexItemSelect], reason: result.reasonName);
+              if (_cartModel.orderType == OrderType.dineIn && _cartModel.items[_indexItemSelect].dineInSavedOrder) {
+                List<CartItemModel> voidItems = [];
+                voidItems.add(_cartModel.items[_indexItemSelect]);
+                voidItems.addAll(_cartModel.items.where((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid));
+                Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
+              }
+
+              _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
+              _cartModel.items.removeAt(_indexItemSelect);
+              _indexItemSelect = -1;
+              if (_cartModel.items.isEmpty) {
+                _cartModel.deliveryCharge = 0;
+                _cartModel.discount = 0;
+              } else if (_cartModel.items.every((element) => !element.discountAvailable)) {
+                _cartModel.discount = 0;
+              }
+              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+              _dineInChangedOrder = true;
+              setState(() {});
+            }
+          } else {
+            Fluttertoast.showToast(msg: 'Please select the item you want to remove'.tr);
+          }
+        }
+        break;
+      case 'Line Discount':
+        var permission = false;
+        if (mySharedPreferences.employee.hasLineDiscPermission) {
+          permission = true;
+        } else {
+          EmployeeModel? employee = await Utils.showLoginDialog();
+          if (employee != null) {
+            if (employee.hasLineDiscPermission) {
+              permission = true;
+            } else {
+              Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+            }
+          }
+        }
+        if (permission) {
+          if (_indexItemSelect != -1) {
+            if (_cartModel.items[_indexItemSelect].discountAvailable) {
+              var result = await _showDiscountDialog(
+                discount: _cartModel.items[_indexItemSelect].lineDiscount,
+                price: _cartModel.items[_indexItemSelect].priceChange,
+                type: _cartModel.items[_indexItemSelect].lineDiscountType,
+              );
+              _cartModel.items[_indexItemSelect].lineDiscount = result['discount'];
+              _cartModel.items[_indexItemSelect].lineDiscountType = result['type'];
+              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+              _dineInChangedOrder = true;
+              setState(() {});
+            } else {
+              Fluttertoast.showToast(msg: 'Line discount is not available for this item'.tr);
+            }
+          } else {
+            Fluttertoast.showToast(msg: 'Please select the item you want to line discount'.tr);
+          }
+        }
+        break;
+      case 'Price Change':
+        var permission = false;
+        if (mySharedPreferences.employee.hasPriceChangePermission) {
+          permission = true;
+        } else {
+          EmployeeModel? employee = await Utils.showLoginDialog();
+          if (employee != null) {
+            if (employee.hasPriceChangePermission) {
+              permission = true;
+            } else {
+              Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+            }
+          }
+        }
+        if (permission) {
+          if (_indexItemSelect != -1) {
+            if (_cartModel.items[_indexItemSelect].openPrice) {
+              _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
+              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+              _dineInChangedOrder = true;
+              setState(() {});
+            } else {
+              Fluttertoast.showToast(msg: 'Price change is not available for this item'.tr);
+            }
+          } else {
+            Fluttertoast.showToast(msg: 'Please select the item you want to price change'.tr);
+          }
+        }
+    }
+    // if (value == 'edit') {
+    //   message = 'You selected edit for $name';
+    //   // You can navigate the user to edit page.
+    // } else if (value == 'delete') {
+    //   message = 'You selected delete for $name';
+    //   // You can delete the item.
+    // } else {
+    //   message = 'Not implemented';
+    // }
+  }
+
   _saveDineIn() async {
     Utils.showLoadingDialog();
     await Printer.printInvoicesDialog(cart: _cartModel, showPrintButton: false, cashPrinter: false, kitchenPrinter: true, showInvoiceNo: false);
@@ -1201,13 +1424,23 @@ class _OrderScreenState extends State<OrderScreen> {
         }
       },
       child: Scaffold(
+        key: _scaffoldKey,
+        endDrawer: ClipPath(
+          // clipper: OvalRightBorderClipper(),
+          child: SizedBox(
+            width: 120.w,
+            child: CustomDrawer(
+              menu: _menu,
+            ),
+          ),
+        ),
         body: CustomSingleChildScrollView(
           child: Column(
             children: [
               Container(
                 width: double.infinity,
                 height: 50.h,
-                color: ColorsApp.gray,
+                color: companyType == CompanyType.falcons ? ColorsApp.backgroundDialog : ColorsApp.black,
                 child: Row(
                   children: [
                     IconButton(
@@ -1250,11 +1483,11 @@ class _OrderScreenState extends State<OrderScreen> {
                           }
                         }
                       },
-                      icon: const Icon(Icons.arrow_back),
-                    ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
+                      icon: Icon(
+                        Icons.arrow_back_ios,
+                        size: 20,
+                        color: companyType == CompanyType.falcons ? ColorsApp.black : ColorsApp.orange_2,
+                      ),
                     ),
                     SizedBox(width: 4.w),
                     Text(
@@ -1265,10 +1498,6 @@ class _OrderScreenState extends State<OrderScreen> {
                       style: kStyleTextDefault,
                     ),
                     SizedBox(width: 4.w),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
                     Expanded(
                       child: Text(
                         '${'VocNo'.tr} : ${mySharedPreferences.inVocNo}',
@@ -1278,78 +1507,7 @@ class _OrderScreenState extends State<OrderScreen> {
                         style: kStyleTextDefault,
                       ),
                     ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
-                    if (widget.type == OrderType.takeAway)
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
-                            if (_cartModel.items.isNotEmpty) {
-                              Fluttertoast.showToast(msg: 'The cart must be emptied, in order to be able to change the delivery company'.tr);
-                            } else {
-                              await _showDeliveryCompanyDialog();
-                              if (_cartModel.deliveryCompanyId == 0) {
-                                for (var element in allDataModel.items) {
-                                  element.companyPrice = 0;
-                                }
-                              } else {
-                                for (var element in allDataModel.items) {
-                                  var indexDeliveryCompanyItemPrice = allDataModel.deliveryCompanyItemPriceModel.indexWhere((elementDeliveryCompany) => elementDeliveryCompany.itemId == element.id && elementDeliveryCompany.deliveryCoId == _cartModel.deliveryCompanyId);
-                                  if (indexDeliveryCompanyItemPrice != -1) {
-                                    element.companyPrice = allDataModel.deliveryCompanyItemPriceModel[indexDeliveryCompanyItemPrice].price;
-                                  } else {
-                                    element.companyPrice = element.price;
-                                  }
-                                }
-                              }
-                              setState(() {});
-                            }
-                          },
-                          child: Text(
-                            allDataModel.deliveryCompanyModel.firstWhereOrNull((element) => element.id == _cartModel.deliveryCompanyId)?.coName ?? 'Delivery Company',
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: kStyleTextDefault,
-                          ),
-                        ),
-                      ),
-                    if (widget.type == OrderType.takeAway)
-                      const VerticalDivider(
-                        width: 1,
-                        thickness: 2,
-                      ),
-                    if (widget.type == OrderType.takeAway)
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
-                            if (_cartModel.items.isNotEmpty) {
-                              Fluttertoast.showToast(msg: 'The cart must be emptied, in order to be able to get park'.tr);
-                            } else {
-                              var result = await _showParkDialog();
-                              if (result != null) {
-                                _cartModel = result;
-                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                setState(() {});
-                              }
-                            }
-                          },
-                          child: Text(
-                            'Park'.tr,
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: kStyleTextDefault,
-                          ),
-                        ),
-                      ),
-                    if (widget.type == OrderType.takeAway)
-                      const VerticalDivider(
-                        width: 1,
-                        thickness: 2,
-                      ),
+
                     if (widget.type == OrderType.dineIn)
                       Expanded(
                         child: Text(
@@ -1388,6 +1546,12 @@ class _OrderScreenState extends State<OrderScreen> {
                         maxLines: 1,
                         style: kStyleTextDefault,
                       ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        _scaffoldKey.currentState?.openEndDrawer();
+                      },
+                      icon: Icon(Icons.menu),
                     ),
                     // if (widget.type == OrderType.dineIn)
                     //   Row(
@@ -1555,15 +1719,37 @@ class _OrderScreenState extends State<OrderScreen> {
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  if (e.itemPicture.isNotEmpty)
-                                                    CachedNetworkImage(
-                                                      imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
-                                                      height: 50.h,
-                                                      width: 50.w,
-                                                      fit: BoxFit.contain,
-                                                      placeholder: (context, url) => Container(),
-                                                      errorWidget: (context, url, error) => Container(),
-                                                    ),
+                                                  Stack(
+                                                    children: [
+                                                      Image.asset(
+                                                        'assets/images/Image_2.png',
+                                                        height: 80.h,
+                                                        width: 300.h,
+                                                        fit: BoxFit.fill,
+                                                      ),
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(5.0),
+                                                        child: Align(
+                                                          alignment: Alignment.centerRight,
+                                                          child: Image.asset(
+                                                            'assets/images/Favorite.png',
+                                                            height: 30.h,
+                                                            width: 30.w,
+                                                            fit: BoxFit.fitHeight,
+                                                          ),
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  // if (e.itemPicture.isNotEmpty)
+                                                  //   CachedNetworkImage(
+                                                  //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
+                                                  //     height: 50.h,
+                                                  //     width: 50.w,
+                                                  //     fit: BoxFit.contain,
+                                                  //     placeholder: (context, url) => Container(),
+                                                  //     errorWidget: (context, url, error) => Container(),
+                                                  //   ),
                                                   Column(
                                                     mainAxisSize: MainAxisSize.min,
                                                     mainAxisAlignment: MainAxisAlignment.start,
@@ -1574,14 +1760,38 @@ class _OrderScreenState extends State<OrderScreen> {
                                                         style: kStyleTextTitle,
                                                         textAlign: TextAlign.center,
                                                       ),
-                                                      if (e.description.isNotEmpty)
-                                                        Text(
-                                                          e.description,
-                                                          style: kStyleTextDefault,
-                                                        ),
-                                                      Text(
-                                                        _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(3) : e.companyPrice.toStringAsFixed(3),
-                                                        style: kStyleTextTitle,
+                                                      // if (e.description.isNotEmpty)
+                                                      //   Text(
+                                                      //     e.description,
+                                                      //     style: kStyleTextDefault,
+                                                      //   ),
+                                                      Row(
+                                                        children: [
+                                                          Text(
+                                                            _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(3) + " JD" : e.companyPrice.toStringAsFixed(3) + " JD",
+                                                            style: kStyleTextTitle.copyWith(color: ColorsApp.orange_2),
+                                                          ),
+                                                          SizedBox(
+                                                            width: 10.w,
+                                                          ),
+                                                          Container(
+                                                            decoration: BoxDecoration(
+                                                                color: ColorsApp.orange_2,
+                                                                borderRadius: BorderRadius.circular(
+                                                                  15.0,
+                                                                ),
+                                                                border: Border.all(color: ColorsApp.orange_2)),
+                                                            width: 30.w,
+                                                            height: 40.h,
+                                                            margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                                            child: Center(
+                                                              child: Text(
+                                                                'Add + '.tr,
+                                                                style: kStyleTextDefault.copyWith(color: Colors.white),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ],
                                                   ),
@@ -1596,43 +1806,84 @@ class _OrderScreenState extends State<OrderScreen> {
                                   .toList()
                               : allDataModel.categories
                                   .map((e) => Card(
+                                        color: ColorsApp.gray_light,
+                                        shadowColor: ColorsApp.gray_light,
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(5.r),
                                         ),
                                         elevation: 0,
-                                        child: InkWell(
-                                          borderRadius: BorderRadius.circular(5.r),
-                                          onTap: () {
-                                            _selectedCategoryId = e.id;
-                                            _isShowItem = true;
-                                            setState(() {});
-                                          },
+                                        child: Container(
+                                          height: 200.h,
+                                          width: 100.h,
                                           child: Padding(
                                             padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                CachedNetworkImage(
-                                                  imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
-                                                  height: 50.h,
-                                                  width: 50.w,
-                                                  fit: BoxFit.contain,
-                                                  placeholder: (context, url) => SizedBox(
-                                                    height: 50.h,
-                                                    width: 50.w,
+                                            child: SingleChildScrollView(
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Stack(
+                                                    children: [
+                                                      Image.asset(
+                                                        'assets/images/Image_1.png',
+                                                        height: 80.h,
+                                                        width: 100.w,
+                                                        fit: BoxFit.fitHeight,
+                                                      ),
+                                                      Align(
+                                                        alignment: Alignment.topRight,
+                                                        child: Image.asset(
+                                                          'assets/images/Favorite.png',
+                                                          height: 30.h,
+                                                          width: 30.w,
+                                                          fit: BoxFit.fitHeight,
+                                                        ),
+                                                      )
+                                                    ],
                                                   ),
-                                                  errorWidget: (context, url, error) => SizedBox(
-                                                    height: 50.h,
-                                                    width: 50.w,
+                                                  // CachedNetworkImage(
+                                                  //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                                  //   height: 50.h,
+                                                  //   width: 50.w,
+                                                  //   fit: BoxFit.contain,
+                                                  //   placeholder: (context, url) => SizedBox(
+                                                  //     height: 50.h,
+                                                  //     width: 50.w,
+                                                  //   ),
+                                                  //   errorWidget: (context, url, error) => SizedBox(
+                                                  //     height: 50.h,
+                                                  //     width: 50.w,
+                                                  //   ),
+                                                  // ),
+                                                  SizedBox(
+                                                    height: 10.h,
                                                   ),
-                                                ),
-                                                Text(
-                                                  '${e.categoryName}\n',
-                                                  maxLines: 2,
-                                                  textAlign: TextAlign.center,
-                                                  style: kStyleTextTitle,
-                                                ),
-                                              ],
+                                                  Text(
+                                                    '${e.categoryName}',
+                                                    maxLines: 2,
+                                                    textAlign: TextAlign.center,
+                                                    style: kStyleTextTitle,
+                                                  ),
+                                                  SizedBox(
+                                                    height: 10.h,
+                                                  ),
+                                                  CustomButton(
+                                                    borderRadius: 8,
+                                                    width: 50.w,
+                                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                                    child: Text(
+                                                      'View Items'.tr,
+                                                      style: kStyleTextButton,
+                                                    ),
+                                                    fixed: true,
+                                                    backgroundColor: ColorsApp.orange_2,
+                                                    onPressed: () async {
+                                                      _selectedCategoryId = e.id;
+                                                      _isShowItem = true;
+                                                      setState(() {});
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -1642,10 +1893,236 @@ class _OrderScreenState extends State<OrderScreen> {
                       ),
                     ),
                     Container(
-                      width: 110.w,
+                      width: 130.w,
+                      color: ColorsApp.orange_light,
                       padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
                       child: Column(
                         children: [
+                          SizedBox(
+                            height: 5.h,
+                          ),
+                          Row(
+                            children: [
+                              if (mySharedPreferences.employee.hasDiscPermission)
+                                Expanded(
+                                  child: Container(
+                                    width: 50.w,
+                                    height: 30.h,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: ColorsApp.orange_2),
+                                      borderRadius: BorderRadius.circular(
+                                        10.0,
+                                      ),
+                                    ),
+                                    child: InkWell(
+                                      onTap: () async {
+                                        var permission = false;
+                                        if (mySharedPreferences.employee.hasDiscPermission) {
+                                          permission = true;
+                                        } else {
+                                          EmployeeModel? employee = await Utils.showLoginDialog();
+                                          if (employee != null) {
+                                            if (employee.hasDiscPermission) {
+                                              permission = true;
+                                            } else {
+                                              Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                                            }
+                                          }
+                                        }
+                                        if (permission) {
+                                          if (_cartModel.items.any((element) => element.discountAvailable)) {
+                                            var result = await _showDiscountDialog(
+                                              discount: _cartModel.discount,
+                                              price: _cartModel.total,
+                                              type: _cartModel.discountType,
+                                            );
+                                            _cartModel.discount = result['discount'];
+                                            _cartModel.discountType = result['type'];
+                                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                            _dineInChangedOrder = true;
+                                            setState(() {});
+                                          } else {
+                                            Fluttertoast.showToast(msg: 'No items accept discount in order'.tr);
+                                          }
+                                        }
+                                      },
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Center(
+                                              child: Text(
+                                                'Discount'.tr,
+                                                textAlign: TextAlign.center,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: kStyleTextOrange,
+                                              ),
+                                            ),
+                                            Image.asset(
+                                              'assets/images/arrowchevronright.png',
+                                              height: 30.h,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              SizedBox(
+                                width: 5.w,
+                              ),
+                              if (mySharedPreferences.employee.hasVoidAllPermission)
+                                Expanded(
+                                    child: Container(
+                                  width: 50.w,
+                                  height: 30.h,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: ColorsApp.orange_2),
+                                    borderRadius: BorderRadius.circular(
+                                      10.0,
+                                    ),
+                                  ),
+                                  child: InkWell(
+                                    onTap: () async {
+                                      var permission = false;
+                                      if (mySharedPreferences.employee.hasVoidAllPermission) {
+                                        permission = true;
+                                      } else {
+                                        EmployeeModel? employee = await Utils.showLoginDialog();
+                                        if (employee != null) {
+                                          if (employee.hasVoidAllPermission) {
+                                            permission = true;
+                                          } else {
+                                            Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                                          }
+                                        }
+                                      }
+                                      if (permission) {
+                                        if (_cartModel.items.isEmpty) {
+                                          Fluttertoast.showToast(msg: 'There must be items'.tr);
+                                        } else {
+                                          VoidReasonModel? result;
+                                          if (allDataModel.companyConfig[0].useVoidReason) {
+                                            result = await _showVoidReasonDialog();
+                                          } else {
+                                            var areYouSure = await Utils.showAreYouSureDialog(
+                                              title: 'Void All'.tr,
+                                            );
+                                            if (areYouSure) {
+                                              result = VoidReasonModel.fromJson({});
+                                            }
+                                          }
+                                          if (result != null) {
+                                            RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
+                                            List<CartItemModel> voidItems = [];
+                                            voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
+                                            if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
+                                              Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
+                                            }
+                                            _indexItemSelect = -1;
+                                            _cartModel.items = [];
+                                            _cartModel.deliveryCharge = 0;
+                                            _cartModel.discount = 0;
+                                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                            _dineInChangedOrder = true;
+                                            setState(() {});
+                                          }
+                                        }
+                                      }
+                                    },
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Center(
+                                            child: Text(
+                                              'Void All'.tr,
+                                              textAlign: TextAlign.center,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: kStyleTextOrange,
+                                            ),
+                                          ),
+                                          Image.asset(
+                                            'assets/images/arrowchevronright.png',
+                                            height: 30.h,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                )),
+                              SizedBox(
+                                width: 5.w,
+                              ),
+                              if (widget.type == OrderType.takeAway)
+                                Expanded(
+                                    child: Container(
+                                  width: 50.w,
+                                  height: 30.h,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: ColorsApp.orange_2),
+                                    borderRadius: BorderRadius.circular(
+                                      10.0,
+                                    ),
+                                  ),
+                                  child: InkWell(
+                                    onTap: () async {
+                                      if (_cartModel.items.isNotEmpty) {
+                                        _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
+                                        _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                        setState(() {});
+                                      } else {
+                                        Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
+                                      }
+                                    },
+                                    child: Text(
+                                      'Delivery'.tr,
+                                      style: kStyleTextButton,
+                                    ),
+                                  ),
+                                )),
+                              SizedBox(
+                                width: 5.w,
+                              ),
+                              Expanded(
+                                child: CustomButton(
+                                  margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                  child: Text(
+                                    'Park'.tr,
+                                    style: kStyleTextButton,
+                                  ),
+                                  fixed: true,
+                                  backgroundColor: ColorsApp.red_light,
+                                  onPressed: () async {
+                                    if (_cartModel.items.isNotEmpty) {
+                                      var result = await _showAddParkDialog();
+                                      if (result.isNotEmpty) {
+                                        _cartModel.parkName = result;
+                                        var park = mySharedPreferences.park;
+                                        park.add(_cartModel);
+                                        mySharedPreferences.park = park;
+                                        _cartModel = CartModel.init(orderType: OrderType.takeAway);
+                                        _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                        setState(() {});
+                                      }
+                                    } else {
+                                      Fluttertoast.showToast(msg: 'Please add items to complete an park'.tr);
+                                    }
+                                  },
+                                ),
+                              )
+                            ],
+                          ),
+                          SizedBox(
+                            height: 5.h,
+                          ),
                           Expanded(
                             child: ListView(
                               children: [
@@ -1656,212 +2133,285 @@ class _OrderScreenState extends State<OrderScreen> {
                                   ),
                                   child: Column(
                                     children: [
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                'Qty'.tr,
-                                                style: kStyleHeaderTable,
-                                                textAlign: TextAlign.center,
+                                      Container(
+                                        color: Colors.white,
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  'Qty'.tr,
+                                                  style: kStyleHeaderTable,
+                                                  textAlign: TextAlign.center,
+                                                ),
                                               ),
-                                            ),
-                                            Expanded(
-                                              flex: 3,
-                                              child: Text(
-                                                'Pro-Nam'.tr,
-                                                style: kStyleHeaderTable,
-                                                textAlign: TextAlign.center,
+                                              Expanded(
+                                                flex: 3,
+                                                child: Text(
+                                                  'Pro-Nam'.tr,
+                                                  style: kStyleHeaderTable,
+                                                  textAlign: TextAlign.center,
+                                                ),
                                               ),
-                                            ),
-                                            Expanded(
-                                              child: Text(
-                                                'Price'.tr,
-                                                style: kStyleHeaderTable,
-                                                textAlign: TextAlign.center,
+                                              Expanded(
+                                                child: Text(
+                                                  'Price'.tr,
+                                                  style: kStyleHeaderTable,
+                                                  textAlign: TextAlign.center,
+                                                ),
                                               ),
-                                            ),
-                                            Expanded(
-                                              child: Text(
-                                                'Total'.tr,
-                                                style: kStyleHeaderTable,
-                                                textAlign: TextAlign.center,
+                                              Expanded(
+                                                child: Text(
+                                                  'Total'.tr,
+                                                  style: kStyleHeaderTable,
+                                                  textAlign: TextAlign.center,
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                      const Divider(color: Colors.black, height: 1),
-                                      ListView.separated(
-                                        itemCount: _cartModel.items.length,
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        separatorBuilder: (context, index) => _cartModel.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
-                                        itemBuilder: (context, index) {
-                                          if (_cartModel.items[index].parentUuid.isNotEmpty) {
-                                            return Container();
-                                          } else {
-                                            var subItem = _cartModel.items.where((element) => element.parentUuid == _cartModel.items[index].uuid).toList();
-                                            return InkWell(
-                                              onTap: () {
-                                                _indexItemSelect = index;
-                                                setState(() {});
-                                              },
-                                              onLongPress: () async {
-                                                var note = await _showNoteItemDialog(note: _cartModel.items[index].note);
-                                                _cartModel.items[index].note = note;
-                                              },
-                                              child: Container(
-                                                color: index == _indexItemSelect ? ColorsApp.primaryColor : null,
-                                                child: Column(
-                                                  children: [
-                                                    Padding(
-                                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                                      child: Row(
-                                                        children: [
-                                                          Expanded(
-                                                            child: Text(
-                                                              '${_cartModel.items[index].qty}',
-                                                              style: kStyleDataTable,
-                                                              textAlign: TextAlign.center,
+                                      const Divider(color: Colors.grey, height: 1),
+                                      SizedBox(
+                                        height: 300.h,
+                                        child: ListView.separated(
+                                          itemCount: _cartModel.items.length,
+                                          shrinkWrap: true,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          separatorBuilder: (context, index) => _cartModel.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
+                                          itemBuilder: (context, index) {
+                                            if (_cartModel.items[index].parentUuid.isNotEmpty) {
+                                              return Container();
+                                            } else {
+                                              var subItem = _cartModel.items.where((element) => element.parentUuid == _cartModel.items[index].uuid).toList();
+                                              return InkWell(
+                                                onTap: () {
+                                                  _indexItemSelect = index;
+                                                  setState(() {});
+                                                },
+                                                onLongPress: () async {
+                                                  var note = await _showNoteItemDialog(note: _cartModel.items[index].note);
+                                                  _cartModel.items[index].note = note;
+                                                },
+                                                child: Container(
+                                                  color: index == _indexItemSelect ? ColorsApp.primaryColor : null,
+                                                  child: Column(
+                                                    children: [
+                                                      Padding(
+                                                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                                        child: Row(
+                                                          children: [
+                                                            Expanded(
+                                                              child: Text(
+                                                                '${_cartModel.items[index].qty}',
+                                                                style: kStyleDataTable,
+                                                                textAlign: TextAlign.center,
+                                                              ),
                                                             ),
-                                                          ),
-                                                          Expanded(
-                                                            flex: 3,
-                                                            child: Text(
-                                                              _cartModel.items[index].name,
-                                                              style: kStyleDataTable,
-                                                              textAlign: TextAlign.center,
+                                                            Expanded(
+                                                              flex: 3,
+                                                              child: Text(
+                                                                _cartModel.items[index].name,
+                                                                style: kStyleDataTable,
+                                                                textAlign: TextAlign.center,
+                                                              ),
                                                             ),
-                                                          ),
-                                                          Expanded(
-                                                            child: Text(
-                                                              _cartModel.items[index].priceChange.toStringAsFixed(3),
-                                                              style: kStyleDataTable,
-                                                              textAlign: TextAlign.center,
+                                                            Expanded(
+                                                              child: Text(
+                                                                _cartModel.items[index].priceChange.toStringAsFixed(3),
+                                                                style: kStyleDataTable,
+                                                                textAlign: TextAlign.center,
+                                                              ),
                                                             ),
-                                                          ),
-                                                          Expanded(
-                                                            child: Text(
-                                                              (_cartModel.items[index].priceChange * _cartModel.items[index].qty).toStringAsFixed(3),
-                                                              style: kStyleDataTable,
-                                                              textAlign: TextAlign.center,
+                                                            Expanded(
+                                                              child: Text(
+                                                                (_cartModel.items[index].priceChange * _cartModel.items[index].qty).toStringAsFixed(3),
+                                                                style: kStyleDataTable,
+                                                                textAlign: TextAlign.center,
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                                      child: Column(
-                                                        children: [
-                                                          ListView.builder(
-                                                            itemCount: _cartModel.items[index].questions.length,
-                                                            shrinkWrap: true,
-                                                            physics: const NeverScrollableScrollPhysics(),
-                                                            itemBuilder: (context, indexQuestions) => Column(
-                                                              children: [
-                                                                Row(
-                                                                  children: [
-                                                                    Expanded(
-                                                                      child: Text(
-                                                                        _cartModel.items[index].questions[indexQuestions].question.trim(),
-                                                                        style: kStyleDataTableModifiers,
-                                                                      ),
+                                                            PopupMenuButton(
+                                                              itemBuilder: (context) {
+                                                                return [
+                                                                  PopupMenuItem(
+                                                                    value: 'Qty',
+                                                                    child: Text(
+                                                                      'Qty'.tr,
+                                                                      style: kStyleTextDefault,
                                                                     ),
-                                                                  ],
-                                                                ),
-                                                                ListView.builder(
-                                                                  itemCount: _cartModel.items[index].questions[indexQuestions].modifiers.length,
-                                                                  shrinkWrap: true,
-                                                                  physics: const NeverScrollableScrollPhysics(),
-                                                                  itemBuilder: (context, indexModifiers) => Column(
+                                                                  ),
+                                                                  PopupMenuItem(
+                                                                    value: 'Modifier',
+                                                                    child: Text(
+                                                                      'Modifier'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
+                                                                  ),
+                                                                  PopupMenuItem(
+                                                                    value: 'Void',
+                                                                    child: Text(
+                                                                      'Void'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
+                                                                  ),
+                                                                  PopupMenuItem(
+                                                                    value: 'Line Discount',
+                                                                    child: Text(
+                                                                      'Line Discount'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
+                                                                  ),
+                                                                  PopupMenuItem(
+                                                                    value: 'Price Change',
+                                                                    child: Text(
+                                                                      'Price Change'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
+                                                                  ),
+                                                                ];
+                                                              },
+                                                              onSelected: (String value) {
+                                                                _actionPopUpItemSelected(value, index);
+                                                              },
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                                        child: Column(
+                                                          children: [
+                                                            ListView.builder(
+                                                              itemCount: _cartModel.items[index].questions.length,
+                                                              shrinkWrap: true,
+                                                              physics: const NeverScrollableScrollPhysics(),
+                                                              itemBuilder: (context, indexQuestions) => Column(
+                                                                children: [
+                                                                  Row(
                                                                     children: [
-                                                                      Row(
-                                                                        children: [
-                                                                          Expanded(
-                                                                            child: Text(
-                                                                              '* ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
-                                                                              style: kStyleDataTableModifiers,
-                                                                            ),
-                                                                          ),
-                                                                        ],
+                                                                      Expanded(
+                                                                        child: Text(
+                                                                          _cartModel.items[index].questions[indexQuestions].question.trim(),
+                                                                          style: kStyleDataTableModifiers,
+                                                                        ),
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                          ListView.builder(
-                                                            itemCount: _cartModel.items[index].modifiers.length,
-                                                            shrinkWrap: true,
-                                                            physics: const NeverScrollableScrollPhysics(),
-                                                            itemBuilder: (context, indexModifiers) => Row(
-                                                              children: [
-                                                                Expanded(
-                                                                  child: Text(
-                                                                    '${_cartModel.items[index].modifiers[indexModifiers].name}\n* ${_cartModel.items[index].modifiers[indexModifiers].modifier}',
-                                                                    style: kStyleDataTableModifiers,
+                                                                  ListView.builder(
+                                                                    itemCount: _cartModel.items[index].questions[indexQuestions].modifiers.length,
+                                                                    shrinkWrap: true,
+                                                                    physics: const NeverScrollableScrollPhysics(),
+                                                                    itemBuilder: (context, indexModifiers) => Column(
+                                                                      children: [
+                                                                        Row(
+                                                                          children: [
+                                                                            Expanded(
+                                                                              child: Text(
+                                                                                '* ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
+                                                                                style: kStyleDataTableModifiers,
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
                                                                   ),
-                                                                ),
-                                                              ],
+                                                                ],
+                                                              ),
                                                             ),
-                                                          ),
-                                                          if (subItem.isNotEmpty)
                                                             ListView.builder(
-                                                              itemCount: subItem.length,
+                                                              itemCount: _cartModel.items[index].modifiers.length,
                                                               shrinkWrap: true,
                                                               physics: const NeverScrollableScrollPhysics(),
-                                                              itemBuilder: (context, indexSubItem) {
-                                                                return Row(
-                                                                  children: [
-                                                                    Expanded(
-                                                                      flex: 4,
-                                                                      child: Text(
-                                                                        subItem[indexSubItem].name,
-                                                                        style: kStyleDataTableModifiers,
-                                                                        textAlign: TextAlign.center,
-                                                                        maxLines: 1,
-                                                                        overflow: TextOverflow.ellipsis,
-                                                                      ),
+                                                              itemBuilder: (context, indexModifiers) => Row(
+                                                                children: [
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      '${_cartModel.items[index].modifiers[indexModifiers].name}\n* ${_cartModel.items[index].modifiers[indexModifiers].modifier}',
+                                                                      style: kStyleDataTableModifiers,
                                                                     ),
-                                                                    Expanded(
-                                                                      child: Text(
-                                                                        subItem[indexSubItem].priceChange.toStringAsFixed(3),
-                                                                        style: kStyleDataTableModifiers,
-                                                                        textAlign: TextAlign.center,
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child: Text(
-                                                                        (subItem[indexSubItem].priceChange * subItem[indexSubItem].qty).toStringAsFixed(3),
-                                                                        style: kStyleDataTableModifiers,
-                                                                        textAlign: TextAlign.center,
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                );
-                                                              },
+                                                                  ),
+                                                                ],
+                                                              ),
                                                             ),
-                                                        ],
-                                                      ),
-                                                    )
-                                                  ],
+                                                            if (subItem.isNotEmpty)
+                                                              ListView.builder(
+                                                                itemCount: subItem.length,
+                                                                shrinkWrap: true,
+                                                                physics: const NeverScrollableScrollPhysics(),
+                                                                itemBuilder: (context, indexSubItem) {
+                                                                  return Row(
+                                                                    children: [
+                                                                      Expanded(
+                                                                        flex: 4,
+                                                                        child: Text(
+                                                                          subItem[indexSubItem].name,
+                                                                          style: kStyleDataTableModifiers,
+                                                                          textAlign: TextAlign.center,
+                                                                          maxLines: 1,
+                                                                          overflow: TextOverflow.ellipsis,
+                                                                        ),
+                                                                      ),
+                                                                      Expanded(
+                                                                        child: Text(
+                                                                          subItem[indexSubItem].priceChange.toStringAsFixed(3),
+                                                                          style: kStyleDataTableModifiers,
+                                                                          textAlign: TextAlign.center,
+                                                                        ),
+                                                                      ),
+                                                                      Expanded(
+                                                                        child: Text(
+                                                                          (subItem[indexSubItem].priceChange * subItem[indexSubItem].qty).toStringAsFixed(3),
+                                                                          style: kStyleDataTableModifiers,
+                                                                          textAlign: TextAlign.center,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  );
+                                                                },
+                                                              ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                            );
-                                          }
-                                        },
+                                              );
+                                            }
+                                          },
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                Container(
+                              ],
+                            ),
+                          ),
+                          Stack(children: [
+                            const Divider(color: Colors.black, height: 20),
+                            Align(
+                              alignment: Alignment.topCenter,
+                              child: InkWell(
+                                onTap: () {
+                                  _isShowTotal = !_isShowTotal;
+                                  setState(() {});
+                                },
+                                child: Container(
+                                  child: Image.asset(
+                                    'assets/images/drop_dark.png',
+                                    height: 20.h,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ]),
+                          _isShowTotal
+                              ? Container(
                                   margin: EdgeInsets.symmetric(vertical: 4.h),
                                   padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
                                   decoration: BoxDecoration(
+                                    color: ColorsApp.orange_light,
                                     border: Border.all(),
                                     borderRadius: BorderRadius.circular(3.r),
                                   ),
@@ -1982,8 +2532,25 @@ class _OrderScreenState extends State<OrderScreen> {
                                       ),
                                     ],
                                   ),
+                                )
+                              : Container(),
+                          SizedBox(
+                            height: 5.h,
+                          ),
+                          Container(
+                            width: 150.w,
+                            height: 35.h,
+                            decoration: BoxDecoration(
+                                color: ColorsApp.backgroundDialog,
+                                borderRadius: BorderRadius.circular(
+                                  5.0,
                                 ),
-                              ],
+                                border: Border.all(color: ColorsApp.black)),
+                            child: Center(
+                              child: Text(
+                                'Amount Due'.tr + '\t\t\t' + _cartModel.amountDue.toStringAsFixed(3),
+                                style: kStyleTextDefault.copyWith(color: ColorsApp.black, fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                           Row(
@@ -1993,14 +2560,17 @@ class _OrderScreenState extends State<OrderScreen> {
                                   child: CustomButton(
                                     margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
                                     child: Text(
-                                      'Pay'.tr,
+                                      'Cash'.tr,
                                       style: kStyleTextButton,
                                     ),
                                     fixed: true,
-                                    backgroundColor: ColorsApp.green,
-                                    onPressed: () {
+                                    backgroundColor: ColorsApp.orange_2,
+                                    onPressed: () async {
                                       if (_cartModel.items.isNotEmpty) {
-                                        Get.to(() => PayScreen(cart: _cartModel));
+                                        Get.to(() => PayScreen(
+                                              cart: _cartModel,
+                                              openTypeDialog: 1,
+                                            ));
                                       } else {
                                         Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
                                       }
@@ -2012,25 +2582,42 @@ class _OrderScreenState extends State<OrderScreen> {
                                   child: CustomButton(
                                     margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
                                     child: Text(
-                                      'Park'.tr,
+                                      'Visa'.tr,
                                       style: kStyleTextButton,
                                     ),
                                     fixed: true,
-                                    backgroundColor: ColorsApp.blue,
+                                    backgroundColor: ColorsApp.orange_2,
                                     onPressed: () async {
                                       if (_cartModel.items.isNotEmpty) {
-                                        var result = await _showAddParkDialog();
-                                        if (result.isNotEmpty) {
-                                          _cartModel.parkName = result;
-                                          var park = mySharedPreferences.park;
-                                          park.add(_cartModel);
-                                          mySharedPreferences.park = park;
-                                          _cartModel = CartModel.init(orderType: OrderType.takeAway);
-                                          _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                          setState(() {});
-                                        }
+                                        Get.to(() => PayScreen(
+                                              cart: _cartModel,
+                                              openTypeDialog: 0,
+                                            ));
                                       } else {
-                                        Fluttertoast.showToast(msg: 'Please add items to complete an park'.tr);
+                                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              if (widget.type == OrderType.takeAway)
+                                Expanded(
+                                  child: CustomButton(
+                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                    child: Text(
+                                      'Multi Pay'.tr,
+                                      style: kStyleTextButton,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    fixed: true,
+                                    backgroundColor: ColorsApp.orange_2,
+                                    onPressed: () {
+                                      if (_cartModel.items.isNotEmpty) {
+                                        Get.to(() => PayScreen(
+                                              cart: _cartModel,
+                                              openTypeDialog: 2,
+                                            ));
+                                      } else {
+                                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
                                       }
                                     },
                                   ),
@@ -2082,482 +2669,6 @@ class _OrderScreenState extends State<OrderScreen> {
                             ],
                           ),
                         ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                height: 50.h,
-                color: ColorsApp.accentColor,
-                child: Row(
-                  children: [
-                    // Expanded(
-                    //   child: InkWell(
-                    //     onTap: () async {
-                    //       if (_indexItemSelect != -1) {
-                    //         var subItems = allDataModel.subItemsForceQuestions.where((element) => element.itemId == _cartModel.items[_indexItemSelect].id).toList();
-                    //         if (subItems.isNotEmpty) {
-                    //           var cartSubItems = await _showSubItemDialog(subItems: subItems, parentRandomId: _cartModel.items[_indexItemSelect].uuid, parentQty: _cartModel.items[_indexItemSelect].qty);
-                    //           _cartModel.items.addAll(cartSubItems);
-                    //           setState(() {});
-                    //         } else {
-                    //           Fluttertoast.showToast(msg: 'This item cannot be sub item'.tr);
-                    //         }
-                    //       } else {
-                    //         Fluttertoast.showToast(msg: 'Please select the item you want to sub item'.tr);
-                    //       }
-                    //     },
-                    //     child: SizedBox(
-                    //       width: double.infinity,
-                    //       height: double.infinity,
-                    //       child: Center(
-                    //         child: Text(
-                    //           'Sub Item'.tr,
-                    //           textAlign: TextAlign.center,
-                    //           overflow: TextOverflow.ellipsis,
-                    //           maxLines: 1,
-                    //           style: kStyleTextDefault,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-                    // const VerticalDivider(
-                    //   width: 1,
-                    //   thickness: 2,
-                    // ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          if (_indexItemSelect != -1) {
-                            if (!_cartModel.items[_indexItemSelect].dineInSavedOrder) {
-                              _cartModel.items[_indexItemSelect].qty = await _showQtyDialog(rQty: _cartModel.items[_indexItemSelect].qty, minQty: 0);
-                              for (var element in _cartModel.items) {
-                                if (_cartModel.items[_indexItemSelect].uuid == element.parentUuid) {
-                                  element.qty = _cartModel.items[_indexItemSelect].qty;
-                                }
-                              }
-                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                              setState(() {});
-                            } else {
-                              Fluttertoast.showToast(msg: 'The quantity of this item cannot be modified'.tr);
-                            }
-                          } else {
-                            Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
-                          }
-                        },
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Qty'.tr,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: kStyleTextDefault,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          if (_indexItemSelect != -1) {
-                            var modifiersItem = allDataModel.itemWithModifires.where((element) => element.itemsId == _cartModel.items[_indexItemSelect].id).toList();
-                            var modifiersCategory = allDataModel.categoryWithModifires.where((element) => element.categoryId == _cartModel.items[_indexItemSelect].categoryId).toList();
-                            modifiersCategory.removeWhere((elementCategory) => modifiersItem.any((elementItem) => elementItem.modifiresId == elementCategory.modifireId));
-                            modifiersCategory.removeWhere((elementCategory) => allDataModel.modifires.any((element) => element.id == elementCategory.modifireId && element.active == 0));
-                            modifiersItem.removeWhere((elementItem) => allDataModel.modifires.any((element) => element.id == elementItem.modifiresId && element.active == 0));
-                            if (modifiersItem.isNotEmpty || modifiersCategory.isNotEmpty) {
-                              modifiersCategory.removeWhere((elementCategory) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementCategory.modifireId));
-                              modifiersItem.removeWhere((elementItem) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementItem.modifiresId));
-                              var modifiers = await _showModifierDialog(modifiersItem: modifiersItem, modifiersCategory: modifiersCategory, addedModifiers: _cartModel.items[_indexItemSelect].modifiers);
-                              if (modifiers.isNotEmpty) {
-                                _cartModel.items[_indexItemSelect].modifiers = modifiers;
-                              }
-                              setState(() {});
-                            } else {
-                              Fluttertoast.showToast(msg: 'This item cannot be modified'.tr);
-                            }
-                          } else {
-                            Fluttertoast.showToast(msg: 'Please select the item you want to modifier'.tr);
-                          }
-                        },
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Modifier'.tr,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: kStyleTextDefault,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          var permission = false;
-                          if (mySharedPreferences.employee.hasVoidPermission) {
-                            permission = true;
-                          } else {
-                            EmployeeModel? employee = await Utils.showLoginDialog();
-                            if (employee != null) {
-                              if (employee.hasVoidPermission) {
-                                permission = true;
-                              } else {
-                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
-                              }
-                            }
-                          }
-                          if (permission) {
-                            if (_indexItemSelect != -1) {
-                              VoidReasonModel? result;
-                              if (allDataModel.companyConfig[0].useVoidReason) {
-                                result = await _showVoidReasonDialog();
-                              } else {
-                                var areYouSure = await Utils.showAreYouSureDialog(title: 'Void'.tr);
-                                if (areYouSure) {
-                                  result = VoidReasonModel.fromJson({});
-                                }
-                              }
-                              if (result != null) {
-                                RestApi.saveVoidItem(item: _cartModel.items[_indexItemSelect], reason: result.reasonName);
-                                if (_cartModel.orderType == OrderType.dineIn && _cartModel.items[_indexItemSelect].dineInSavedOrder) {
-                                  List<CartItemModel> voidItems = [];
-                                  voidItems.add(_cartModel.items[_indexItemSelect]);
-                                  voidItems.addAll(_cartModel.items.where((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid));
-                                  Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
-                                }
-
-                                _cartModel.items.removeWhere((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid);
-                                _cartModel.items.removeAt(_indexItemSelect);
-                                _indexItemSelect = -1;
-                                if (_cartModel.items.isEmpty) {
-                                  _cartModel.deliveryCharge = 0;
-                                  _cartModel.discount = 0;
-                                } else if (_cartModel.items.every((element) => !element.discountAvailable)) {
-                                  _cartModel.discount = 0;
-                                }
-                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                _dineInChangedOrder = true;
-                                setState(() {});
-                              }
-                            } else {
-                              Fluttertoast.showToast(msg: 'Please select the item you want to remove'.tr);
-                            }
-                          }
-                        },
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Void'.tr,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: kStyleTextDefault,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          var permission = false;
-                          if (mySharedPreferences.employee.hasVoidAllPermission) {
-                            permission = true;
-                          } else {
-                            EmployeeModel? employee = await Utils.showLoginDialog();
-                            if (employee != null) {
-                              if (employee.hasVoidAllPermission) {
-                                permission = true;
-                              } else {
-                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
-                              }
-                            }
-                          }
-                          if (permission) {
-                            if (_cartModel.items.isEmpty) {
-                              Fluttertoast.showToast(msg: 'There must be items'.tr);
-                            } else {
-                              VoidReasonModel? result;
-                              if (allDataModel.companyConfig[0].useVoidReason) {
-                                result = await _showVoidReasonDialog();
-                              } else {
-                                var areYouSure = await Utils.showAreYouSureDialog(
-                                  title: 'Void All'.tr,
-                                );
-                                if (areYouSure) {
-                                  result = VoidReasonModel.fromJson({});
-                                }
-                              }
-                              if (result != null) {
-                                RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
-                                List<CartItemModel> voidItems = [];
-                                voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
-                                if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
-                                  Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
-                                }
-                                _indexItemSelect = -1;
-                                _cartModel.items = [];
-                                _cartModel.deliveryCharge = 0;
-                                _cartModel.discount = 0;
-                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                _dineInChangedOrder = true;
-                                setState(() {});
-                              }
-                            }
-                          }
-                        },
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Void All'.tr,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: kStyleTextDefault,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
-                    if (widget.type == OrderType.takeAway)
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
-                            if (_cartModel.items.isNotEmpty) {
-                              _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
-                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                              setState(() {});
-                            } else {
-                              Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
-                            }
-                          },
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                            child: Center(
-                              child: Text(
-                                'Delivery'.tr,
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: kStyleTextDefault,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (widget.type == OrderType.takeAway)
-                      const VerticalDivider(
-                        width: 1,
-                        thickness: 2,
-                      ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          var permission = false;
-                          if (mySharedPreferences.employee.hasLineDiscPermission) {
-                            permission = true;
-                          } else {
-                            EmployeeModel? employee = await Utils.showLoginDialog();
-                            if (employee != null) {
-                              if (employee.hasLineDiscPermission) {
-                                permission = true;
-                              } else {
-                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
-                              }
-                            }
-                          }
-                          if (permission) {
-                            if (_indexItemSelect != -1) {
-                              if (_cartModel.items[_indexItemSelect].discountAvailable) {
-                                var result = await _showDiscountDialog(
-                                  discount: _cartModel.items[_indexItemSelect].lineDiscount,
-                                  price: _cartModel.items[_indexItemSelect].priceChange,
-                                  type: _cartModel.items[_indexItemSelect].lineDiscountType,
-                                );
-                                _cartModel.items[_indexItemSelect].lineDiscount = result['discount'];
-                                _cartModel.items[_indexItemSelect].lineDiscountType = result['type'];
-                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                _dineInChangedOrder = true;
-                                setState(() {});
-                              } else {
-                                Fluttertoast.showToast(msg: 'Line discount is not available for this item'.tr);
-                              }
-                            } else {
-                              Fluttertoast.showToast(msg: 'Please select the item you want to line discount'.tr);
-                            }
-                          }
-                        },
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Line Discount'.tr,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: kStyleTextDefault,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          var permission = false;
-                          if (mySharedPreferences.employee.hasDiscPermission) {
-                            permission = true;
-                          } else {
-                            EmployeeModel? employee = await Utils.showLoginDialog();
-                            if (employee != null) {
-                              if (employee.hasDiscPermission) {
-                                permission = true;
-                              } else {
-                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
-                              }
-                            }
-                          }
-                          if (permission) {
-                            if (_cartModel.items.any((element) => element.discountAvailable)) {
-                              var result = await _showDiscountDialog(
-                                discount: _cartModel.discount,
-                                price: _cartModel.total,
-                                type: _cartModel.discountType,
-                              );
-                              _cartModel.discount = result['discount'];
-                              _cartModel.discountType = result['type'];
-                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                              _dineInChangedOrder = true;
-                              setState(() {});
-                            } else {
-                              Fluttertoast.showToast(msg: 'No items accept discount in order'.tr);
-                            }
-                          }
-                        },
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Discount'.tr,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: kStyleTextDefault,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 2,
-                    ),
-                    // if (widget.type == OrderType.dineIn)
-                    //   Expanded(
-                    //     child: InkWell(
-                    //       onTap: () {},
-                    //       child: SizedBox(
-                    //         width: double.infinity,
-                    //         height: double.infinity,
-                    //         child: Center(
-                    //           child: Text(
-                    //             'Split'.tr,
-                    //             textAlign: TextAlign.center,
-                    //             overflow: TextOverflow.ellipsis,
-                    //             maxLines: 1,
-                    //             style: kStyleTextDefault,
-                    //           ),
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // const VerticalDivider(
-                    //   width: 1,
-                    //   thickness: 2,
-                    // ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          var permission = false;
-                          if (mySharedPreferences.employee.hasPriceChangePermission) {
-                            permission = true;
-                          } else {
-                            EmployeeModel? employee = await Utils.showLoginDialog();
-                            if (employee != null) {
-                              if (employee.hasPriceChangePermission) {
-                                permission = true;
-                              } else {
-                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
-                              }
-                            }
-                          }
-                          if (permission) {
-                            if (_indexItemSelect != -1) {
-                              if (_cartModel.items[_indexItemSelect].openPrice) {
-                                _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
-                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                _dineInChangedOrder = true;
-                                setState(() {});
-                              } else {
-                                Fluttertoast.showToast(msg: 'Price change is not available for this item'.tr);
-                              }
-                            } else {
-                              Fluttertoast.showToast(msg: 'Please select the item you want to price change'.tr);
-                            }
-                          }
-                        },
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Price Change'.tr,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: kStyleTextDefault,
-                            ),
-                          ),
-                        ),
                       ),
                     ),
                   ],

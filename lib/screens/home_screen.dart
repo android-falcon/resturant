@@ -1813,10 +1813,8 @@ class _HomeScreenState extends State<HomeScreen> {
           // clipper: OvalRightBorderClipper(),
           child: SizedBox(
             width: 120.w,
-            child: Drawer(
-              child: CustomDrawer(
-                menu: _menu,
-              ),
+            child: CustomDrawer(
+              menu: _menu,
             ),
           ),
         ),

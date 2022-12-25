@@ -18,6 +18,7 @@ import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
+import 'package:restaurant_system/screens/widgets/custom_drawer.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/utils/app_config/home_menu.dart';
@@ -40,6 +41,7 @@ class TableScreen extends StatefulWidget {
 }
 
 class _TableScreenState extends State<TableScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<HomeMenu> _menu = [];
   Set<int> floors = {};
   int? _selectFloor;
@@ -53,6 +55,7 @@ class _TableScreenState extends State<TableScreen> {
     _menu = <HomeMenu>[
       HomeMenu(
         name: 'Move'.tr,
+        icon: Icon(Icons.move_down, color: ColorsApp.orange_2),
         onTab: () async {
           if (mySharedPreferences.employee.hasMoveTablePermission) {
             await _showMoveDialog();
@@ -72,6 +75,7 @@ class _TableScreenState extends State<TableScreen> {
       ),
       HomeMenu(
         name: 'Merge'.tr,
+        icon: Icon(Icons.merge_type_rounded, color: ColorsApp.gray),
         onTab: () async {
           if (mySharedPreferences.employee.hasMergeTablePermission) {
             await _showMargeDialog();
@@ -112,6 +116,7 @@ class _TableScreenState extends State<TableScreen> {
       ),
       HomeMenu(
         name: 'Cash Drawer'.tr,
+        icon: Icon(Icons.cable_sharp, color: ColorsApp.gray),
         onTab: () async {
           var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
           if (indexPrinter != -1) {
@@ -147,6 +152,7 @@ class _TableScreenState extends State<TableScreen> {
       ),
       HomeMenu(
         name: 'Close'.tr,
+        icon: Icon(Icons.exit_to_app, color: ColorsApp.gray),
         onTab: () {
           Get.back();
         },
@@ -344,7 +350,6 @@ class _TableScreenState extends State<TableScreen> {
       barrierDismissible: false,
     );
   }
-
 
   Future<void> _showReportTablesDialog() async {
     int? _selectFloor = floors.first;
@@ -1333,11 +1338,26 @@ class _TableScreenState extends State<TableScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      endDrawer: ClipPath(
+        // clipper: OvalRightBorderClipper(),
+        child: SizedBox(
+          width: 120.w,
+          child: CustomDrawer(
+            menu: _menu,
+          ),
+        ),
+      ),
       body: CustomSingleChildScrollView(
         child: Stack(
           children: [
+            Container(
+              color: ColorsApp.gray_light_2,
+              width: 1.sw,
+              height: 1.sh,
+            ),
             Image.asset(
-              'assets/images/floor.png',
+              'assets/images/dinin_group.png',
               width: 1.sw,
               height: 1.sh,
               fit: BoxFit.cover,
@@ -1354,14 +1374,30 @@ class _TableScreenState extends State<TableScreen> {
                         height: 50.h,
                         color: ColorsApp.grayLight,
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             IconButton(
                               onPressed: () {
                                 Get.back();
                               },
-                              icon: const Icon(Icons.arrow_back),
+                              icon: Icon(
+                                Icons.arrow_back_ios,
+                                color: ColorsApp.black,
+                              ),
                             ),
-                            Text('Dine In'.tr),
+                            Text(
+                              'Dine In'.tr,
+                              style: TextStyle(color: ColorsApp.black),
+                            ),
+                            Align(
+                              alignment: Alignment.center,
+                              child: IconButton(
+                                onPressed: () {
+                                  _scaffoldKey.currentState?.openEndDrawer();
+                                },
+                                icon: Icon(Icons.menu, color: ColorsApp.black),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -1436,7 +1472,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 e.cart.seatsMale = totalSeats['male'];
                                                 e.cart.seatsFemale = totalSeats['female'];
                                                 Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
-                                                   RestApi.unlockTable(e.tableId);
+                                                  RestApi.unlockTable(e.tableId);
                                                   _initData(false);
                                                 });
                                               }
@@ -1445,12 +1481,12 @@ class _TableScreenState extends State<TableScreen> {
                                         },
                                         child: Column(
                                           children: [
-                                            Center(
-                                              child: Text(
-                                                '${e.tableNo}',
-                                                style: kStyleTextTable,
-                                              ),
-                                            ),
+                                            // Center(
+                                            //   child: Text(
+                                            //     '${e.tableNo}',
+                                            //     style: kStyleTextTable,
+                                            //   ),
+                                            // ),
                                             Stack(
                                               children: [
                                                 Container(
@@ -1466,9 +1502,55 @@ class _TableScreenState extends State<TableScreen> {
                                                           blurRadius: 20,
                                                         ),
                                                     ],
-                                                    image: const DecorationImage(
-                                                      image: AssetImage('assets/images/table.png'),
-                                                    ),
+                                                  ),
+                                                ),
+                                                Opacity(
+                                                  opacity: 0.8,
+                                                  child: Column(
+                                                    children: [
+                                                      Container(
+                                                        margin: EdgeInsets.all(10),
+                                                        height: 120.h,
+                                                        decoration: BoxDecoration(
+                                                          color: ColorsApp.backgroundDialog,
+                                                          border: Border.all(width: 1, color: ColorsApp.backgroundDialog),
+                                                          borderRadius: BorderRadius.circular(5.r),
+                                                        ),
+                                                        child: Column(
+                                                          children: [
+                                                            Container(
+                                                              decoration: const BoxDecoration(
+                                                                image: DecorationImage(
+                                                                  image: AssetImage('assets/images/table_ellipse.png'),
+                                                                ),
+                                                              ),
+                                                              height: 70.h,
+                                                              width: 100.w,
+                                                            ),
+                                                            Center(
+                                                              child: Text(
+                                                                '${e.tableNo}',
+                                                                style: kStyleTextTable,
+                                                              ),
+                                                            ),
+                                                            Container(
+                                                              width: 50.w,
+                                                              decoration: BoxDecoration(
+                                                                color: ColorsApp.backgroundDialog,
+                                                                border: Border.all(width: 1, color: ColorsApp.orange_2),
+                                                                borderRadius: BorderRadius.circular(5.r),
+                                                              ),
+                                                              child: Center(
+                                                                child: Text(
+                                                                  'View ',
+                                                                  style: kStyleTextTable.copyWith(color: ColorsApp.red_light),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               ],
@@ -1482,43 +1564,6 @@ class _TableScreenState extends State<TableScreen> {
                         ),
                       ),
                     ],
-                  ),
-                ),
-                Container(
-                  height: 1.sh,
-                  width: 80.w,
-                  constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3.r),
-                    border: Border.all(width: 2, color: ColorsApp.blue),
-                    gradient: const LinearGradient(
-                      colors: [
-                        ColorsApp.primaryColor,
-                        ColorsApp.accentColor,
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                  ),
-                  child: ListView.separated(
-                    itemCount: _menu.length,
-                    shrinkWrap: true,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1.h,
-                      thickness: 2,
-                    ),
-                    itemBuilder: (context, index) => InkWell(
-                      onTap: _menu[index].onTab,
-                      child: Container(
-                        padding: EdgeInsets.all(6.w),
-                        width: double.infinity,
-                        child: Text(
-                          _menu[index].name,
-                          style: kStyleTextTitle,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ],

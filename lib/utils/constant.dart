@@ -39,8 +39,8 @@ loadAssets() {
       kAssetsDrawerHeader = "assets/images/rectangle60.png";
       kAssetsHomeScreen = "assets/images/takeway108.png";
       kAssetsChoose = "assets/images/choose109.png";
-      kAssetsTakeAway = "assets/images/choose109.png";
-      kAssetsDineIn = "assets/images/choose109.png";
+      kAssetsTakeAway = "assets/images/take_away_.png";
+      kAssetsDineIn = "assets/images/dine_in_.png";
       break;
     case CompanyType.umniah:
       kAssetsLoginBackground = "assets/images/rectangle602.png";
@@ -48,8 +48,8 @@ loadAssets() {
       kAssetsDrawerHeader = "assets/images/logo_arabic.png";
       kAssetsHomeScreen = "assets/images/takeway108.png";
       kAssetsChoose = "assets/images/choose109.png";
-      kAssetsTakeAway = "assets/images/choose109.png";
-      kAssetsDineIn = "assets/images/choose109.png";
+      kAssetsTakeAway = "assets/images/take_away_.png";
+      kAssetsDineIn = "assets/images/dine_in_.png";
       break;
   }
 }
