@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // ),
         HomeMenu(
           name: 'Pay In'.tr,
-          icon: Icon(Icons.money, color: ColorsApp.orange_2),
+          icon: Icon(Icons.money, color: ColorsApp.gray),
           onTab: () async {
             if (mySharedPreferences.employee.hasCashInOutPermission) {
               _showInOutDialog(type: InOutType.payIn);
@@ -1238,8 +1238,7 @@ class _HomeScreenState extends State<HomeScreen> {
     CartModel? _refundModel;
     Get.dialog(
       CustomDialog(
-        gestureDetectorOnTap: () {
-        },
+        gestureDetectorOnTap: () {},
         builder: (context, setState, constraints) => Column(
           children: [
             Container(
@@ -1809,124 +1808,109 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           centerTitle: true,
         ),
-        drawer: ClipPath(
-          // clipper: OvalRightBorderClipper(),
-          child: SizedBox(
-            width: 120.w,
-            child: CustomDrawer(
-              menu: _menu,
+        endDrawer: CustomDrawer(
+          menu: _menu,
+        ),
+        body: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: 20.h),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 10.w,
+                    ),
+                    Image.asset(
+                      kAssetsHomeScreen,
+                      height: 250.h,
+                      width: 170.w,
+                    ),
+                    Column(
+                      children: [
+                        Image.asset(
+                          kAssetsChoose,
+                          height: 40.h,
+                          width: 100.w,
+                        ),
+                        SizedBox(height: 20.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 6.w),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(15.0),
+                                onTap: () {
+                                  Get.to(() => const OrderScreen(type: OrderType.takeAway));
+                                },
+                                child: Container(
+                                  width: 70.w,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15.0),
+                                    border: Border.all(color: ColorsApp.orange_2),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Image.asset(
+                                        kAssetsTakeAway,
+                                        height: 130.h,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: Text(
+                                          'Take Away'.tr,
+                                          style: kStyleButtonPayment,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 6.w),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(15.0),
+                                onTap: () {
+                                  Get.to(() => const TableScreen());
+                                },
+                                child: Container(
+                                  width: 70.w,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15.0),
+                                    border: Border.all(color: ColorsApp.orange_2),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Image.asset(
+                                        kAssetsDineIn,
+                                        height: 130.h,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: Text(
+                                          'Dine In'.tr,
+                                          style: kStyleButtonPayment,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ],
             ),
           ),
-        ),
-        body: Stack(
-          children: [
-            Container(
-              color: Colors.white,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(height: 20.h),
-                        Row(children: [
-                          SizedBox(
-                            width: 10.w,
-                          ),
-                          Image.asset(
-                            kAssetsHomeScreen,
-                            height: 250.h,
-                            width: 170.w,
-                          ),
-                          Column(
-                            children: [
-                              Image.asset(
-                                kAssetsChoose,
-                                height: 40.h,
-                                width: 100.w,
-                              ),
-                              SizedBox(height: 20.h),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 6.w),
-                                    child: InkWell(
-                                      onTap: () {
-                                        Get.to(() => const OrderScreen(type: OrderType.takeAway));
-                                      },
-                                      child: Container(
-                                        width: 70.w,
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              15.0,
-                                            ),
-                                            border: Border.all(color: ColorsApp.orange_2)),
-                                        child: Column(
-                                          children: [
-                                            Image.asset(
-                                              kAssetsTakeAway,
-                                              height: 130.h,
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(5.0),
-                                              child: Text(
-                                                'Take Away'.tr,
-                                                style: kStyleButtonPayment,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 6.w),
-                                    child: InkWell(
-                                      onTap: () {
-                                        Get.to(() => const TableScreen());
-                                      },
-                                      child: Container(
-                                        width: 70.w,
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              15.0,
-                                            ),
-                                            border: Border.all(color: ColorsApp.orange_2)),
-                                        child: Column(
-                                          children: [
-                                            Image.asset(
-                                              kAssetsDineIn,
-                                              height: 130.h,
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(5.0),
-                                              child: Text(
-                                                'Dine In'.tr,
-                                                style: kStyleButtonPayment,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          )
-                        ])
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );

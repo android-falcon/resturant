@@ -70,7 +70,7 @@ class _OrderScreenState extends State<OrderScreen> {
       if (widget.type == OrderType.takeAway)
         HomeMenu(
           name: 'Park List'.tr,
-          icon: Icon(Icons.local_parking_outlined, color: ColorsApp.orange_2),
+          icon: const Icon(Icons.local_parking_outlined, color: ColorsApp.gray),
           onTab: () async {
             if (_cartModel.items.isNotEmpty) {
               Fluttertoast.showToast(msg: 'The cart must be emptied, in order to be able to get park'.tr);
@@ -1425,15 +1425,7 @@ class _OrderScreenState extends State<OrderScreen> {
       },
       child: Scaffold(
         key: _scaffoldKey,
-        endDrawer: ClipPath(
-          // clipper: OvalRightBorderClipper(),
-          child: SizedBox(
-            width: 120.w,
-            child: CustomDrawer(
-              menu: _menu,
-            ),
-          ),
-        ),
+        endDrawer: CustomDrawer(menu: _menu),
         body: CustomSingleChildScrollView(
           child: Column(
             children: [
@@ -1638,164 +1630,171 @@ class _OrderScreenState extends State<OrderScreen> {
                                   .where((element) => element.category.id == _selectedCategoryId)
                                   .map(
                                     (e) => Card(
+                                      color: ColorsApp.gray_light,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5.r),
                                       ),
                                       elevation: 0,
-                                      child: InkWell(
-                                        borderRadius: BorderRadius.circular(5.r),
-                                        onTap: () async {
-                                          bool itemIsAdded = false;
-                                          var indexItem = _cartModel.items.lastIndexWhere((element) => element.id == e.id && element.parentUuid == '' && element.modifiers.isEmpty);
-                                          var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == e.id).toList();
-                                          var questionsSubItems = allDataModel.comboItemsForceQuestion.where((element) => element.itemId == e.id).toList();
-                                          if (indexItem != -1 && questionsItem.isEmpty && questionsSubItems.isEmpty) {
-                                            if (widget.type == OrderType.dineIn && _cartModel.items[indexItem].dineInSavedOrder) {
-                                              itemIsAdded = false;
-                                            } else {
-                                              itemIsAdded = true;
-                                            }
-                                          }
-                                          if (itemIsAdded) {
-                                            _cartModel.items[indexItem].qty += 1;
-                                          } else {
-                                            _cartModel.items.add(CartItemModel(
-                                              uuid: const Uuid().v1(),
-                                              parentUuid: '',
-                                              orderType: widget.type,
-                                              id: e.id,
-                                              categoryId: e.category.id,
-                                              taxType: e.taxTypeId,
-                                              taxPercent: e.taxPercent.percent,
-                                              name: e.menuName,
-                                              qty: 1,
-                                              price: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
-                                              priceChange: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
-                                              total: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
-                                              tax: 0,
-                                              discountAvailable: e.discountAvailable == 1,
-                                              openPrice: e.openPrice == 1,
-                                              rowSerial: _cartModel.items.length + 1,
-                                            ));
-                                            int indexAddedItem = _cartModel.items.length - 1;
-                                            if (questionsSubItems.isNotEmpty) {
-                                              var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid);
-                                              if (cartSubItems == null) {
-                                                _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
+                                      child: Container(
+                                        height: 180.h,
+                                        width: 100.w,
+                                        child: InkWell(
+                                          borderRadius: BorderRadius.circular(5.r),
+                                          onTap: () async {
+                                            bool itemIsAdded = false;
+                                            var indexItem = _cartModel.items.lastIndexWhere((element) => element.id == e.id && element.parentUuid == '' && element.modifiers.isEmpty);
+                                            var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == e.id).toList();
+                                            var questionsSubItems = allDataModel.comboItemsForceQuestion.where((element) => element.itemId == e.id).toList();
+                                            if (indexItem != -1 && questionsItem.isEmpty && questionsSubItems.isEmpty) {
+                                              if (widget.type == OrderType.dineIn && _cartModel.items[indexItem].dineInSavedOrder) {
+                                                itemIsAdded = false;
                                               } else {
-                                                _cartModel.items[indexAddedItem].isCombo = true;
-                                                if (cartSubItems.isNotEmpty) {
-                                                  // _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
-                                                  // _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
-                                                  _cartModel.items[indexAddedItem].openPrice = false;
-                                                  _cartModel.items.addAll(cartSubItems);
+                                                itemIsAdded = true;
+                                              }
+                                            }
+                                            if (itemIsAdded) {
+                                              _cartModel.items[indexItem].qty += 1;
+                                            } else {
+                                              _cartModel.items.add(CartItemModel(
+                                                uuid: const Uuid().v1(),
+                                                parentUuid: '',
+                                                orderType: widget.type,
+                                                id: e.id,
+                                                categoryId: e.category.id,
+                                                taxType: e.taxTypeId,
+                                                taxPercent: e.taxPercent.percent,
+                                                name: e.menuName,
+                                                qty: 1,
+                                                price: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
+                                                priceChange: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
+                                                total: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
+                                                tax: 0,
+                                                discountAvailable: e.discountAvailable == 1,
+                                                openPrice: e.openPrice == 1,
+                                                rowSerial: _cartModel.items.length + 1,
+                                              ));
+                                              int indexAddedItem = _cartModel.items.length - 1;
+                                              if (questionsSubItems.isNotEmpty) {
+                                                var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid);
+                                                if (cartSubItems == null) {
+                                                  _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
+                                                } else {
+                                                  _cartModel.items[indexAddedItem].isCombo = true;
+                                                  if (cartSubItems.isNotEmpty) {
+                                                    // _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
+                                                    // _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
+                                                    _cartModel.items[indexAddedItem].openPrice = false;
+                                                    _cartModel.items.addAll(cartSubItems);
+                                                  }
+                                                }
+                                              }
+                                              if (questionsItem.isNotEmpty && indexAddedItem < _cartModel.items.length) {
+                                                var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
+                                                if (questions == null) {
+                                                  _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
+                                                } else {
+                                                  _cartModel.items[indexAddedItem].questions = questions;
                                                 }
                                               }
                                             }
-                                            if (questionsItem.isNotEmpty && indexAddedItem < _cartModel.items.length) {
-                                              var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
-                                              if (questions == null) {
-                                                _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
-                                              } else {
-                                                _cartModel.items[indexAddedItem].questions = questions;
-                                              }
-                                            }
-                                          }
-                                          _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                          _dineInChangedOrder = true;
-                                          setState(() {});
-                                        },
-                                        child: SizedBox(
-                                          // height: maxHeightItem == 0 ? null : maxHeightItem,
-                                          child: MeasureSize(
-                                            onChange: (size) {
-                                              // if (size.height > maxHeightItem) {
-                                              //   maxHeightItem = size.height;
-                                              //   setState(() {});
-                                              // }
-                                            },
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Stack(
-                                                    children: [
-                                                      Image.asset(
-                                                        'assets/images/Image_2.png',
-                                                        height: 80.h,
-                                                        width: 300.h,
-                                                        fit: BoxFit.fill,
-                                                      ),
-                                                      Padding(
-                                                        padding: const EdgeInsets.all(5.0),
-                                                        child: Align(
-                                                          alignment: Alignment.centerRight,
-                                                          child: Image.asset(
-                                                            'assets/images/Favorite.png',
-                                                            height: 30.h,
-                                                            width: 30.w,
-                                                            fit: BoxFit.fitHeight,
-                                                          ),
-                                                        ),
-                                                      )
-                                                    ],
-                                                  ),
-                                                  // if (e.itemPicture.isNotEmpty)
-                                                  //   CachedNetworkImage(
-                                                  //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
-                                                  //     height: 50.h,
-                                                  //     width: 50.w,
-                                                  //     fit: BoxFit.contain,
-                                                  //     placeholder: (context, url) => Container(),
-                                                  //     errorWidget: (context, url, error) => Container(),
-                                                  //   ),
-                                                  Column(
+                                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                            _dineInChangedOrder = true;
+                                            setState(() {});
+                                          },
+                                          child: SizedBox(
+                                            // height: maxHeightItem == 0 ? null : maxHeightItem,
+                                            child: MeasureSize(
+                                              onChange: (size) {
+                                                // if (size.height > maxHeightItem) {
+                                                //   maxHeightItem = size.height;
+                                                //   setState(() {});
+                                                // }
+                                              },
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 2.w),
+                                                child: SingleChildScrollView(
+                                                  child: Column(
                                                     mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.start,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
-                                                      Text(
-                                                        e.menuName,
-                                                        style: kStyleTextTitle,
-                                                        textAlign: TextAlign.center,
-                                                      ),
-                                                      // if (e.description.isNotEmpty)
-                                                      //   Text(
-                                                      //     e.description,
-                                                      //     style: kStyleTextDefault,
-                                                      //   ),
-                                                      Row(
+                                                      Stack(
                                                         children: [
-                                                          Text(
-                                                            _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(3) + " JD" : e.companyPrice.toStringAsFixed(3) + " JD",
-                                                            style: kStyleTextTitle.copyWith(color: ColorsApp.orange_2),
+                                                          Image.asset(
+                                                            'assets/images/Image_2.png',
+                                                            height: 80.h,
+                                                            width: 300.h,
+                                                            fit: BoxFit.fill,
                                                           ),
-                                                          SizedBox(
-                                                            width: 10.w,
-                                                          ),
-                                                          Container(
-                                                            decoration: BoxDecoration(
-                                                                color: ColorsApp.orange_2,
-                                                                borderRadius: BorderRadius.circular(
-                                                                  15.0,
-                                                                ),
-                                                                border: Border.all(color: ColorsApp.orange_2)),
-                                                            width: 30.w,
-                                                            height: 40.h,
-                                                            margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                                            child: Center(
-                                                              child: Text(
-                                                                'Add + '.tr,
-                                                                style: kStyleTextDefault.copyWith(color: Colors.white),
+                                                          Padding(
+                                                            padding: const EdgeInsets.all(5.0),
+                                                            child: Align(
+                                                              alignment: Alignment.centerRight,
+                                                              child: Image.asset(
+                                                                'assets/images/Favorite.png',
+                                                                height: 30.h,
+                                                                width: 30.w,
+                                                                fit: BoxFit.fitHeight,
                                                               ),
                                                             ),
                                                           ),
                                                         ],
                                                       ),
+                                                      // if (e.itemPicture.isNotEmpty)
+                                                      //   CachedNetworkImage(
+                                                      //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
+                                                      //     height: 50.h,
+                                                      //     width: 50.w,
+                                                      //     fit: BoxFit.contain,
+                                                      //     placeholder: (context, url) => Container(),
+                                                      //     errorWidget: (context, url, error) => Container(),
+                                                      //   ),
+                                                      Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        mainAxisAlignment: MainAxisAlignment.start,
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text(
+                                                            e.menuName,
+                                                            style: kStyleTextTitle,
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                          // if (e.description.isNotEmpty)
+                                                          //   Text(
+                                                          //     e.description,
+                                                          //     style: kStyleTextDefault,
+                                                          //   ),
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(3) + " JD" : e.companyPrice.toStringAsFixed(3) + " JD",
+                                                                style: kStyleTextTitle.copyWith(color: ColorsApp.orange_2),
+                                                              ),
+                                                              SizedBox(
+                                                                width: 10.w,
+                                                              ),
+                                                              Container(
+                                                                decoration: BoxDecoration(
+                                                                    color: ColorsApp.orange_2,
+                                                                    borderRadius: BorderRadius.circular(
+                                                                      15.0,
+                                                                    ),
+                                                                    border: Border.all(color: ColorsApp.orange_2)),
+                                                                width: 30.w,
+                                                                height: 40.h,
+                                                                margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                                                child: Center(
+                                                                  child: Text(
+                                                                    'Add + '.tr,
+                                                                    style: kStyleTextDefault.copyWith(color: Colors.white),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ],
                                                   ),
-                                                ],
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -1858,7 +1857,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                     height: 10.h,
                                                   ),
                                                   Text(
-                                                    '${e.categoryName}',
+                                                    e.categoryName,
                                                     maxLines: 2,
                                                     textAlign: TextAlign.center,
                                                     style: kStyleTextTitle,
@@ -1976,118 +1975,139 @@ class _OrderScreenState extends State<OrderScreen> {
                               ),
                               if (mySharedPreferences.employee.hasVoidAllPermission)
                                 Expanded(
-                                    child: Container(
-                                  width: 50.w,
-                                  height: 30.h,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: ColorsApp.orange_2),
-                                    borderRadius: BorderRadius.circular(
-                                      10.0,
+                                  child: Container(
+                                    width: 50.w,
+                                    height: 30.h,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: ColorsApp.orange_2),
+                                      borderRadius: BorderRadius.circular(
+                                        10.0,
+                                      ),
                                     ),
-                                  ),
-                                  child: InkWell(
-                                    onTap: () async {
-                                      var permission = false;
-                                      if (mySharedPreferences.employee.hasVoidAllPermission) {
-                                        permission = true;
-                                      } else {
-                                        EmployeeModel? employee = await Utils.showLoginDialog();
-                                        if (employee != null) {
-                                          if (employee.hasVoidAllPermission) {
-                                            permission = true;
-                                          } else {
-                                            Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
-                                          }
-                                        }
-                                      }
-                                      if (permission) {
-                                        if (_cartModel.items.isEmpty) {
-                                          Fluttertoast.showToast(msg: 'There must be items'.tr);
+                                    child: InkWell(
+                                      onTap: () async {
+                                        var permission = false;
+                                        if (mySharedPreferences.employee.hasVoidAllPermission) {
+                                          permission = true;
                                         } else {
-                                          VoidReasonModel? result;
-                                          if (allDataModel.companyConfig[0].useVoidReason) {
-                                            result = await _showVoidReasonDialog();
-                                          } else {
-                                            var areYouSure = await Utils.showAreYouSureDialog(
-                                              title: 'Void All'.tr,
-                                            );
-                                            if (areYouSure) {
-                                              result = VoidReasonModel.fromJson({});
+                                          EmployeeModel? employee = await Utils.showLoginDialog();
+                                          if (employee != null) {
+                                            if (employee.hasVoidAllPermission) {
+                                              permission = true;
+                                            } else {
+                                              Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
                                             }
-                                          }
-                                          if (result != null) {
-                                            RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
-                                            List<CartItemModel> voidItems = [];
-                                            voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
-                                            if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
-                                              Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
-                                            }
-                                            _indexItemSelect = -1;
-                                            _cartModel.items = [];
-                                            _cartModel.deliveryCharge = 0;
-                                            _cartModel.discount = 0;
-                                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                            _dineInChangedOrder = true;
-                                            setState(() {});
                                           }
                                         }
-                                      }
-                                    },
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Center(
-                                            child: Text(
-                                              'Void All'.tr,
-                                              textAlign: TextAlign.center,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              style: kStyleTextOrange,
+                                        if (permission) {
+                                          if (_cartModel.items.isEmpty) {
+                                            Fluttertoast.showToast(msg: 'There must be items'.tr);
+                                          } else {
+                                            VoidReasonModel? result;
+                                            if (allDataModel.companyConfig[0].useVoidReason) {
+                                              result = await _showVoidReasonDialog();
+                                            } else {
+                                              var areYouSure = await Utils.showAreYouSureDialog(
+                                                title: 'Void All'.tr,
+                                              );
+                                              if (areYouSure) {
+                                                result = VoidReasonModel.fromJson({});
+                                              }
+                                            }
+                                            if (result != null) {
+                                              RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
+                                              List<CartItemModel> voidItems = [];
+                                              voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
+                                              if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
+                                                Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
+                                              }
+                                              _indexItemSelect = -1;
+                                              _cartModel.items = [];
+                                              _cartModel.deliveryCharge = 0;
+                                              _cartModel.discount = 0;
+                                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                              _dineInChangedOrder = true;
+                                              setState(() {});
+                                            }
+                                          }
+                                        }
+                                      },
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Center(
+                                              child: Text(
+                                                'Void All'.tr,
+                                                textAlign: TextAlign.center,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: kStyleTextOrange,
+                                              ),
                                             ),
-                                          ),
-                                          Image.asset(
-                                            'assets/images/arrowchevronright.png',
-                                            height: 30.h,
-                                          ),
-                                        ],
+                                            Image.asset(
+                                              'assets/images/arrowchevronright.png',
+                                              height: 30.h,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                )),
+                                ),
                               SizedBox(
                                 width: 5.w,
                               ),
                               if (widget.type == OrderType.takeAway)
                                 Expanded(
-                                    child: Container(
-                                  width: 50.w,
-                                  height: 30.h,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: ColorsApp.orange_2),
-                                    borderRadius: BorderRadius.circular(
-                                      10.0,
+                                  child: Container(
+                                    width: 50.w,
+                                    height: 30.h,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: ColorsApp.orange_2),
+                                      borderRadius: BorderRadius.circular(
+                                        10.0,
+                                      ),
+                                    ),
+                                    child: InkWell(
+                                      onTap: () async {
+                                        if (_cartModel.items.isNotEmpty) {
+                                          _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
+                                          _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                          setState(() {});
+                                        } else {
+                                          Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
+                                        }
+                                      },
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Center(
+                                              child: Text(
+                                                'Delivery'.tr,
+                                                textAlign: TextAlign.center,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: kStyleTextOrange,
+                                              ),
+                                            ),
+                                            Image.asset(
+                                              'assets/images/arrowchevronright.png',
+                                              height: 30.h,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                  child: InkWell(
-                                    onTap: () async {
-                                      if (_cartModel.items.isNotEmpty) {
-                                        _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
-                                        _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                        setState(() {});
-                                      } else {
-                                        Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
-                                      }
-                                    },
-                                    child: Text(
-                                      'Delivery'.tr,
-                                      style: kStyleTextButton,
-                                    ),
-                                  ),
-                                )),
+                                ),
                               SizedBox(
                                 width: 5.w,
                               ),
@@ -2127,9 +2147,9 @@ class _OrderScreenState extends State<OrderScreen> {
                             child: ListView(
                               children: [
                                 Container(
+                                  width: 130.w,
                                   decoration: BoxDecoration(
-                                    border: Border.all(),
-                                    borderRadius: BorderRadius.circular(3.r),
+                                    color: ColorsApp.orange_light,
                                   ),
                                   child: Column(
                                     children: [
@@ -2173,7 +2193,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       const Divider(color: Colors.grey, height: 1),
-                                      SizedBox(
+                                      Container(
                                         height: 300.h,
                                         child: ListView.separated(
                                           itemCount: _cartModel.items.length,
@@ -2252,6 +2272,13 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                     value: 'Void',
                                                                     child: Text(
                                                                       'Void'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
+                                                                  ),
+                                                                  PopupMenuItem(
+                                                                    value: 'Delivery',
+                                                                    child: Text(
+                                                                      'Delivery'.tr,
                                                                       style: kStyleTextDefault,
                                                                     ),
                                                                   ),
@@ -2388,24 +2415,26 @@ class _OrderScreenState extends State<OrderScreen> {
                               ],
                             ),
                           ),
-                          Stack(children: [
-                            const Divider(color: Colors.black, height: 20),
-                            Align(
-                              alignment: Alignment.topCenter,
-                              child: InkWell(
-                                onTap: () {
-                                  _isShowTotal = !_isShowTotal;
-                                  setState(() {});
-                                },
-                                child: Container(
-                                  child: Image.asset(
-                                    'assets/images/drop_dark.png',
-                                    height: 20.h,
+                          Stack(
+                            children: [
+                              const Divider(color: Colors.black, height: 20),
+                              Align(
+                                alignment: Alignment.topCenter,
+                                child: InkWell(
+                                  onTap: () {
+                                    _isShowTotal = !_isShowTotal;
+                                    setState(() {});
+                                  },
+                                  child: Container(
+                                    child: Image.asset(
+                                      'assets/images/drop_dark.png',
+                                      height: 20.h,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ]),
+                            ],
+                          ),
                           _isShowTotal
                               ? Container(
                                   margin: EdgeInsets.symmetric(vertical: 4.h),

@@ -42,47 +42,53 @@ class CustomDrawer extends StatefulWidget {
 class CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      child: Column(
-        children: <Widget>[
-          SizedBox(
-            height: 100.h,
-            width: 120.w,
-            child: DrawerHeader(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(1.0),
-                  image: DecorationImage(
-                    image: AssetImage(kAssetsDrawerHeader),
-                    fit: BoxFit.contain,
+    return ClipPath(
+      // clipper: OvalRightBorderClipper(),
+      child: SizedBox(
+        width: 120.w,
+        child: Drawer(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 100.h,
+                width: 120.w,
+                child: DrawerHeader(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(1.0),
+                      image: DecorationImage(
+                        image: AssetImage(kAssetsDrawerHeader),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    child: Visibility(
+                      visible: companyType == CompanyType.falcons,
+                      child: const Text("FalconsSoft"),
+                    ),
                   ),
-                ),
-                child: Visibility(
-                  visible: companyType == CompanyType.falcons,
-                  child: const Text("FalconsSoft"),
+                  margin: const EdgeInsets.only(bottom: 2),
                 ),
               ),
-              margin: const EdgeInsets.only(bottom: 2),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: widget.menu.length,
-              shrinkWrap: true,
-              itemBuilder: (context, index) => InkWell(
-                onTap: widget.menu[index].onTab,
-                child: ListTile(
-                  leading: widget.menu[index].icon,
-                  title: Text(
-                    widget.menu[index].name,
-                    style: kStyleTextDefault,
-                    textAlign: TextAlign.center,
+              Expanded(
+                child: ListView.builder(
+                  itemCount: widget.menu.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) => InkWell(
+                    onTap: widget.menu[index].onTab,
+                    child: ListTile(
+                      trailing: widget.menu[index].icon,
+                      title: Text(
+                        widget.menu[index].name,
+                        style: kStyleTextDefault,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

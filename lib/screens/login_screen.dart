@@ -146,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 if (indexPointOfSales != -1) {
                                   mySharedPreferences.orderNo = allDataModel.pointOfSalesModel[indexPointOfSales].orderNo;
                                 }
-                                Get.to(() => const HomeScreen());
+                                Get.offAll(() => const HomeScreen());
                               } else {
                                 Fluttertoast.showToast(msg: 'Incorrect username or password'.tr, timeInSecForIosWeb: 3);
                               }
