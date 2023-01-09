@@ -7,12 +7,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:restaurant_system/models/all_data/employee_model.dart';
+import 'package:intl/intl.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
+import 'package:restaurant_system/models/printer_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
+import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -27,6 +29,9 @@ import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 import 'package:restaurant_system/utils/utils.dart';
+import 'package:screenshot/screenshot.dart';
+
+import '../models/all_data/employee_model.dart';
 
 class TableScreen extends StatefulWidget {
   const TableScreen({Key? key}) : super(key: key);
@@ -50,7 +55,7 @@ class _TableScreenState extends State<TableScreen> {
     _menu = <HomeMenu>[
       HomeMenu(
         name: 'Move'.tr,
-        icon: const Icon(Icons.move_down, color: ColorsApp.gray),
+        icon: Icon(Icons.move_down, color: ColorsApp.orange_2),
         onTab: () async {
           if (mySharedPreferences.employee.hasMoveTablePermission) {
             await _showMoveDialog();
@@ -104,7 +109,7 @@ class _TableScreenState extends State<TableScreen> {
       // ),
       HomeMenu(
         name: 'Print'.tr,
-        icon: const Icon(Icons.print, color: ColorsApp.gray),
+        icon: Icon(Icons.print, color: ColorsApp.gray),
         onTab: () async {
           await _showPrintTablesDialog();
           setState(() {});
@@ -112,7 +117,7 @@ class _TableScreenState extends State<TableScreen> {
       ),
       HomeMenu(
         name: 'Cash Drawer'.tr,
-        icon: const Icon(Icons.cable_sharp, color: ColorsApp.gray),
+        icon: Icon(Icons.cable_sharp, color: ColorsApp.gray),
         onTab: () async {
           var indexPrinter = allDataModel.printers.indexWhere((element) => element.cashNo == mySharedPreferences.cashNo);
           if (indexPrinter != -1) {
@@ -122,7 +127,7 @@ class _TableScreenState extends State<TableScreen> {
       ),
       HomeMenu(
         name: 'Change User'.tr,
-        icon: const Icon(Icons.change_circle_outlined, color: ColorsApp.gray),
+        icon: Icon(Icons.supervised_user_circle, color: ColorsApp.gray),
         onTab: () async {
           if (mySharedPreferences.employee.hasChangeTableCaptinPermission) {
             await _showChangeUserDialog();
@@ -141,8 +146,8 @@ class _TableScreenState extends State<TableScreen> {
         },
       ),
       HomeMenu(
+        icon: Icon(Icons.note, color: ColorsApp.gray),
         name: 'Report Tables'.tr,
-        icon: const Icon(Icons.analytics, color: ColorsApp.gray),
         onTab: () async {
           await _showReportTablesDialog();
           setState(() {});
@@ -150,7 +155,7 @@ class _TableScreenState extends State<TableScreen> {
       ),
       HomeMenu(
         name: 'Close'.tr,
-        icon: const Icon(Icons.exit_to_app, color: ColorsApp.gray),
+        icon: Icon(Icons.exit_to_app, color: ColorsApp.gray),
         onTab: () {
           Get.back();
         },
@@ -165,6 +170,7 @@ class _TableScreenState extends State<TableScreen> {
     Utils.showLoadingDialog();
     await _getTables();
     Utils.hideLoadingDialog();
+
     if (enableTimer) {
       _timer = Timer.periodic(const Duration(seconds: 3), (Timer t) async => await _getTables());
     }
@@ -222,7 +228,7 @@ class _TableScreenState extends State<TableScreen> {
                         Container(
                           width: double.infinity,
                           height: 35.h,
-                          color: Colors.grey,
+                          color: Colors.white,
                           child: Row(
                               children: floors
                                   .map(
@@ -232,7 +238,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectFloor == e ? ColorsApp.accentColor : null,
+                                              color: _selectFloor == e ? ColorsApp.orange_2 : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectFloor = e;
@@ -285,7 +291,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table.png',
+                                                'assets/images/table_ellipse.png',
                                                 height: 80.h,
                                               )
                                             ],
@@ -335,6 +341,7 @@ class _TableScreenState extends State<TableScreen> {
                 SizedBox(width: 10.w),
                 CustomButton(
                   fixed: true,
+                  backgroundColor: ColorsApp.red_light,
                   child: Text('Close'.tr),
                   onPressed: () {
                     Get.back();
@@ -369,7 +376,7 @@ class _TableScreenState extends State<TableScreen> {
                         Container(
                           width: double.infinity,
                           height: 35.h,
-                          color: Colors.grey,
+                          color:ColorsApp.orange_light,
                           child: Row(
                               children: floors
                                   .map(
@@ -425,7 +432,7 @@ class _TableScreenState extends State<TableScreen> {
                                               ),
                                             ),
                                             Image.asset(
-                                              'assets/images/table.png',
+                                              'assets/images/table_ellipse.png',
                                               height: 80.h,
                                             )
                                           ],
@@ -443,6 +450,7 @@ class _TableScreenState extends State<TableScreen> {
             ),
             CustomButton(
               fixed: true,
+              backgroundColor: ColorsApp.red_light,
               child: Text('Close'.tr),
               onPressed: () {
                 Get.back();
@@ -477,7 +485,7 @@ class _TableScreenState extends State<TableScreen> {
                         Container(
                           width: double.infinity,
                           height: 35.h,
-                          color: Colors.grey,
+                          color: Colors.white,
                           child: Row(
                               children: floors
                                   .map(
@@ -487,7 +495,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectFloor == e ? ColorsApp.accentColor : null,
+                                              color: _selectFloor == e ? ColorsApp.orange_2 : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectFloor = e;
@@ -540,7 +548,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table.png',
+                                                'assets/images/table_ellipse.png',
                                                 height: 80.h,
                                               )
                                             ],
@@ -638,6 +646,7 @@ class _TableScreenState extends State<TableScreen> {
                 ),
                 SizedBox(width: 10.w),
                 CustomButton(
+                  backgroundColor: ColorsApp.red_light,
                   fixed: true,
                   child: Text('Close'.tr),
                   onPressed: () {
@@ -676,7 +685,7 @@ class _TableScreenState extends State<TableScreen> {
                         Container(
                           width: double.infinity,
                           height: 35.h,
-                          color: Colors.grey,
+                          color: Colors.white,
                           child: Row(
                               children: floors
                                   .map(
@@ -686,7 +695,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectFromFloor == e ? ColorsApp.accentColor : null,
+                                              color: _selectFromFloor == e ? ColorsApp.orange_2 : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectFromFloor = e;
@@ -739,7 +748,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table.png',
+                                                'assets/images/table_ellipse.png',
                                                 height: 80.h,
                                               )
                                             ],
@@ -764,7 +773,7 @@ class _TableScreenState extends State<TableScreen> {
                         Container(
                           width: double.infinity,
                           height: 35.h,
-                          color: Colors.grey,
+                          color: Colors.white,
                           child: Row(
                               children: floors
                                   .map(
@@ -774,7 +783,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectToFloor == e ? ColorsApp.accentColor : null,
+                                              color: _selectToFloor == e ? ColorsApp.orange_2 : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectToFloor = e;
@@ -827,7 +836,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table.png',
+                                                'assets/images/table_ellipse.png',
                                                 height: 80.h,
                                               )
                                             ],
@@ -883,6 +892,7 @@ class _TableScreenState extends State<TableScreen> {
                 SizedBox(width: 10.w),
                 CustomButton(
                   fixed: true,
+                  backgroundColor: ColorsApp.red_light,
                   child: Text('Close'.tr),
                   onPressed: () {
                     Get.back();
@@ -920,7 +930,7 @@ class _TableScreenState extends State<TableScreen> {
                         Container(
                           width: double.infinity,
                           height: 35.h,
-                          color: Colors.grey,
+                          color: Colors.white,
                           child: Row(
                               children: floors
                                   .map(
@@ -930,7 +940,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectFromFloor == e ? ColorsApp.accentColor : null,
+                                              color: _selectFromFloor == e ? ColorsApp.orange_2 : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectFromFloor = e;
@@ -987,7 +997,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table.png',
+                                                'assets/images/table_ellipse.png',
                                                 height: 80.h,
                                               )
                                             ],
@@ -1012,7 +1022,7 @@ class _TableScreenState extends State<TableScreen> {
                         Container(
                           width: double.infinity,
                           height: 35.h,
-                          color: Colors.grey,
+                          color: Colors.white,
                           child: Row(
                               children: floors
                                   .map(
@@ -1022,7 +1032,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectToFloor == e ? ColorsApp.accentColor : null,
+                                              color: _selectToFloor == e ? ColorsApp.orange_2 : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectToFloor = e;
@@ -1079,7 +1089,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table.png',
+                                                'assets/images/table_ellipse.png',
                                                 height: 80.h,
                                               )
                                             ],
@@ -1132,6 +1142,7 @@ class _TableScreenState extends State<TableScreen> {
                 SizedBox(width: 10.w),
                 CustomButton(
                   fixed: true,
+                  backgroundColor: ColorsApp.red_light,
                   child: Text('Close'.tr),
                   onPressed: () {
                     Get.back();
@@ -1210,6 +1221,18 @@ class _TableScreenState extends State<TableScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(height: 10.h),
+
+                Container(
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/image_placeholder.png'),
+                    ),
+                  ),
+                  height: 200.h,
+
+                  // width: 500.w,
+                ),
+
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1337,14 +1360,20 @@ class _TableScreenState extends State<TableScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      endDrawer: CustomDrawer(
-        menu: _menu,
+      endDrawer: ClipPath(
+        // clipper: OvalRightBorderClipper(),
+        child: SizedBox(
+          width: 120.w,
+          child: CustomDrawer(
+            menu: _menu,
+          ),
+        ),
       ),
       body: CustomSingleChildScrollView(
         child: Stack(
           children: [
             Container(
-              color: ColorsApp.gray_light_2,
+              color: ColorsApp.backgroundDialog,
               width: 1.sw,
               height: 1.sh,
             ),
@@ -1364,7 +1393,7 @@ class _TableScreenState extends State<TableScreen> {
                       Container(
                         width: double.infinity,
                         height: 50.h,
-                        color: ColorsApp.grayLight,
+                        color: ColorsApp.backgroundDialog,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -1396,7 +1425,7 @@ class _TableScreenState extends State<TableScreen> {
                       Container(
                         width: double.infinity,
                         height: 35.h,
-                        color: Colors.grey,
+                        color: ColorsApp.orange_light,
                         child: Row(
                             children: floors
                                 .map(
@@ -1406,7 +1435,7 @@ class _TableScreenState extends State<TableScreen> {
                                         Expanded(
                                           child: Container(
                                             height: 35.h,
-                                            color: _selectFloor == e ? ColorsApp.accentColor : null,
+                                            color: _selectFloor == e ? ColorsApp.orange_2 : null,
                                             child: InkWell(
                                               onTap: () {
                                                 _selectFloor = e;
@@ -1482,82 +1511,65 @@ class _TableScreenState extends State<TableScreen> {
                                             Stack(
                                               children: [
                                                 Container(
-                                                  height: 80.h,
-                                                  margin: const EdgeInsets.symmetric(horizontal: 8),
-                                                  decoration: const BoxDecoration(
-                                                    borderRadius: BorderRadius.only(
-                                                      topLeft: Radius.circular(150),
-                                                      topRight: Radius.circular(150),
-                                                      bottomLeft: Radius.circular(150),
-                                                      bottomRight: Radius.circular(150),
-                                                    ),
-                                                    // boxShadow: [
-                                                    //   if (e.isOpen) //  && mySharedPreferences.employee.id == e.userId
-                                                    //     BoxShadow(
-                                                    //       color: e.isPrinted ? Colors.yellow.withOpacity(0.5) : Colors.green.withOpacity(0.5),
-                                                    //       spreadRadius: 1,
-                                                    //       blurRadius: 20,
-                                                    //     ),
-                                                    // ],
+                                                  height: 120.h,
+                                                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                                                  decoration: BoxDecoration(
+
+                                                    border: Border.all(width: 2, color: ColorsApp.orange_light),
+                                                    borderRadius:  BorderRadius.circular(5) ,
+                                                    boxShadow: [
+                                                      if (e.isOpen) //  && mySharedPreferences.employee.id == e.userId
+                                                        BoxShadow(
+                                                          color: e.isPrinted ? Colors.yellow.withOpacity(0.5) : Colors.green.withOpacity(0.5),
+                                                          spreadRadius: 1,
+                                                          blurRadius: 20,
+                                                        ),
+                                                    ],
                                                   ),
                                                 ),
                                                 Opacity(
-                                                  opacity: 0.8,
+                                                  opacity: 0.9,
                                                   child: Column(
                                                     children: [
                                                       Container(
-                                                        margin: const EdgeInsets.all(10),
+                                                        margin: EdgeInsets.all(10),
                                                         height: 120.h,
                                                         decoration: BoxDecoration(
                                                           color: ColorsApp.backgroundDialog,
-                                                          border: Border.all(width: 1, color: ColorsApp.backgroundDialog),
+                                                          border: Border.all(width: 2, color: ColorsApp.backgroundDialog),
                                                           borderRadius: BorderRadius.circular(5.r),
                                                         ),
-                                                        child: Stack(
+                                                        child: Column(
                                                           children: [
-                                                            Column(
-                                                              children: [
-                                                                Container(
-                                                                  decoration: const BoxDecoration(
-                                                                    image: DecorationImage(
-                                                                      image: AssetImage('assets/images/table_ellipse.png'),
-                                                                    ),
-                                                                  ),
-                                                                  height: 70.h,
-                                                                  width: 100.w,
+                                                            Container(
+                                                              decoration: const BoxDecoration(
+                                                                image: DecorationImage(
+                                                                  image: AssetImage('assets/images/table_ellipse.png'),
                                                                 ),
-                                                                Center(
-                                                                  child: Text(
-                                                                    '${e.tableNo}',
-                                                                    style: kStyleTextTable,
-                                                                  ),
-                                                                ),
-                                                                Container(
-                                                                  width: 50.w,
-                                                                  decoration: BoxDecoration(
-                                                                    color: ColorsApp.backgroundDialog,
-                                                                    border: Border.all(width: 1, color: ColorsApp.orange_2),
-                                                                    borderRadius: BorderRadius.circular(5.r),
-                                                                  ),
-                                                                  child: Center(
-                                                                    child: Text(
-                                                                      'View ',
-                                                                      style: kStyleTextTable.copyWith(color: ColorsApp.red_light),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                              ),
+                                                              height: 70.h,
+                                                              width: 100.w,
                                                             ),
-                                                            if (e.isOpen)
-                                                              Container(
-                                                                margin: const EdgeInsets.all(8),
-                                                                width: 15,
-                                                                height: 15,
-                                                                decoration: BoxDecoration(
-                                                                  color: e.isPrinted ? Colors.yellow.withOpacity(0.5) : Colors.green.withOpacity(0.5),
-                                                                  shape: BoxShape.circle,
+                                                            Center(
+                                                              child: Text(
+                                                                '${e.tableNo}',
+                                                                style: kStyleTextTable,
+                                                              ),
+                                                            ),
+                                                            Container(
+                                                              width: 50.w,
+                                                              decoration: BoxDecoration(
+                                                                color: ColorsApp.backgroundDialog,
+                                                                border: Border.all(width: 1, color: ColorsApp.orange_2),
+                                                                borderRadius: BorderRadius.circular(5.r),
+                                                              ),
+                                                              child: Center(
+                                                                child: Text(
+                                                                  'View ',
+                                                                  style: kStyleTextTable.copyWith(color: ColorsApp.red_light),
                                                                 ),
-                                                              )
+                                                              ),
+                                                            ),
                                                           ],
                                                         ),
                                                       ),

@@ -367,7 +367,7 @@ class _PayScreenState extends State<PayScreen> {
             Container(
               width: double.infinity,
               height: 50.h,
-              color: ColorsApp.gray,
+              color: ColorsApp.backgroundDialog,
               child: Row(
                 children: [
                   IconButton(
@@ -471,7 +471,7 @@ class _PayScreenState extends State<PayScreen> {
                                         visible: (widget.openTypeDialog != 1),
                                         child: Expanded(
                                           child: CustomButton(
-                                            backgroundColor: ColorsApp.blue_light,
+                                            backgroundColor: ColorsApp.green,
                                             margin: EdgeInsets.all(10.h),
                                             height: 50.h,
                                             child: Text(

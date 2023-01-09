@@ -184,7 +184,7 @@ class Utils{
                         Expanded(
                           child: CustomButton(
                             fixed: true,
-                            backgroundColor: ColorsApp.red,
+                            backgroundColor: ColorsApp.red_light,
                             child: Text(
                               'Exit'.tr,
                               style: kStyleTextButton,
@@ -251,7 +251,10 @@ class Utils{
     var result = await Get.defaultDialog(
       title: title,
       titleStyle: kStyleTextTitle,
-      content: Text('Are you sure?'.tr),
+      content: Container(
+          height: 100.h,
+          width: 150.w,
+          child: Center(child: Text('Are you sure?'.tr))),
       textCancel: 'Cancel'.tr,
       textConfirm: 'Confirm'.tr,
       confirmTextColor: Colors.white,

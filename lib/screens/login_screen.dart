@@ -177,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: RichText(
                           text: TextSpan(
                             text: 'Welcome',
-                            style: kStyleHint.copyWith(fontSize: 30.sp, color: ColorsApp.orange_light),
+                            style: kStyleHint.copyWith(fontSize: 30.sp, color: ColorsApp.black),
                             // children:  <TextSpan>[
                             //   TextSpan(text: 'Welcom'.tr, style: kStyleHint.copyWith(fontSize: 30.sp,color: ColorsApp.orange_light)),
                             //

@@ -70,7 +70,7 @@ class _OrderScreenState extends State<OrderScreen> {
       if (widget.type == OrderType.takeAway)
         HomeMenu(
           name: 'Park List'.tr,
-          icon: const Icon(Icons.local_parking_outlined, color: ColorsApp.gray),
+          icon: Icon(Icons.local_parking_outlined, color: ColorsApp.orange_2),
           onTab: () async {
             if (_cartModel.items.isNotEmpty) {
               Fluttertoast.showToast(msg: 'The cart must be emptied, in order to be able to get park'.tr);
@@ -339,37 +339,46 @@ class _OrderScreenState extends State<OrderScreen> {
               style: kStyleTextTitle,
             ),
             const Divider(thickness: 2),
-            StaggeredGrid.count(
-              crossAxisCount: 3,
-              children: [
-                CustomButton(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Text(
-                    'No Delivery Company'.tr,
-                    style: kStyleTextDefault,
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(
+                    15.0,
                   ),
-                  backgroundColor: ColorsApp.backgroundDialog,
-                  onPressed: () {
-                    _cartModel.deliveryCompanyId = 0;
-                    Get.back();
-                  },
-                ),
-                ...allDataModel.deliveryCompanyModel
-                    .map((e) => CustomButton(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          child: Text(
-                            e.coName,
-                            style: kStyleTextDefault,
-                          ),
-                          backgroundColor: ColorsApp.backgroundDialog,
-                          onPressed: () {
-                            _cartModel.deliveryCompanyId = e.id;
-                            Get.back();
-                          },
-                        ))
-                    .toList()
-              ],
+                  border: Border.all(color: ColorsApp.orange_2)),
+              height: 250.h,
+              child: StaggeredGrid.count(
+                crossAxisCount: 3,
+                children: [
+                  CustomButton(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      'No Delivery Company'.tr,
+                      style: kStyleTextDefault,
+                    ),
+                    backgroundColor: ColorsApp.backgroundDialog,
+                    onPressed: () {
+                      _cartModel.deliveryCompanyId = 0;
+                      Get.back();
+                    },
+                  ),
+                  ...allDataModel.deliveryCompanyModel
+                      .map((e) => CustomButton(
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            child: Text(
+                              e.coName,
+                              style: kStyleTextDefault,
+                            ),
+                            backgroundColor: ColorsApp.backgroundDialog,
+                            onPressed: () {
+                              _cartModel.deliveryCompanyId = e.id;
+                              Get.back();
+                            },
+                          ))
+                      .toList()
+                ],
+              ),
             ),
+            SizedBox(height:50.h),
             Row(
               children: [
                 Expanded(child: Container()),
@@ -403,37 +412,47 @@ class _OrderScreenState extends State<OrderScreen> {
               style: kStyleTextTitle,
             ),
             const Divider(thickness: 2),
-            StaggeredGrid.count(
-              crossAxisCount: 3,
-              children: [
-                ...mySharedPreferences.park
-                    .map((e) => Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5.r),
-                            side: const BorderSide(width: 1),
-                          ),
-                          elevation: 0,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(5.r),
-                            onTap: () async {
-                              _parkCart = e;
-                              var park = mySharedPreferences.park;
-                              park.remove(e);
-                              mySharedPreferences.park = park;
-                              Get.back();
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                              child: Text(
-                                e.parkName,
-                                style: kStyleTextTitle,
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(
+                    15.0,
+                  ),
+                  border: Border.all(color: ColorsApp.orange_2)),
+              height: 250.h,
+              child: StaggeredGrid.count(
+                crossAxisCount: 3,
+                children: [
+                  ...mySharedPreferences.park
+                      .map((e) => Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.r),
+                              side: const BorderSide(width: 1),
+                            ),
+                            elevation: 0,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(5.r),
+                              onTap: () async {
+                                _parkCart = e;
+                                var park = mySharedPreferences.park;
+                                park.remove(e);
+                                mySharedPreferences.park = park;
+                                Get.back();
+                              },
+
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                child: Text(
+                                  e.parkName,
+                                  style: kStyleTextTitle,
+                                ),
                               ),
                             ),
-                          ),
-                        ))
-                    .toList()
-              ],
+                          ))
+                      .toList()
+                ],
+              ),
             ),
+            SizedBox(height: 50.h,),
             Row(
               children: [
                 Expanded(child: Container()),
@@ -462,6 +481,8 @@ class _OrderScreenState extends State<OrderScreen> {
     TextEditingController _controllerPark = TextEditingController();
     await Get.dialog(
       CustomDialog(
+        width:  250.w,
+        height: 300.h,
         builder: (context, setState, constraints) => Form(
           key: _keyForm,
           child: Column(
@@ -473,6 +494,7 @@ class _OrderScreenState extends State<OrderScreen> {
               const Divider(thickness: 2),
               SizedBox(height: 20.h),
               CustomTextField(
+                borderColor: ColorsApp.orange_2,
                 controller: _controllerPark,
                 label: Text('Name'.tr),
                 fillColor: Colors.white,
@@ -480,7 +502,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   return Validation.isRequired(value);
                 },
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 50.h),
               Row(
                 children: [
                   Expanded(child: Container()),
@@ -488,7 +510,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     child: CustomButton(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text('Save'.tr),
-                      backgroundColor: ColorsApp.green,
+                      backgroundColor: ColorsApp.orange_2,
                       onPressed: () {
                         if (_keyForm.currentState!.validate()) {
                           Get.back();
@@ -500,7 +522,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     child: CustomButton(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text('Exit'.tr),
-                      backgroundColor: ColorsApp.red,
+                      backgroundColor: ColorsApp.red_light,
                       onPressed: () {
                         _controllerPark.text = '';
                         Get.back();
@@ -1425,7 +1447,15 @@ class _OrderScreenState extends State<OrderScreen> {
       },
       child: Scaffold(
         key: _scaffoldKey,
-        endDrawer: CustomDrawer(menu: _menu),
+        endDrawer: ClipPath(
+          // clipper: OvalRightBorderClipper(),
+          child: SizedBox(
+            width: 120.w,
+            child: CustomDrawer(
+              menu: _menu,
+            ),
+          ),
+        ),
         body: CustomSingleChildScrollView(
           child: Column(
             children: [
@@ -1621,180 +1651,190 @@ class _OrderScreenState extends State<OrderScreen> {
                           crossAxisCount: deviceType == DeviceType.phone
                               ? _isShowItem
                                   ? 2
-                                  : 3
+                                  : 2
                               : _isShowItem
-                                  ? 4
-                                  : 5,
+                                  ? 2
+                                  : 2,
                           children: _isShowItem
                               ? allDataModel.items
                                   .where((element) => element.category.id == _selectedCategoryId)
                                   .map(
                                     (e) => Card(
-                                      color: ColorsApp.gray_light,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5.r),
                                       ),
                                       elevation: 0,
-                                      child: Container(
-                                        height: 180.h,
-                                        width: 100.w,
-                                        child: InkWell(
-                                          borderRadius: BorderRadius.circular(5.r),
-                                          onTap: () async {
-                                            bool itemIsAdded = false;
-                                            var indexItem = _cartModel.items.lastIndexWhere((element) => element.id == e.id && element.parentUuid == '' && element.modifiers.isEmpty);
-                                            var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == e.id).toList();
-                                            var questionsSubItems = allDataModel.comboItemsForceQuestion.where((element) => element.itemId == e.id).toList();
-                                            if (indexItem != -1 && questionsItem.isEmpty && questionsSubItems.isEmpty) {
-                                              if (widget.type == OrderType.dineIn && _cartModel.items[indexItem].dineInSavedOrder) {
-                                                itemIsAdded = false;
-                                              } else {
-                                                itemIsAdded = true;
-                                              }
-                                            }
-                                            if (itemIsAdded) {
-                                              _cartModel.items[indexItem].qty += 1;
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(5.r),
+                                        onTap: () async {
+                                          bool itemIsAdded = false;
+                                          var indexItem = _cartModel.items.lastIndexWhere((element) => element.id == e.id && element.parentUuid == '' && element.modifiers.isEmpty);
+                                          var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == e.id).toList();
+                                          var questionsSubItems = allDataModel.comboItemsForceQuestion.where((element) => element.itemId == e.id).toList();
+                                          if (indexItem != -1 && questionsItem.isEmpty && questionsSubItems.isEmpty) {
+                                            if (widget.type == OrderType.dineIn && _cartModel.items[indexItem].dineInSavedOrder) {
+                                              itemIsAdded = false;
                                             } else {
-                                              _cartModel.items.add(CartItemModel(
-                                                uuid: const Uuid().v1(),
-                                                parentUuid: '',
-                                                orderType: widget.type,
-                                                id: e.id,
-                                                categoryId: e.category.id,
-                                                taxType: e.taxTypeId,
-                                                taxPercent: e.taxPercent.percent,
-                                                name: e.menuName,
-                                                qty: 1,
-                                                price: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
-                                                priceChange: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
-                                                total: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
-                                                tax: 0,
-                                                discountAvailable: e.discountAvailable == 1,
-                                                openPrice: e.openPrice == 1,
-                                                rowSerial: _cartModel.items.length + 1,
-                                              ));
-                                              int indexAddedItem = _cartModel.items.length - 1;
-                                              if (questionsSubItems.isNotEmpty) {
-                                                var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid);
-                                                if (cartSubItems == null) {
-                                                  _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
-                                                } else {
-                                                  _cartModel.items[indexAddedItem].isCombo = true;
-                                                  if (cartSubItems.isNotEmpty) {
-                                                    // _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
-                                                    // _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
-                                                    _cartModel.items[indexAddedItem].openPrice = false;
-                                                    _cartModel.items.addAll(cartSubItems);
-                                                  }
-                                                }
-                                              }
-                                              if (questionsItem.isNotEmpty && indexAddedItem < _cartModel.items.length) {
-                                                var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
-                                                if (questions == null) {
-                                                  _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
-                                                } else {
-                                                  _cartModel.items[indexAddedItem].questions = questions;
+                                              itemIsAdded = true;
+                                            }
+                                          }
+                                          if (itemIsAdded) {
+                                            _cartModel.items[indexItem].qty += 1;
+                                          } else {
+                                            _cartModel.items.add(CartItemModel(
+                                              uuid: const Uuid().v1(),
+                                              parentUuid: '',
+                                              orderType: widget.type,
+                                              id: e.id,
+                                              categoryId: e.category.id,
+                                              taxType: e.taxTypeId,
+                                              taxPercent: e.taxPercent.percent,
+                                              name: e.menuName,
+                                              qty: 1,
+                                              price: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
+                                              priceChange: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
+                                              total: _cartModel.deliveryCompanyId == 0 ? e.price : e.companyPrice,
+                                              tax: 0,
+                                              discountAvailable: e.discountAvailable == 1,
+                                              openPrice: e.openPrice == 1,
+                                              rowSerial: _cartModel.items.length + 1,
+                                            ));
+                                            int indexAddedItem = _cartModel.items.length - 1;
+                                            if (questionsSubItems.isNotEmpty) {
+                                              var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid);
+                                              if (cartSubItems == null) {
+                                                _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
+                                              } else {
+                                                _cartModel.items[indexAddedItem].isCombo = true;
+                                                if (cartSubItems.isNotEmpty) {
+                                                  // _cartModel.items[indexAddedItem].price = cartSubItems.fold(_cartModel.items[indexAddedItem].price, (sum, element) => sum + element.price);
+                                                  // _cartModel.items[indexAddedItem].priceChange = cartSubItems.fold(_cartModel.items[indexAddedItem].priceChange, (sum, element) => sum + element.priceChange);
+                                                  _cartModel.items[indexAddedItem].openPrice = false;
+                                                  _cartModel.items.addAll(cartSubItems);
                                                 }
                                               }
                                             }
-                                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                            _dineInChangedOrder = true;
-                                            setState(() {});
-                                          },
-                                          child: SizedBox(
-                                            // height: maxHeightItem == 0 ? null : maxHeightItem,
-                                            child: MeasureSize(
-                                              onChange: (size) {
-                                                // if (size.height > maxHeightItem) {
-                                                //   maxHeightItem = size.height;
-                                                //   setState(() {});
-                                                // }
-                                              },
-                                              child: Padding(
-                                                padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 2.w),
-                                                child: SingleChildScrollView(
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
+                                            if (questionsItem.isNotEmpty && indexAddedItem < _cartModel.items.length) {
+                                              var questions = await _showForceQuestionDialog(questionsItem: questionsItem);
+                                              if (questions == null) {
+                                                _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
+                                              } else {
+                                                _cartModel.items[indexAddedItem].questions = questions;
+                                              }
+                                            }
+                                          }
+                                          _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                          _dineInChangedOrder = true;
+                                          setState(() {});
+                                        },
+                                        child: SizedBox(
+                                          // height: maxHeightItem == 0 ? null : maxHeightItem,
+                                          child: MeasureSize(
+                                            onChange: (size) {
+                                              // if (size.height > maxHeightItem) {
+                                              //   maxHeightItem = size.height;
+                                              //   setState(() {});
+                                              // }
+                                            },
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Stack(
                                                     children: [
-                                                      Stack(
-                                                        children: [
-                                                          Image.asset(
-                                                            'assets/images/Image_2.png',
-                                                            height: 80.h,
-                                                            width: 300.h,
-                                                            fit: BoxFit.fill,
+
+                                                      // e.itemPicture.isNotEmpty?
+                                                      //   CachedNetworkImage(
+                                                      //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
+                                                      //     height: 80.h,
+                                                      //       width: 300.h,
+                                                      //       fit: BoxFit.fill,
+                                                      //
+                                                      //     placeholder: (context, url) => Container(),
+                                                      //     errorWidget: (context, url, error) => Container(),
+                                                      //   ):
+                                                      Image.asset(
+                                          'assets/images/Image_2.png',
+                                          height: 80.h,
+                                          width: 300.h,
+                                          fit: BoxFit.fill,
+                                        ),
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(5.0),
+                                                        child: Align(
+                                                          alignment: Alignment.centerRight,
+                                                          child: Image.asset(
+                                                            'assets/images/Favorite.png',
+                                                            height: 30.h,
+                                                            width: 30.w,
+                                                            fit: BoxFit.fitHeight,
                                                           ),
-                                                          Padding(
-                                                            padding: const EdgeInsets.all(5.0),
-                                                            child: Align(
-                                                              alignment: Alignment.centerRight,
-                                                              child: Image.asset(
-                                                                'assets/images/Favorite.png',
-                                                                height: 30.h,
-                                                                width: 30.w,
-                                                                fit: BoxFit.fitHeight,
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  // if (e.itemPicture.isNotEmpty)
+                                                  //   CachedNetworkImage(
+                                                  //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
+                                                  //     height: 50.h,
+                                                  //     width: 50.w,
+                                                  //     fit: BoxFit.contain,
+                                                  //     placeholder: (context, url) => Container(),
+                                                  //     errorWidget: (context, url, error) => Container(),
+                                                  //   ),
+                                                  Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      SizedBox(height: 5.h,),
+                                                      Container(
+                                                        height: 45.h,
+                                                        width: 300.h,
+                                                        child: Text(
+                                                          e.menuName,
+                                                          style: kStyleTextTitle,
+                                                          textAlign: TextAlign.left,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                      // if (e.description.isNotEmpty)
+                                                      //   Text(
+                                                      //     e.description,
+                                                      //     style: kStyleTextDefault,
+                                                      //   ),
+                                                      Row(
+                                                        children: [
+                                                          Text(
+                                                            _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(3) + " JD" : e.companyPrice.toStringAsFixed(3) + " JD",
+                                                            style: kStyleTextTitle.copyWith(color: ColorsApp.orange_2),
+                                                          ),
+                                                          SizedBox(
+                                                            width: 10.w,
+                                                          ),
+                                                          Container(
+                                                            decoration: BoxDecoration(
+                                                                color: ColorsApp.orange_2,
+                                                                borderRadius: BorderRadius.circular(
+                                                                  15.0,
+                                                                ),
+                                                                border: Border.all(color: ColorsApp.orange_2)),
+                                                            width: 30.w,
+                                                            height: 40.h,
+                                                            margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                                            child: Center(
+                                                              child: Text(
+                                                                'Add + '.tr,
+                                                                style: kStyleTextDefault.copyWith(color: Colors.white),
                                                               ),
                                                             ),
                                                           ),
                                                         ],
                                                       ),
-                                                      // if (e.itemPicture.isNotEmpty)
-                                                      //   CachedNetworkImage(
-                                                      //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
-                                                      //     height: 50.h,
-                                                      //     width: 50.w,
-                                                      //     fit: BoxFit.contain,
-                                                      //     placeholder: (context, url) => Container(),
-                                                      //     errorWidget: (context, url, error) => Container(),
-                                                      //   ),
-                                                      Column(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        mainAxisAlignment: MainAxisAlignment.start,
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            e.menuName,
-                                                            style: kStyleTextTitle,
-                                                            textAlign: TextAlign.center,
-                                                          ),
-                                                          // if (e.description.isNotEmpty)
-                                                          //   Text(
-                                                          //     e.description,
-                                                          //     style: kStyleTextDefault,
-                                                          //   ),
-                                                          Row(
-                                                            children: [
-                                                              Text(
-                                                                _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(3) + " JD" : e.companyPrice.toStringAsFixed(3) + " JD",
-                                                                style: kStyleTextTitle.copyWith(color: ColorsApp.orange_2),
-                                                              ),
-                                                              SizedBox(
-                                                                width: 10.w,
-                                                              ),
-                                                              Container(
-                                                                decoration: BoxDecoration(
-                                                                    color: ColorsApp.orange_2,
-                                                                    borderRadius: BorderRadius.circular(
-                                                                      15.0,
-                                                                    ),
-                                                                    border: Border.all(color: ColorsApp.orange_2)),
-                                                                width: 30.w,
-                                                                height: 40.h,
-                                                                margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                                                child: Center(
-                                                                  child: Text(
-                                                                    'Add + '.tr,
-                                                                    style: kStyleTextDefault.copyWith(color: Colors.white),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
                                                     ],
                                                   ),
-                                                ),
+                                                ],
                                               ),
                                             ),
                                           ),
@@ -1804,89 +1844,121 @@ class _OrderScreenState extends State<OrderScreen> {
                                   )
                                   .toList()
                               : allDataModel.categories
-                                  .map((e) => Card(
-                                        color: ColorsApp.gray_light,
-                                        shadowColor: ColorsApp.gray_light,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(5.r),
-                                        ),
-                                        elevation: 0,
-                                        child: Container(
-                                          height: 200.h,
-                                          width: 100.h,
-                                          child: Padding(
-                                            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                                            child: SingleChildScrollView(
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Stack(
-                                                    children: [
-                                                      Image.asset(
-                                                        'assets/images/Image_1.png',
-                                                        height: 80.h,
-                                                        width: 100.w,
-                                                        fit: BoxFit.fitHeight,
-                                                      ),
-                                                      Align(
-                                                        alignment: Alignment.topRight,
-                                                        child: Image.asset(
-                                                          'assets/images/Favorite.png',
-                                                          height: 30.h,
-                                                          width: 30.w,
-                                                          fit: BoxFit.fitHeight,
+                                  .map((e) => InkWell(
+                            onTap: () async {
+                              _selectedCategoryId = e.id;
+                              _isShowItem = true;
+                              setState(() {});
+                            },
+                                    child: Card(
+                                          color: ColorsApp.gray_light,
+                                          shadowColor: ColorsApp.gray_light,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(5.r),
+                                          ),
+                                          elevation: 0,
+                                          child: Container(
+                                            height: 200.h,
+                                            width: 100.h,
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                              child: SingleChildScrollView(
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Stack(
+                                                      children: [
+
+                                              //           e.categoryPic.isNotEmpty?
+                                              //           CachedNetworkImage(
+                                              //             imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                              //             height: 80.h,
+                                              //             width: 100.w,
+                                              //             fit: BoxFit.fitHeight,
+                                              //             placeholder: (context, url) => SizedBox(
+                                              //               height: 50.h,
+                                              //               width: 50.w,
+                                              //             ),
+                                              // errorWidget: (context, url, error) => SizedBox(
+                                              //       height: 50.h,
+                                              //       width: 50.w,
+                                              //     )):
+                                                        Image.asset(
+                                            'assets/images/Image_1.png',
+                                                          height: 180.h,
+                                                          width: 300.h,
+                                                          fit: BoxFit.fill,
+                                          ),
+                                                        Align(
+                                                          alignment: Alignment.topRight,
+                                                          child: Image.asset(
+                                                            'assets/images/Favorite.png',
+                                                            height: 30.h,
+                                                            width: 30.w,
+                                                            fit: BoxFit.fitHeight,
+                                                          ),
                                                         ),
-                                                      )
-                                                    ],
-                                                  ),
-                                                  // CachedNetworkImage(
-                                                  //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
-                                                  //   height: 50.h,
-                                                  //   width: 50.w,
-                                                  //   fit: BoxFit.contain,
-                                                  //   placeholder: (context, url) => SizedBox(
-                                                  //     height: 50.h,
-                                                  //     width: 50.w,
-                                                  //   ),
-                                                  //   errorWidget: (context, url, error) => SizedBox(
-                                                  //     height: 50.h,
-                                                  //     width: 50.w,
-                                                  //   ),
-                                                  // ),
-                                                  SizedBox(
-                                                    height: 10.h,
-                                                  ),
-                                                  Text(
-                                                    e.categoryName,
-                                                    maxLines: 2,
-                                                    textAlign: TextAlign.center,
-                                                    style: kStyleTextTitle,
-                                                  ),
-                                                  SizedBox(
-                                                    height: 10.h,
-                                                  ),
-                                                  CustomButton(
-                                                    borderRadius: 8,
-                                                    width: 50.w,
-                                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                                    child: Text(
-                                                      'View Items'.tr,
-                                                      style: kStyleTextButton,
+
+                                                        Column(
+                                                          children: [
+                                                            SizedBox(height: 120.h,),
+                                                            Align(
+
+                                                              child: Opacity(
+                                                                opacity: 0.7,
+                                                                child: CustomButton(
+                                                                  borderRadius: 8,
+                                                                  height: 65.h,
+                                                                  width: 300.h,
+
+                                                                  child:
+                                                                  Center(
+                                                                    child: Text(
+                                                                      '${e.categoryName}',
+                                                                      style: kStyleButtonPayment.copyWith(color: ColorsApp.orange_2,fontSize: 20.sp),
+                                                                    ),
+                                                                  ),
+                                                                  fixed: true,
+
+                                                                  backgroundColor: ColorsApp.orange_light,
+                                                                  onPressed: () async {
+                                                                    _selectedCategoryId = e.id;
+                                                                    _isShowItem = true;
+                                                                    setState(() {});
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
                                                     ),
-                                                    fixed: true,
-                                                    backgroundColor: ColorsApp.orange_2,
-                                                    onPressed: () async {
-                                                      _selectedCategoryId = e.id;
-                                                      _isShowItem = true;
-                                                      setState(() {});
-                                                    },
-                                                  ),
-                                                ],
+                                                    // CachedNetworkImage(
+                                                    //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                                    //   height: 50.h,
+                                                    //   width: 50.w,
+                                                    //   fit: BoxFit.contain,
+                                                    //   placeholder: (context, url) => SizedBox(
+                                                    //     height: 50.h,
+                                                    //     width: 50.w,
+                                                    //   ),
+                                                    //   errorWidget: (context, url, error) => SizedBox(
+                                                    //     height: 50.h,
+                                                    //     width: 50.w,
+                                                    //   ),
+                                                    // ),
+                                                    // SizedBox(
+                                                    //   height: 10.h,
+                                                    // ),
+
+
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ))
+                                  ))
                                   .toList(),
                         ),
                       ),
@@ -1945,9 +2017,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                           }
                                         }
                                       },
-                                      child: SingleChildScrollView(
+                                      child:
+                                      SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
-                                        child: Row(
+                                        child:
+                                        Row(
                                           crossAxisAlignment: CrossAxisAlignment.center,
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
@@ -1962,7 +2036,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                             ),
                                             Image.asset(
                                               'assets/images/arrowchevronright.png',
-                                              height: 30.h,
+                                              height: 20.h,
                                             ),
                                           ],
                                         ),
@@ -1975,16 +2049,19 @@ class _OrderScreenState extends State<OrderScreen> {
                               ),
                               if (mySharedPreferences.employee.hasVoidAllPermission)
                                 Expanded(
-                                  child: Container(
-                                    width: 50.w,
-                                    height: 30.h,
-                                    decoration: BoxDecoration(
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Container(
+
+                                  height: 30.h,
+                                  decoration: BoxDecoration(
                                       border: Border.all(color: ColorsApp.orange_2),
                                       borderRadius: BorderRadius.circular(
                                         10.0,
                                       ),
-                                    ),
-                                    child: InkWell(
+                                  ),
+                                  child:
+                                  InkWell(
                                       onTap: () async {
                                         var permission = false;
                                         if (mySharedPreferences.employee.hasVoidAllPermission) {
@@ -2032,46 +2109,50 @@ class _OrderScreenState extends State<OrderScreen> {
                                           }
                                         }
                                       },
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Center(
-                                              child: Text(
-                                                'Void All'.tr,
-                                                textAlign: TextAlign.center,
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 1,
-                                                style: kStyleTextOrange,
-                                              ),
+                                      child:
+                                        SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Center(
+                                            child: Row(
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Center(
+                                                  child: Text(
+                                                    'Void All'.tr,
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: kStyleTextOrange,
+                                                  ),
+                                                ),
+                                                Image.asset(
+                                                  'assets/images/arrowchevronright.png',
+                                                  height: 20.h,
+                                                ),
+                                              ],
                                             ),
-                                            Image.asset(
-                                              'assets/images/arrowchevronright.png',
-                                              height: 30.h,
-                                            ),
-                                          ],
+                                          ),
                                         ),
-                                      ),
-                                    ),
+
                                   ),
                                 ),
+                                    )),
                               SizedBox(
                                 width: 5.w,
                               ),
                               if (widget.type == OrderType.takeAway)
                                 Expanded(
-                                  child: Container(
-                                    width: 50.w,
-                                    height: 30.h,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: ColorsApp.orange_2),
-                                      borderRadius: BorderRadius.circular(
-                                        10.0,
-                                      ),
+                                    child: Container(
+                                  width: 50.w,
+                                  height: 30.h,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: ColorsApp.orange_2),
+                                    borderRadius: BorderRadius.circular(
+                                      10.0,
                                     ),
+                                  ),
+                                  child: Center(
                                     child: InkWell(
                                       onTap: () async {
                                         if (_cartModel.items.isNotEmpty) {
@@ -2082,32 +2163,13 @@ class _OrderScreenState extends State<OrderScreen> {
                                           Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
                                         }
                                       },
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Center(
-                                              child: Text(
-                                                'Delivery'.tr,
-                                                textAlign: TextAlign.center,
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 1,
-                                                style: kStyleTextOrange,
-                                              ),
-                                            ),
-                                            Image.asset(
-                                              'assets/images/arrowchevronright.png',
-                                              height: 30.h,
-                                            ),
-                                          ],
-                                        ),
+                                      child: Text(
+                                        'Delivery'.tr,
+                                        style:kStyleTextOrange,
                                       ),
                                     ),
                                   ),
-                                ),
+                                )),
                               SizedBox(
                                 width: 5.w,
                               ),
@@ -2147,9 +2209,9 @@ class _OrderScreenState extends State<OrderScreen> {
                             child: ListView(
                               children: [
                                 Container(
-                                  width: 130.w,
                                   decoration: BoxDecoration(
-                                    color: ColorsApp.orange_light,
+                                    border: Border.all(),
+                                    borderRadius: BorderRadius.circular(3.r),
                                   ),
                                   child: Column(
                                     children: [
@@ -2193,7 +2255,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       const Divider(color: Colors.grey, height: 1),
-                                      Container(
+                                      SizedBox(
                                         height: 300.h,
                                         child: ListView.separated(
                                           itemCount: _cartModel.items.length,
@@ -2272,13 +2334,6 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                     value: 'Void',
                                                                     child: Text(
                                                                       'Void'.tr,
-                                                                      style: kStyleTextDefault,
-                                                                    ),
-                                                                  ),
-                                                                  PopupMenuItem(
-                                                                    value: 'Delivery',
-                                                                    child: Text(
-                                                                      'Delivery'.tr,
                                                                       style: kStyleTextDefault,
                                                                     ),
                                                                   ),
@@ -2415,26 +2470,24 @@ class _OrderScreenState extends State<OrderScreen> {
                               ],
                             ),
                           ),
-                          Stack(
-                            children: [
-                              const Divider(color: Colors.black, height: 20),
-                              Align(
-                                alignment: Alignment.topCenter,
-                                child: InkWell(
-                                  onTap: () {
-                                    _isShowTotal = !_isShowTotal;
-                                    setState(() {});
-                                  },
-                                  child: Container(
-                                    child: Image.asset(
-                                      'assets/images/drop_dark.png',
-                                      height: 20.h,
-                                    ),
+                          Stack(children: [
+                            const Divider(color: Colors.black, height: 20),
+                            Align(
+                              alignment: Alignment.topCenter,
+                              child: InkWell(
+                                onTap: () {
+                                  _isShowTotal = !_isShowTotal;
+                                  setState(() {});
+                                },
+                                child: Container(
+                                  child: Image.asset(
+                                    'assets/images/drop_dark.png',
+                                    height: 20.h,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ]),
                           _isShowTotal
                               ? Container(
                                   margin: EdgeInsets.symmetric(vertical: 4.h),
