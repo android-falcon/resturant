@@ -44,6 +44,21 @@ class Utils{
     });
   }
 
+  static void loadSortItems(){
+    for(var sortItem in mySharedPreferences.sortItems.items){
+      var indexItem = allDataModel.items.indexWhere((element) => element.id == sortItem.id);
+      if(indexItem != -1){
+        allDataModel.items[indexItem].index = sortItem.index;
+      }
+    }
+    for(var sortCategory in mySharedPreferences.sortItems.categories){
+      var indexCategory = allDataModel.categories.indexWhere((element) => element.id == sortCategory.id);
+      if(indexCategory != -1){
+        allDataModel.categories[indexCategory].index = sortCategory.index;
+      }
+    }
+  }
+
   static CartModel calculateOrder({required CartModel cart, required OrderType orderType, InvoiceKind invoiceKind = InvoiceKind.invoicePay}) {
     if (allDataModel.companyConfig.first.taxCalcMethod == 0) {
       // خاضع

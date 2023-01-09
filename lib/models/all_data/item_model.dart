@@ -37,6 +37,7 @@ class ItemModel {
     required this.sortOrder,
     required this.showInMenu,
     required this.itemPicture,
+    required this.index,
   });
 
   int id;
@@ -63,6 +64,7 @@ class ItemModel {
   int sortOrder;
   int showInMenu;
   String itemPicture;
+  int index;
 
   factory ItemModel.fromJson(Map<String, dynamic> json) => ItemModel(
         id: json["Id"] ?? 0,
@@ -88,6 +90,7 @@ class ItemModel {
         itemPicture: json["ITEM_PICTURE"] ?? "",
         unit: json["Unit"],
         unitId: json["UnitId"] ?? 0,
+        index: json["Index"] ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
@@ -114,6 +117,7 @@ class ItemModel {
         "ITEM_PICTURE": itemPicture,
         "Unit": unit,
         "UnitId": unitId,
+        "Index": index,
       };
 }
 

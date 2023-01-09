@@ -14,18 +14,21 @@ class CategoryModel {
     required this.categoryName,
     required this.categoryPic,
     required this.sortOrder,
+    required this.index,
   });
 
   int id;
   String categoryName;
   String categoryPic;
   int sortOrder;
+  int index;
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) => CategoryModel(
     id: json["Id"] ?? 0,
     categoryName: json["CategoryName"] ?? "",
     categoryPic: json["CategoryPic"] ?? "",
     sortOrder: json["SortOrder"] ?? 0,
+    index: json["Index"] ?? 0,
   );
 
   Map<String, dynamic> toJson() => {
@@ -33,5 +36,6 @@ class CategoryModel {
     "CategoryName": categoryName,
     "CategoryPic": categoryPic,
     "SortOrder": sortOrder,
+    "Index": index,
   };
 }

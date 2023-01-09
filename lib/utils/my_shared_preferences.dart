@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
+import 'package:restaurant_system/utils/sort_items.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MySharedPreferences {
@@ -57,6 +58,12 @@ class MySharedPreferences {
   EmployeeModel get employee => EmployeeModel.fromJson(jsonDecode(_sharedPreferences.getString(keyEmployee) ?? "{}"));
 
   set employee(EmployeeModel? value) {
+    _sharedPreferences.setString(keyEmployee, value == null ? "{}" : jsonEncode(value.toJson()));
+  }
+
+  SortItems get sortItems => SortItems.fromJson(jsonDecode(_sharedPreferences.getString(keyEmployee) ?? "{}"));
+
+  set sortItems(SortItems? value) {
     _sharedPreferences.setString(keyEmployee, value == null ? "{}" : jsonEncode(value.toJson()));
   }
 

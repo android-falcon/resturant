@@ -211,11 +211,13 @@ class RestApi {
         networkModel.uploadedAt = DateTime.now().toIso8601String();
         await NetworkTable.update(networkModel);
       }
+      Utils.loadSortItems();
     } on dio.DioError catch (e) {
       _traceError(e);
       Utils.hideLoadingDialog();
       if (mySharedPreferences.allData.isNotEmpty) {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
+        Utils.loadSortItems();
       }
       // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     } catch (e) {
@@ -223,6 +225,7 @@ class RestApi {
       Utils.hideLoadingDialog();
       if (mySharedPreferences.allData.isNotEmpty) {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
+        Utils.loadSortItems();
       }
       // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
