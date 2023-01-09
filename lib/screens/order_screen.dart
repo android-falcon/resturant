@@ -339,37 +339,46 @@ class _OrderScreenState extends State<OrderScreen> {
               style: kStyleTextTitle,
             ),
             const Divider(thickness: 2),
-            StaggeredGrid.count(
-              crossAxisCount: 3,
-              children: [
-                CustomButton(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Text(
-                    'No Delivery Company'.tr,
-                    style: kStyleTextDefault,
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(
+                    15.0,
                   ),
-                  backgroundColor: ColorsApp.backgroundDialog,
-                  onPressed: () {
-                    _cartModel.deliveryCompanyId = 0;
-                    Get.back();
-                  },
-                ),
-                ...allDataModel.deliveryCompanyModel
-                    .map((e) => CustomButton(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          child: Text(
-                            e.coName,
-                            style: kStyleTextDefault,
-                          ),
-                          backgroundColor: ColorsApp.backgroundDialog,
-                          onPressed: () {
-                            _cartModel.deliveryCompanyId = e.id;
-                            Get.back();
-                          },
-                        ))
-                    .toList()
-              ],
+                  border: Border.all(color: ColorsApp.orange_2)),
+              height: 250.h,
+              child: StaggeredGrid.count(
+                crossAxisCount: 3,
+                children: [
+                  CustomButton(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      'No Delivery Company'.tr,
+                      style: kStyleTextDefault,
+                    ),
+                    backgroundColor: ColorsApp.backgroundDialog,
+                    onPressed: () {
+                      _cartModel.deliveryCompanyId = 0;
+                      Get.back();
+                    },
+                  ),
+                  ...allDataModel.deliveryCompanyModel
+                      .map((e) => CustomButton(
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            child: Text(
+                              e.coName,
+                              style: kStyleTextDefault,
+                            ),
+                            backgroundColor: ColorsApp.backgroundDialog,
+                            onPressed: () {
+                              _cartModel.deliveryCompanyId = e.id;
+                              Get.back();
+                            },
+                          ))
+                      .toList()
+                ],
+              ),
             ),
+            SizedBox(height:50.h),
             Row(
               children: [
                 Expanded(child: Container()),
@@ -403,37 +412,47 @@ class _OrderScreenState extends State<OrderScreen> {
               style: kStyleTextTitle,
             ),
             const Divider(thickness: 2),
-            StaggeredGrid.count(
-              crossAxisCount: 3,
-              children: [
-                ...mySharedPreferences.park
-                    .map((e) => Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5.r),
-                            side: const BorderSide(width: 1),
-                          ),
-                          elevation: 0,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(5.r),
-                            onTap: () async {
-                              _parkCart = e;
-                              var park = mySharedPreferences.park;
-                              park.remove(e);
-                              mySharedPreferences.park = park;
-                              Get.back();
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                              child: Text(
-                                e.parkName,
-                                style: kStyleTextTitle,
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(
+                    15.0,
+                  ),
+                  border: Border.all(color: ColorsApp.orange_2)),
+              height: 250.h,
+              child: StaggeredGrid.count(
+                crossAxisCount: 3,
+                children: [
+                  ...mySharedPreferences.park
+                      .map((e) => Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.r),
+                              side: const BorderSide(width: 1),
+                            ),
+                            elevation: 0,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(5.r),
+                              onTap: () async {
+                                _parkCart = e;
+                                var park = mySharedPreferences.park;
+                                park.remove(e);
+                                mySharedPreferences.park = park;
+                                Get.back();
+                              },
+
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                child: Text(
+                                  e.parkName,
+                                  style: kStyleTextTitle,
+                                ),
                               ),
                             ),
-                          ),
-                        ))
-                    .toList()
-              ],
+                          ))
+                      .toList()
+                ],
+              ),
             ),
+            SizedBox(height: 50.h,),
             Row(
               children: [
                 Expanded(child: Container()),
@@ -462,6 +481,8 @@ class _OrderScreenState extends State<OrderScreen> {
     TextEditingController _controllerPark = TextEditingController();
     await Get.dialog(
       CustomDialog(
+        width:  250.w,
+        height: 300.h,
         builder: (context, setState, constraints) => Form(
           key: _keyForm,
           child: Column(
@@ -473,6 +494,7 @@ class _OrderScreenState extends State<OrderScreen> {
               const Divider(thickness: 2),
               SizedBox(height: 20.h),
               CustomTextField(
+                borderColor: ColorsApp.orange_2,
                 controller: _controllerPark,
                 label: Text('Name'.tr),
                 fillColor: Colors.white,
@@ -480,7 +502,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   return Validation.isRequired(value);
                 },
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 50.h),
               Row(
                 children: [
                   Expanded(child: Container()),
@@ -488,7 +510,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     child: CustomButton(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text('Save'.tr),
-                      backgroundColor: ColorsApp.green,
+                      backgroundColor: ColorsApp.orange_2,
                       onPressed: () {
                         if (_keyForm.currentState!.validate()) {
                           Get.back();
@@ -500,7 +522,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     child: CustomButton(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text('Exit'.tr),
-                      backgroundColor: ColorsApp.red,
+                      backgroundColor: ColorsApp.red_light,
                       onPressed: () {
                         _controllerPark.text = '';
                         Get.back();
@@ -1629,10 +1651,10 @@ class _OrderScreenState extends State<OrderScreen> {
                           crossAxisCount: deviceType == DeviceType.phone
                               ? _isShowItem
                                   ? 2
-                                  : 3
+                                  : 2
                               : _isShowItem
-                                  ? 4
-                                  : 5,
+                                  ? 2
+                                  : 2,
                           children: _isShowItem
                               ? allDataModel.items
                                   .where((element) => element.category.id == _selectedCategoryId)
@@ -1721,12 +1743,23 @@ class _OrderScreenState extends State<OrderScreen> {
                                                 children: [
                                                   Stack(
                                                     children: [
+
+                                                      // e.itemPicture.isNotEmpty?
+                                                      //   CachedNetworkImage(
+                                                      //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
+                                                      //     height: 80.h,
+                                                      //       width: 300.h,
+                                                      //       fit: BoxFit.fill,
+                                                      //
+                                                      //     placeholder: (context, url) => Container(),
+                                                      //     errorWidget: (context, url, error) => Container(),
+                                                      //   ):
                                                       Image.asset(
-                                                        'assets/images/Image_2.png',
-                                                        height: 80.h,
-                                                        width: 300.h,
-                                                        fit: BoxFit.fill,
-                                                      ),
+                                          'assets/images/Image_2.png',
+                                          height: 80.h,
+                                          width: 300.h,
+                                          fit: BoxFit.fill,
+                                        ),
                                                       Padding(
                                                         padding: const EdgeInsets.all(5.0),
                                                         child: Align(
@@ -1755,10 +1788,16 @@ class _OrderScreenState extends State<OrderScreen> {
                                                     mainAxisAlignment: MainAxisAlignment.start,
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
-                                                      Text(
-                                                        e.menuName,
-                                                        style: kStyleTextTitle,
-                                                        textAlign: TextAlign.center,
+                                                      SizedBox(height: 5.h,),
+                                                      Container(
+                                                        height: 45.h,
+                                                        width: 300.h,
+                                                        child: Text(
+                                                          e.menuName,
+                                                          style: kStyleTextTitle,
+                                                          textAlign: TextAlign.left,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
                                                       ),
                                                       // if (e.description.isNotEmpty)
                                                       //   Text(
@@ -1805,89 +1844,121 @@ class _OrderScreenState extends State<OrderScreen> {
                                   )
                                   .toList()
                               : allDataModel.categories
-                                  .map((e) => Card(
-                                        color: ColorsApp.gray_light,
-                                        shadowColor: ColorsApp.gray_light,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(5.r),
-                                        ),
-                                        elevation: 0,
-                                        child: Container(
-                                          height: 200.h,
-                                          width: 100.h,
-                                          child: Padding(
-                                            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                                            child: SingleChildScrollView(
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Stack(
-                                                    children: [
-                                                      Image.asset(
-                                                        'assets/images/Image_1.png',
-                                                        height: 80.h,
-                                                        width: 100.w,
-                                                        fit: BoxFit.fitHeight,
-                                                      ),
-                                                      Align(
-                                                        alignment: Alignment.topRight,
-                                                        child: Image.asset(
-                                                          'assets/images/Favorite.png',
-                                                          height: 30.h,
-                                                          width: 30.w,
-                                                          fit: BoxFit.fitHeight,
+                                  .map((e) => InkWell(
+                            onTap: () async {
+                              _selectedCategoryId = e.id;
+                              _isShowItem = true;
+                              setState(() {});
+                            },
+                                    child: Card(
+                                          color: ColorsApp.gray_light,
+                                          shadowColor: ColorsApp.gray_light,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(5.r),
+                                          ),
+                                          elevation: 0,
+                                          child: Container(
+                                            height: 200.h,
+                                            width: 100.h,
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                              child: SingleChildScrollView(
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Stack(
+                                                      children: [
+
+                                              //           e.categoryPic.isNotEmpty?
+                                              //           CachedNetworkImage(
+                                              //             imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                              //             height: 80.h,
+                                              //             width: 100.w,
+                                              //             fit: BoxFit.fitHeight,
+                                              //             placeholder: (context, url) => SizedBox(
+                                              //               height: 50.h,
+                                              //               width: 50.w,
+                                              //             ),
+                                              // errorWidget: (context, url, error) => SizedBox(
+                                              //       height: 50.h,
+                                              //       width: 50.w,
+                                              //     )):
+                                                        Image.asset(
+                                            'assets/images/Image_1.png',
+                                                          height: 180.h,
+                                                          width: 300.h,
+                                                          fit: BoxFit.fill,
+                                          ),
+                                                        Align(
+                                                          alignment: Alignment.topRight,
+                                                          child: Image.asset(
+                                                            'assets/images/Favorite.png',
+                                                            height: 30.h,
+                                                            width: 30.w,
+                                                            fit: BoxFit.fitHeight,
+                                                          ),
                                                         ),
-                                                      )
-                                                    ],
-                                                  ),
-                                                  // CachedNetworkImage(
-                                                  //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
-                                                  //   height: 50.h,
-                                                  //   width: 50.w,
-                                                  //   fit: BoxFit.contain,
-                                                  //   placeholder: (context, url) => SizedBox(
-                                                  //     height: 50.h,
-                                                  //     width: 50.w,
-                                                  //   ),
-                                                  //   errorWidget: (context, url, error) => SizedBox(
-                                                  //     height: 50.h,
-                                                  //     width: 50.w,
-                                                  //   ),
-                                                  // ),
-                                                  SizedBox(
-                                                    height: 10.h,
-                                                  ),
-                                                  Text(
-                                                    '${e.categoryName}',
-                                                    maxLines: 2,
-                                                    textAlign: TextAlign.center,
-                                                    style: kStyleTextTitle,
-                                                  ),
-                                                  SizedBox(
-                                                    height: 10.h,
-                                                  ),
-                                                  CustomButton(
-                                                    borderRadius: 8,
-                                                    width: 50.w,
-                                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                                    child: Text(
-                                                      'View Items'.tr,
-                                                      style: kStyleTextButton,
+
+                                                        Column(
+                                                          children: [
+                                                            SizedBox(height: 120.h,),
+                                                            Align(
+
+                                                              child: Opacity(
+                                                                opacity: 0.7,
+                                                                child: CustomButton(
+                                                                  borderRadius: 8,
+                                                                  height: 65.h,
+                                                                  width: 300.h,
+
+                                                                  child:
+                                                                  Center(
+                                                                    child: Text(
+                                                                      '${e.categoryName}',
+                                                                      style: kStyleButtonPayment.copyWith(color: ColorsApp.orange_2,fontSize: 20.sp),
+                                                                    ),
+                                                                  ),
+                                                                  fixed: true,
+
+                                                                  backgroundColor: ColorsApp.orange_light,
+                                                                  onPressed: () async {
+                                                                    _selectedCategoryId = e.id;
+                                                                    _isShowItem = true;
+                                                                    setState(() {});
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
                                                     ),
-                                                    fixed: true,
-                                                    backgroundColor: ColorsApp.orange_2,
-                                                    onPressed: () async {
-                                                      _selectedCategoryId = e.id;
-                                                      _isShowItem = true;
-                                                      setState(() {});
-                                                    },
-                                                  ),
-                                                ],
+                                                    // CachedNetworkImage(
+                                                    //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                                    //   height: 50.h,
+                                                    //   width: 50.w,
+                                                    //   fit: BoxFit.contain,
+                                                    //   placeholder: (context, url) => SizedBox(
+                                                    //     height: 50.h,
+                                                    //     width: 50.w,
+                                                    //   ),
+                                                    //   errorWidget: (context, url, error) => SizedBox(
+                                                    //     height: 50.h,
+                                                    //     width: 50.w,
+                                                    //   ),
+                                                    // ),
+                                                    // SizedBox(
+                                                    //   height: 10.h,
+                                                    // ),
+
+
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ))
+                                  ))
                                   .toList(),
                         ),
                       ),
@@ -1946,9 +2017,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                           }
                                         }
                                       },
-                                      child: SingleChildScrollView(
+                                      child:
+                                      SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
-                                        child: Row(
+                                        child:
+                                        Row(
                                           crossAxisAlignment: CrossAxisAlignment.center,
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
@@ -1963,7 +2036,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                             ),
                                             Image.asset(
                                               'assets/images/arrowchevronright.png',
-                                              height: 30.h,
+                                              height: 20.h,
                                             ),
                                           ],
                                         ),
@@ -1976,88 +2049,95 @@ class _OrderScreenState extends State<OrderScreen> {
                               ),
                               if (mySharedPreferences.employee.hasVoidAllPermission)
                                 Expanded(
-                                    child: Container(
-                                  width: 50.w,
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Container(
+
                                   height: 30.h,
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: ColorsApp.orange_2),
-                                    borderRadius: BorderRadius.circular(
-                                      10.0,
-                                    ),
+                                      border: Border.all(color: ColorsApp.orange_2),
+                                      borderRadius: BorderRadius.circular(
+                                        10.0,
+                                      ),
                                   ),
-                                  child: InkWell(
-                                    onTap: () async {
-                                      var permission = false;
-                                      if (mySharedPreferences.employee.hasVoidAllPermission) {
-                                        permission = true;
-                                      } else {
-                                        EmployeeModel? employee = await Utils.showLoginDialog();
-                                        if (employee != null) {
-                                          if (employee.hasVoidAllPermission) {
-                                            permission = true;
-                                          } else {
-                                            Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
-                                          }
-                                        }
-                                      }
-                                      if (permission) {
-                                        if (_cartModel.items.isEmpty) {
-                                          Fluttertoast.showToast(msg: 'There must be items'.tr);
+                                  child:
+                                  InkWell(
+                                      onTap: () async {
+                                        var permission = false;
+                                        if (mySharedPreferences.employee.hasVoidAllPermission) {
+                                          permission = true;
                                         } else {
-                                          VoidReasonModel? result;
-                                          if (allDataModel.companyConfig[0].useVoidReason) {
-                                            result = await _showVoidReasonDialog();
-                                          } else {
-                                            var areYouSure = await Utils.showAreYouSureDialog(
-                                              title: 'Void All'.tr,
-                                            );
-                                            if (areYouSure) {
-                                              result = VoidReasonModel.fromJson({});
+                                          EmployeeModel? employee = await Utils.showLoginDialog();
+                                          if (employee != null) {
+                                            if (employee.hasVoidAllPermission) {
+                                              permission = true;
+                                            } else {
+                                              Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
                                             }
-                                          }
-                                          if (result != null) {
-                                            RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
-                                            List<CartItemModel> voidItems = [];
-                                            voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
-                                            if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
-                                              Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
-                                            }
-                                            _indexItemSelect = -1;
-                                            _cartModel.items = [];
-                                            _cartModel.deliveryCharge = 0;
-                                            _cartModel.discount = 0;
-                                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                            _dineInChangedOrder = true;
-                                            setState(() {});
                                           }
                                         }
-                                      }
-                                    },
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Center(
-                                            child: Text(
-                                              'Void All'.tr,
-                                              textAlign: TextAlign.center,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              style: kStyleTextOrange,
+                                        if (permission) {
+                                          if (_cartModel.items.isEmpty) {
+                                            Fluttertoast.showToast(msg: 'There must be items'.tr);
+                                          } else {
+                                            VoidReasonModel? result;
+                                            if (allDataModel.companyConfig[0].useVoidReason) {
+                                              result = await _showVoidReasonDialog();
+                                            } else {
+                                              var areYouSure = await Utils.showAreYouSureDialog(
+                                                title: 'Void All'.tr,
+                                              );
+                                              if (areYouSure) {
+                                                result = VoidReasonModel.fromJson({});
+                                              }
+                                            }
+                                            if (result != null) {
+                                              RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
+                                              List<CartItemModel> voidItems = [];
+                                              voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
+                                              if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
+                                                Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
+                                              }
+                                              _indexItemSelect = -1;
+                                              _cartModel.items = [];
+                                              _cartModel.deliveryCharge = 0;
+                                              _cartModel.discount = 0;
+                                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                              _dineInChangedOrder = true;
+                                              setState(() {});
+                                            }
+                                          }
+                                        }
+                                      },
+                                      child:
+                                        SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Center(
+                                            child: Row(
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Center(
+                                                  child: Text(
+                                                    'Void All'.tr,
+                                                    textAlign: TextAlign.center,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: kStyleTextOrange,
+                                                  ),
+                                                ),
+                                                Image.asset(
+                                                  'assets/images/arrowchevronright.png',
+                                                  height: 20.h,
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          Image.asset(
-                                            'assets/images/arrowchevronright.png',
-                                            height: 30.h,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                        ),
+
                                   ),
-                                )),
+                                ),
+                                    )),
                               SizedBox(
                                 width: 5.w,
                               ),
@@ -2072,19 +2152,21 @@ class _OrderScreenState extends State<OrderScreen> {
                                       10.0,
                                     ),
                                   ),
-                                  child: InkWell(
-                                    onTap: () async {
-                                      if (_cartModel.items.isNotEmpty) {
-                                        _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
-                                        _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                        setState(() {});
-                                      } else {
-                                        Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
-                                      }
-                                    },
-                                    child: Text(
-                                      'Delivery'.tr,
-                                      style: kStyleTextButton,
+                                  child: Center(
+                                    child: InkWell(
+                                      onTap: () async {
+                                        if (_cartModel.items.isNotEmpty) {
+                                          _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
+                                          _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                          setState(() {});
+                                        } else {
+                                          Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
+                                        }
+                                      },
+                                      child: Text(
+                                        'Delivery'.tr,
+                                        style:kStyleTextOrange,
+                                      ),
                                     ),
                                   ),
                                 )),

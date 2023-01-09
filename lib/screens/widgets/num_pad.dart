@@ -176,7 +176,7 @@ class NumPad extends StatelessWidget {
                     'Exit'.tr,
                     style: kStyleTextButton,
                   ),
-                  backgroundColor: ColorsApp.red,
+                  backgroundColor: ColorsApp.red_light,
                   onPressed: onExit,
                 ),
               ),

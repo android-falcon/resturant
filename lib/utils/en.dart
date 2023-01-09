@@ -1,4 +1,5 @@
 const Map<String, String> en = {
+  'clarify':'Resturant Management',
   'Username': 'Username',
   'Password': 'Password',
   'Sign In': 'Sign In',
