@@ -26,87 +26,85 @@ class _ConfigScreenState extends State<ConfigScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: CustomSingleChildScrollView(
+        child: SingleChildScrollView (
           child: Padding(
             padding: const EdgeInsets.only(left: 20, right: 20, top: 2),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  CustomTextField(
-                    borderColor: ColorsApp.orange_2,
-                    controller: _controllerBaseUrl,
-                    label: Text('Base URL'.tr),
-                  ),
-                  CustomTextField(
-                    borderColor: ColorsApp.orange_2,
-                    controller: _controllerPosNo,
-                    label: Text('POS No'.tr),
-                  ),
-                  CustomTextField(
-                    borderColor: ColorsApp.orange_2,
-                    controller: _controllerCashNo,
-                    label: Text('Cash No'.tr),
-                  ),
-                  CustomTextField(
-                    borderColor: ColorsApp.orange_2,
-                    controller: _controllerStoreNo,
-                    label: Text('Store No'.tr),
-                  ),
-                  CustomTextField(
-                    borderColor: ColorsApp.orange_2,
-                    controller: _controllerInVocNo,
-                    label: Text('In Voc No'.tr),
-                  ),
-                  CustomTextField(
-                    borderColor: ColorsApp.orange_2,
-                    controller: _controllerOutVocNo,
-                    label: Text('Pay In Out No'.tr),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: CustomButton(
-                            backgroundColor: ColorsApp.orange_2,
-                            child: Text(
-                              'Save'.tr,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            onPressed: () {
-                              mySharedPreferences.clearData();
-                              mySharedPreferences.baseUrl = _controllerBaseUrl.text;
-                              mySharedPreferences.posNo = _controllerPosNo.text.isEmpty ? 0 : int.parse(_controllerPosNo.text);
-                              mySharedPreferences.cashNo = _controllerCashNo.text.isEmpty ? 0 : int.parse(_controllerCashNo.text);
-                              mySharedPreferences.storeNo = _controllerStoreNo.text.isEmpty ? 0 : int.parse(_controllerStoreNo.text);
-                              mySharedPreferences.inVocNo = _controllerInVocNo.text.isEmpty ? 0 : int.parse(_controllerInVocNo.text);
-                              mySharedPreferences.payInOutNo = _controllerOutVocNo.text.isEmpty ? 0 : int.parse(_controllerOutVocNo.text);
-                              Get.back();
-                            },
+            child: Column(
+              children: [
+                CustomTextField(
+                  borderColor: ColorsApp.orange_2,
+                  controller: _controllerBaseUrl,
+                  label: Text('Base URL'.tr),
+                ),
+                CustomTextField(
+                  borderColor: ColorsApp.orange_2,
+                  controller: _controllerPosNo,
+                  label: Text('POS No'.tr),
+                ),
+                CustomTextField(
+                  borderColor: ColorsApp.orange_2,
+                  controller: _controllerCashNo,
+                  label: Text('Cash No'.tr),
+                ),
+                CustomTextField(
+                  borderColor: ColorsApp.orange_2,
+                  controller: _controllerStoreNo,
+                  label: Text('Store No'.tr),
+                ),
+                CustomTextField(
+                  borderColor: ColorsApp.orange_2,
+                  controller: _controllerInVocNo,
+                  label: Text('In Voc No'.tr),
+                ),
+                CustomTextField(
+                  borderColor: ColorsApp.orange_2,
+                  controller: _controllerOutVocNo,
+                  label: Text('Pay In Out No'.tr),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CustomButton(
+                          backgroundColor: ColorsApp.orange_2,
+                          child: Text(
+                            'Save'.tr,
+                            style: const TextStyle(color: Colors.white),
                           ),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          onPressed: () {
+                            mySharedPreferences.clearData();
+                            mySharedPreferences.baseUrl = _controllerBaseUrl.text;
+                            mySharedPreferences.posNo = _controllerPosNo.text.isEmpty ? 0 : int.parse(_controllerPosNo.text);
+                            mySharedPreferences.cashNo = _controllerCashNo.text.isEmpty ? 0 : int.parse(_controllerCashNo.text);
+                            mySharedPreferences.storeNo = _controllerStoreNo.text.isEmpty ? 0 : int.parse(_controllerStoreNo.text);
+                            mySharedPreferences.inVocNo = _controllerInVocNo.text.isEmpty ? 0 : int.parse(_controllerInVocNo.text);
+                            mySharedPreferences.payInOutNo = _controllerOutVocNo.text.isEmpty ? 0 : int.parse(_controllerOutVocNo.text);
+                            Get.back();
+                          },
                         ),
-                        Expanded(
-                          child: CustomButton(
-                            backgroundColor: ColorsApp.red_light,
-                            child: Text(
-                              'Cancel'.tr,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            onPressed: () {
-                              Get.back();
-                            },
+                      ),
+                      Expanded(
+                        child: CustomButton(
+                          backgroundColor: ColorsApp.red_light,
+                          child: Text(
+                            'Cancel'.tr,
+                            style: const TextStyle(color: Colors.white),
                           ),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          onPressed: () {
+                            Get.back();
+                          },
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  SizedBox(
-                    height: 20.h,
-                  )
-                ],
-              ),
+                ),
+                SizedBox(
+                  height: 20.h,
+                ),
+              ],
             ),
           ),
         ),
