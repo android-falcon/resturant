@@ -158,6 +158,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.get(ApiUrl.GET_DATA, queryParameters: queryParameters);
@@ -211,13 +212,13 @@ class RestApi {
         networkModel.uploadedAt = DateTime.now().toIso8601String();
         await NetworkTable.update(networkModel);
       }
-      Utils.loadSortItems();
+      Utils.loadSorting();
     } on dio.DioError catch (e) {
       _traceError(e);
       Utils.hideLoadingDialog();
       if (mySharedPreferences.allData.isNotEmpty) {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
-        Utils.loadSortItems();
+        Utils.loadSorting();
       }
       // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     } catch (e) {
@@ -225,7 +226,7 @@ class RestApi {
       Utils.hideLoadingDialog();
       if (mySharedPreferences.allData.isNotEmpty) {
         allDataModel = AllDataModel.fromJson(jsonDecode(mySharedPreferences.allData));
-        Utils.loadSortItems();
+        Utils.loadSorting();
       }
       // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
@@ -267,6 +268,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.INVOICE, data: body);
@@ -310,6 +312,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.get(ApiUrl.REFUND_INVOICE, queryParameters: queryParameters);
@@ -365,6 +368,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.get(ApiUrl.GET_INVOICE, queryParameters: queryParameters);
@@ -376,7 +380,6 @@ class RestApi {
         await NetworkTable.update(networkModel);
       }
       if (response.statusCode == 200) {
-
         CartModel model = CartModel.fromJsonServer(response.data);
         Utils.hideLoadingDialog();
         return model;
@@ -418,6 +421,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.INVOICE_RETURNED_QTY, data: body, queryParameters: queryParameters);
@@ -469,6 +473,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.PAY_IN_OUT, data: body);
@@ -514,6 +519,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.POS_DAILY_CLOSE, data: body);
@@ -562,6 +568,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.get(ApiUrl.GET_TABLES, queryParameters: queryParameters);
@@ -609,6 +616,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.OPEN_TABLE, queryParameters: queryParameters);
@@ -656,6 +664,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.CLOSE_TABLE, queryParameters: queryParameters);
@@ -679,7 +688,6 @@ class RestApi {
     }
   }
 
-
   static Future<bool> unlockTable(int tableId) async {
     try {
       var queryParameters = {
@@ -700,6 +708,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.UNLOCK_TABLE, queryParameters: queryParameters);
@@ -746,6 +755,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.put(ApiUrl.CHANGE_USER_TABLE, queryParameters: queryParameters);
@@ -789,6 +799,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.PRINT_TABLE, queryParameters: queryParameters);
@@ -837,6 +848,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.MOVE_TABLE, queryParameters: queryParameters);
@@ -885,6 +897,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.MERGE_TABLE, queryParameters: queryParameters);
@@ -947,6 +960,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.SAVE_TABLE_ORDER, data: body);
@@ -998,6 +1012,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.SAVE_VOID_ITEMS, data: body);
@@ -1048,6 +1063,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.SAVE_VOID_ALL_ITEMS, data: body);
@@ -1088,6 +1104,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.RESET_POS_ORDER_NO, queryParameters: queryParameters);
@@ -1137,6 +1154,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.post(ApiUrl.END_CASH, data: body);
@@ -1193,6 +1211,7 @@ class RestApi {
         response: '',
         createdAt: DateTime.now().toIso8601String(),
         uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.get(ApiUrl.GET_END_CASH, queryParameters: queryParameters);

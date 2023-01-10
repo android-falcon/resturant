@@ -6,7 +6,7 @@ class NetworkTable {
 
   static const columnId = 'id';
   static const columnType = 'type';
-    static const columnStatus = 'status'; // 1: continues request , 2: continues request finished , 3: normal request , 4: continues request deleted
+  static const columnStatus = 'status'; // 1: continues request , 2: continues request finished , 3: normal request , 4: continues request deleted
   static const columnBaseUrl = 'base_url';
   static const columnPath = 'path';
   static const columnMethod = 'method';
@@ -18,6 +18,7 @@ class NetworkTable {
   static const columnResponse = 'response';
   static const columnCreatedAt = 'created_at';
   static const columnUploadedAt = 'uploaded_at';
+  static const columnDailyClose = 'daily_close';
 
   static Future<int> insert(NetworkTableModel model) async {
     Database db = await DatabaseHelper.instance.database;
@@ -37,6 +38,7 @@ class NetworkTable {
         columnResponse: model.response,
         columnCreatedAt: model.createdAt,
         columnUploadedAt: model.uploadedAt,
+        columnDailyClose: model.dailyClose,
       },
     );
   }
@@ -64,6 +66,12 @@ class NetworkTable {
     return List<NetworkTableModel>.from(query.map((e) => NetworkTableModel.fromMap(e))); // LIKE '%$name%'
   }
 
+  static Future<List<NetworkTableModel>> queryRowsReports({required List<String> types, required int fromDate, required int toDate}) async {
+    Database db = await DatabaseHelper.instance.database;
+    var query = await db.query(tableName, where: "((${types.map((e) => "$columnType = '$e'").toList().join(' OR ')}) AND $columnDailyClose >= $fromDate AND $columnDailyClose <= $toDate)"); //
+    return List<NetworkTableModel>.from(query.map((e) => NetworkTableModel.fromMap(e))); // LIKE '%$name%'
+  }
+
   static Future<int?> queryRowCount() async {
     Database db = await DatabaseHelper.instance.database;
     return Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM $tableName'));
@@ -77,7 +85,7 @@ class NetworkTable {
 
   static Future<NetworkTableModel?> queryById({required int id}) async {
     Database db = await DatabaseHelper.instance.database;
-    var query = await db.query(tableName,  where: "$columnId = $id");
+    var query = await db.query(tableName, where: "$columnId = $id");
     return query.isEmpty ? null : NetworkTableModel.fromMap(query.first);
   }
 
@@ -103,6 +111,7 @@ class NetworkTableModel {
   String response;
   String createdAt;
   String uploadedAt;
+  int dailyClose;
 
   NetworkTableModel({
     required this.id,
@@ -119,10 +128,10 @@ class NetworkTableModel {
     required this.response,
     required this.createdAt,
     required this.uploadedAt,
+    required this.dailyClose,
   });
 
-  factory NetworkTableModel.fromMap(Map<String, dynamic> map) =>
-      NetworkTableModel(
+  factory NetworkTableModel.fromMap(Map<String, dynamic> map) => NetworkTableModel(
         id: map[NetworkTable.columnId],
         type: map[NetworkTable.columnType],
         status: map[NetworkTable.columnStatus],
@@ -137,6 +146,7 @@ class NetworkTableModel {
         response: map[NetworkTable.columnResponse],
         createdAt: map[NetworkTable.columnUploadedAt],
         uploadedAt: map[NetworkTable.columnCreatedAt],
+        dailyClose: map[NetworkTable.columnDailyClose],
       );
 
   Map<String, dynamic> toMap() {
@@ -155,6 +165,7 @@ class NetworkTableModel {
       NetworkTable.columnResponse: response,
       NetworkTable.columnCreatedAt: createdAt,
       NetworkTable.columnUploadedAt: uploadedAt,
+      NetworkTable.columnDailyClose: dailyClose,
     };
   }
 }

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:restaurant_system/models/all_data/category_model.dart';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
+import 'package:restaurant_system/models/all_data/item_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -18,11 +20,11 @@ import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
+import 'package:restaurant_system/utils/sorting_model.dart';
 import 'package:restaurant_system/utils/validation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-class Utils{
-
+class Utils {
   static Future<PackageInfo> packageInfo() async => await PackageInfo.fromPlatform();
 
   static bool isNotEmpty(String? s) => s != null && s.isNotEmpty;
@@ -44,19 +46,41 @@ class Utils{
     });
   }
 
-  static void loadSortItems(){
-    for(var sortItem in mySharedPreferences.sortItems.items){
-      var indexItem = allDataModel.items.indexWhere((element) => element.id == sortItem.id);
-      if(indexItem != -1){
-        allDataModel.items[indexItem].index = sortItem.index;
+  static void loadSorting() {
+    for (var sortItem in mySharedPreferences.sorting.items) {
+      var oldIndex = allDataModel.items.indexWhere((element) => element.id == sortItem.id);
+      var newIndex = sortItem.index;
+      if (oldIndex != -1) {
+        if (newIndex > oldIndex) {
+          newIndex -= 1;
+        }
+        final ItemModel item = allDataModel.items.removeAt(oldIndex);
+        allDataModel.items.insert(newIndex, item);
       }
     }
-    for(var sortCategory in mySharedPreferences.sortItems.categories){
-      var indexCategory = allDataModel.categories.indexWhere((element) => element.id == sortCategory.id);
-      if(indexCategory != -1){
-        allDataModel.categories[indexCategory].index = sortCategory.index;
+    for (var sortCategory in mySharedPreferences.sorting.categories) {
+      var oldIndex = allDataModel.categories.indexWhere((element) => element.id == sortCategory.id);
+      var newIndex = sortCategory.index;
+      if (oldIndex != -1) {
+        if (newIndex > oldIndex) {
+          newIndex -= 1;
+        }
+        final CategoryModel item = allDataModel.categories.removeAt(oldIndex);
+        allDataModel.categories.insert(newIndex, item);
       }
     }
+  }
+
+  static void saveSorting() {
+    List<SortingDataModel> categories = [];
+    List<SortingDataModel> items = [];
+    for (int i = 0; i < allDataModel.categories.length; i++) {
+      categories.add(SortingDataModel(id: allDataModel.categories[i].id, index: i));
+    }
+    for (int i = 0; i < allDataModel.items.length; i++) {
+      items.add(SortingDataModel(id: allDataModel.items[i].id, index: i));
+    }
+    mySharedPreferences.sorting = SortingModel(categories: categories, items: items);
   }
 
   static CartModel calculateOrder({required CartModel cart, required OrderType orderType, InvoiceKind invoiceKind = InvoiceKind.invoicePay}) {
@@ -251,10 +275,7 @@ class Utils{
     var result = await Get.defaultDialog(
       title: title,
       titleStyle: kStyleTextTitle,
-      content: Container(
-          height: 100.h,
-          width: 150.w,
-          child: Center(child: Text('Are you sure?'.tr))),
+      content: Container(height: 100.h, width: 150.w, child: Center(child: Text('Are you sure?'.tr))),
       textCancel: 'Cancel'.tr,
       textConfirm: 'Confirm'.tr,
       confirmTextColor: Colors.white,
@@ -267,13 +288,13 @@ class Utils{
   }
 
   static Widget numPadWidget(
-      TextEditingController? controller,
-      void Function(Function()) setState, {
-        bool decimal = true,
-        Function()? onClear,
-        Function()? onSubmit,
-        Function()? onExit,
-      }) {
+    TextEditingController? controller,
+    void Function(Function()) setState, {
+    bool decimal = true,
+    Function()? onClear,
+    Function()? onSubmit,
+    Function()? onExit,
+  }) {
     void addNumber(TextEditingController? controller, int number) {
       if (controller != null) {
         if (controller.text.contains('.')) {
@@ -293,7 +314,7 @@ class Utils{
       onClear: onClear,
       onSubmit: onSubmit,
       onExit: onExit ??
-              () {
+          () {
             Get.back();
           },
       onPressed1: () {
@@ -360,5 +381,4 @@ class Utils{
       },
     );
   }
-
 }

@@ -15,6 +15,8 @@ import 'package:restaurant_system/models/printer_image_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
+import 'package:restaurant_system/screens/reports_screen.dart';
+import 'package:restaurant_system/screens/sorting_categories_screen.dart';
 import 'package:restaurant_system/screens/table_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -178,6 +180,20 @@ class _HomeScreenState extends State<HomeScreen> {
               RestApi.resetPOSOrderNo();
               mySharedPreferences.orderNo = 1;
             }
+          },
+        ),
+        HomeMenu(
+          name: 'Reports'.tr,
+          icon: const Icon(Icons.analytics_rounded, color: ColorsApp.gray),
+          onTab: () async {
+            Get.to(() => const ReportsScreen());
+          },
+        ),
+        HomeMenu(
+          name: 'Sorting'.tr,
+          icon: const Icon(Icons.sort_rounded, color: ColorsApp.gray),
+          onTab: () async {
+            Get.to(() => const SortingCategoriesScreen());
           },
         ),
         HomeMenu(

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
-import 'package:restaurant_system/utils/sort_items.dart';
+import 'package:restaurant_system/utils/sorting_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MySharedPreferences {
@@ -61,10 +61,10 @@ class MySharedPreferences {
     _sharedPreferences.setString(keyEmployee, value == null ? "{}" : jsonEncode(value.toJson()));
   }
 
-  SortItems get sortItems => SortItems.fromJson(jsonDecode(_sharedPreferences.getString(keyEmployee) ?? "{}"));
+  SortingModel get sorting => SortingModel.fromJson(jsonDecode(_sharedPreferences.getString(keySorting) ?? "{}"));
 
-  set sortItems(SortItems? value) {
-    _sharedPreferences.setString(keyEmployee, value == null ? "{}" : jsonEncode(value.toJson()));
+  set sorting(SortingModel? value) {
+    _sharedPreferences.setString(keySorting, value == null ? "{}" : jsonEncode(value.toJson()));
   }
 
   String get allData => _sharedPreferences.getString(keyAllData) ?? "";
@@ -145,6 +145,7 @@ const String keyLanguage = "key_language";
 const String keyIsLogin = "key_is_login";
 const String keyIsGMS = "key_is_gms";
 const String keyEmployee = "key_employee";
+const String keySorting = "key_sorting";
 const String keyAllData = "key_all_data";
 const String keyDineIn = "key_dine_in";
 const String keyPark = "key_park";

@@ -56,7 +56,8 @@ class DatabaseHelper {
             ${NetworkTable.columnStatusCode} INTEGER NOT NULL,
             ${NetworkTable.columnResponse} TEXT,
             ${NetworkTable.columnCreatedAt} TEXT NOT NULL,
-            ${NetworkTable.columnUploadedAt} TEXT NOT NULL
+            ${NetworkTable.columnUploadedAt} TEXT NOT NULL,
+            ${NetworkTable.columnDailyClose} INTEGER NOT NULL
           )
           ''');
   }
