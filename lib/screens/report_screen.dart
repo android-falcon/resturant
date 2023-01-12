@@ -6,8 +6,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:restaurant_system/database/network_table.dart';
+import 'package:restaurant_system/models/report_sold_qty_model.dart';
 import 'package:restaurant_system/screens/widgets/custom_data_table.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
+import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/credit_card_type_detector.dart';
 import 'package:restaurant_system/utils/enums/enum_report_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
@@ -54,7 +56,7 @@ class _ReportScreenState extends State<ReportScreen> {
             }
           } else if (element.type == 'INVOICE') {
             var body = jsonDecode(element.body);
-            if (body['InvoiceMaster']['PosNo'] == mySharedPreferences.posNo && body['InvoiceMaster']['CashNo'] == mySharedPreferences.cashNo) {
+            if (body['InvoiceMaster']['PosNo'] == mySharedPreferences.posNo && body['InvoiceMaster']['CashNo'] == mySharedPreferences.cashNo && body['InvoiceMaster']['InvKind'] == 0) {
               cash += body['InvoiceMaster']['CashVal'];
               creditCard += body['InvoiceMaster']['CardsVal'];
               if (body['InvoiceMaster']['Card1Name'] == CreditCardType.visa.name) {
@@ -127,6 +129,7 @@ class _ReportScreenState extends State<ReportScreen> {
                   cells: [
                     DataCell(Text(body['VoucherDate'].split('T').first)),
                     DataCell(Text(body['VoucherType'] == 1 ? 'Cash In'.tr : 'Cash Out'.tr)),
+                    DataCell(Text(allDataModel.cashInOutTypesModel.firstWhereOrNull((element) => element.id == body['DescId'])?.description ?? '')),
                     DataCell(Text('${body['PosNo']}')),
                     DataCell(Text('${body['CashNo']}')),
                     DataCell(Text(body['VoucherTime'])),
@@ -139,6 +142,7 @@ class _ReportScreenState extends State<ReportScreen> {
               columns: [
                 DataColumn(label: Text('Date'.tr)),
                 DataColumn(label: Text('Type'.tr)),
+                DataColumn(label: Text('Description'.tr)),
                 DataColumn(label: Text('Pos No'.tr)),
                 DataColumn(label: Text('Cash No'.tr)),
                 DataColumn(label: Text('Time'.tr)),
@@ -156,13 +160,91 @@ class _ReportScreenState extends State<ReportScreen> {
           fromDate: intl.DateFormat(dateFormat).parse(_controllerFromDate.text).millisecondsSinceEpoch,
           toDate: intl.DateFormat(dateFormat).parse(_controllerToDate.text).millisecondsSinceEpoch,
         );
+        List<ReportSoldQtyModel> items = [];
+        for (var element in data) {
+          var body = jsonDecode(element.body);
+          if (body['InvoiceMaster']['PosNo'] == mySharedPreferences.posNo && body['InvoiceMaster']['CashNo'] == mySharedPreferences.cashNo && body['InvoiceMaster']['InvKind'] == 0) {
+            for (var invoiceDetails in body['InvoiceDetails']) {
+              var indexItem = items.indexWhere((e) => e.itemId == invoiceDetails['ItemId']);
+              if (indexItem != -1) {
+                items[indexItem].soldQty += invoiceDetails['Qty'];
+                items[indexItem].disc += invoiceDetails['InvDisc'] + invoiceDetails['LineDisc'];
+                items[indexItem].serviceValue += invoiceDetails['ServiceVal'];
+                items[indexItem].itemTax += invoiceDetails['ItemTaxVal'];
+                items[indexItem].totalNoTaxAndService += invoiceDetails['NetTotal'] - (invoiceDetails['ItemTaxVal'] - invoiceDetails['ServiceVal'] - invoiceDetails['ServiceTax']);
+                items[indexItem].totalNoTax += invoiceDetails['NetTotal'] - invoiceDetails['ItemTaxVal'];
+                items[indexItem].netTotal += invoiceDetails['NetTotal'];
+              } else {
+                var itemInAllData = allDataModel.items.firstWhereOrNull((e) => e.id == invoiceDetails['ItemId']);
+                items.add(ReportSoldQtyModel(
+                  itemId: invoiceDetails['ItemId'],
+                  itemName: itemInAllData?.menuName ?? '',
+                  categoryName: itemInAllData?.category.categoryName ?? '',
+                  soldQty: invoiceDetails['Qty'],
+                  disc: invoiceDetails['InvDisc'] + invoiceDetails['LineDisc'],
+                  serviceValue: invoiceDetails['ServiceVal'],
+                  itemTax: invoiceDetails['ItemTaxVal'],
+                  totalNoTaxAndService: invoiceDetails['NetTotal'] - (invoiceDetails['ItemTaxVal'] - invoiceDetails['ServiceVal'] - invoiceDetails['ServiceTax']),
+                  totalNoTax: invoiceDetails['NetTotal'] - invoiceDetails['ItemTaxVal'],
+                  netTotal: invoiceDetails['NetTotal'],
+                ));
+              }
+            }
+          }
+        }
+        double soldQty = 0;
+        double disc = 0;
+        double serviceValue = 0;
+        double itemTax = 0;
+        double totalNoTaxAndService = 0;
+        double totalNoTax = 0;
+        double netTotal = 0;
+        for (var item in items) {
+          soldQty += item.soldQty;
+          disc += item.disc;
+          serviceValue += item.serviceValue;
+          itemTax += item.itemTax;
+          totalNoTaxAndService += item.totalNoTaxAndService;
+          totalNoTax += item.totalNoTax;
+          netTotal += item.netTotal;
+        }
         _buildWidget = Padding(
           padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 8.w),
           child: SingleChildScrollView(
             child: CustomDataTable(
               minWidth: 344.w,
               showCheckboxColumn: true,
-              rows: [],
+              rows: [
+                ...items
+                    .where((e) => e.soldQty != 0)
+                    .map((e) => DataRow(
+                          cells: [
+                            DataCell(Text(e.itemName)),
+                            DataCell(Text(e.categoryName)),
+                            DataCell(Text(e.soldQty.toStringAsFixed(3))),
+                            DataCell(Text(e.disc.toStringAsFixed(3))),
+                            DataCell(Text(e.serviceValue.toStringAsFixed(3))),
+                            DataCell(Text(e.itemTax.toStringAsFixed(3))),
+                            DataCell(Text(e.totalNoTaxAndService.toStringAsFixed(3))),
+                            DataCell(Text(e.totalNoTax.toStringAsFixed(3))),
+                            DataCell(Text(e.netTotal.toStringAsFixed(3))),
+                          ],
+                        ))
+                    .toList(),
+                DataRow(
+                  cells: [
+                    const DataCell(Text('')),
+                    DataCell(Text('Totals'.tr, style: kStyleHeaderTable,)),
+                    DataCell(Text(soldQty.toStringAsFixed(3))),
+                    DataCell(Text(disc.toStringAsFixed(3))),
+                    DataCell(Text(serviceValue.toStringAsFixed(3))),
+                    DataCell(Text(itemTax.toStringAsFixed(3))),
+                    DataCell(Text(totalNoTaxAndService.toStringAsFixed(3))),
+                    DataCell(Text(totalNoTax.toStringAsFixed(3))),
+                    DataCell(Text(netTotal.toStringAsFixed(3))),
+                  ],
+                )
+              ],
               columns: [
                 DataColumn(label: Text('Item Name'.tr)),
                 DataColumn(label: Text('Category Name'.tr)),
@@ -180,7 +262,6 @@ class _ReportScreenState extends State<ReportScreen> {
         break;
       default:
         _buildWidget = Container();
-
         break;
     }
     setState(() {});

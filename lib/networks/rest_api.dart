@@ -10,6 +10,7 @@ import 'package:restaurant_system/models/all_data_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:restaurant_system/models/end_cash_model.dart';
+import 'package:restaurant_system/models/get_pay_in_out_model.dart';
 import 'package:restaurant_system/models/refund_model.dart';
 import 'package:restaurant_system/networks/api_url.dart';
 import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
@@ -99,6 +100,13 @@ class RestApi {
           break;
         case 'PUT':
           response = await uploadNetworkTableDio.put(
+            model.path,
+            data: model.body,
+            queryParameters: model.params.isEmpty ? null : jsonDecode(model.params),
+          );
+          break;
+        case 'DELETE':
+          response = await uploadNetworkTableDio.delete(
             model.path,
             data: model.body,
             queryParameters: model.params.isEmpty ? null : jsonDecode(model.params),
@@ -442,7 +450,7 @@ class RestApi {
     }
   }
 
-  static Future<void> payInOut({required double value, required int type, String remark = ''}) async {
+  static Future<void> payInOut({required double value, required int type, String remark = '', required int descId}) async {
     try {
       var body = jsonEncode({
         "CoYear": mySharedPreferences.dailyClose.year,
@@ -456,6 +464,7 @@ class RestApi {
         "Remark": remark,
         "UserId": mySharedPreferences.employee.id,
         "ShiftId": 0,
+        "DescId": descId,
       });
       mySharedPreferences.payInOutNo++;
       var networkId = await NetworkTable.insert(NetworkTableModel(
@@ -491,6 +500,109 @@ class RestApi {
     } catch (e) {
       _traceCatch(e);
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
+
+  static Future<List<GetPayInOutModel>> getPayInOut() async {
+    try {
+      Utils.showLoadingDialog();
+      var queryParameters = {
+        "Year": mySharedPreferences.dailyClose.year,
+        "PosNo": mySharedPreferences.posNo,
+        "CashNo": mySharedPreferences.cashNo,
+        "POSDATE": mySharedPreferences.dailyClose.toIso8601String(),
+      };
+
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'GET_PAY_IN_OUT',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.GET_PAY_IN_OUT,
+        method: 'GET',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.get(ApiUrl.GET_PAY_IN_OUT, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      if (response.statusCode == 200) {
+        List<GetPayInOutModel> model = List<GetPayInOutModel>.from(response.data.map((x) => GetPayInOutModel.fromJson(x)));
+        Utils.hideLoadingDialog();
+        return model;
+      } else {
+        Utils.hideLoadingDialog();
+        return [];
+      }
+    } on dio.DioError catch (e) {
+      Utils.hideLoadingDialog();
+      _traceError(e);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
+      return [];
+    } catch (e) {
+      Utils.hideLoadingDialog();
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      return [];
+    }
+  }
+
+  static Future<void> deletePayInOut({required GetPayInOutModel model}) async {
+    try {
+      var queryParameters = {
+        "Year": mySharedPreferences.dailyClose.year,
+        "VoucherType": model.voucherType,
+        "VoucherNo": model.voucherNo,
+        "PosNo": mySharedPreferences.posNo,
+        "CashNo": mySharedPreferences.cashNo,
+      };
+      mySharedPreferences.payInOutNo++;
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'DELETE_PAY_IN_OUT',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.DELETE_PAY_IN_OUT,
+        method: 'DELETE',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.delete(ApiUrl.DELETE_PAY_IN_OUT, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      // Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
+    } catch (e) {
+      _traceCatch(e);
+      // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
   }
 

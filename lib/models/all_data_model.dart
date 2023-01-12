@@ -3,6 +3,7 @@
 //     final allDataModel = allDataModelFromJson(jsonString);
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:restaurant_system/models/all_data/cash_in_out_types_model.dart';
 import 'package:restaurant_system/models/all_data/category_model.dart';
 import 'package:restaurant_system/models/all_data/category_with_modifire_model.dart';
 import 'package:restaurant_system/models/all_data/combo_items_force_question_model.dart';
@@ -61,6 +62,7 @@ class AllDataModel {
     required this.paymentCompanyModel,
     required this.deliveryCompanyModel,
     required this.deliveryCompanyItemPriceModel,
+    required this.cashInOutTypesModel,
   });
 
   DateTime serverTime;
@@ -89,6 +91,7 @@ class AllDataModel {
   List<PaymentCompanyModel> paymentCompanyModel;
   List<DeliveryCompanyModel> deliveryCompanyModel;
   List<DeliveryCompanyItemPriceModel> deliveryCompanyItemPriceModel;
+  List<CashInOutTypesModel> cashInOutTypesModel;
 
   factory AllDataModel.fromJson(Map<String, dynamic> json) => AllDataModel(
         serverTime: json["serverDate"] == null ? DateTime.now() : DateFormat('M/dd/yyyy h:mm:ss a').parse(json["serverDate"]),
@@ -117,6 +120,7 @@ class AllDataModel {
         paymentCompanyModel: json["PaymentCompany"] == null ? [] : List<PaymentCompanyModel>.from(json["PaymentCompany"].map((x) => PaymentCompanyModel.fromJson(x))),
         deliveryCompanyModel: json["DeliveryCompanys"] == null ? [] : List<DeliveryCompanyModel>.from(json["DeliveryCompanys"].map((x) => DeliveryCompanyModel.fromJson(x))),
         deliveryCompanyItemPriceModel: json["DeliveryCoItemPrices"] == null ? [] : List<DeliveryCompanyItemPriceModel>.from(json["DeliveryCoItemPrices"].map((x) => DeliveryCompanyItemPriceModel.fromJson(x))),
+        cashInOutTypesModel: json["CashInOutTypes"] == null ? [] : List<CashInOutTypesModel>.from(json["CashInOutTypes"].map((x) => CashInOutTypesModel.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -146,5 +150,6 @@ class AllDataModel {
         "PaymentCompany": List<dynamic>.from(paymentCompanyModel.map((x) => x.toJson())),
         "DeliveryCompanys": List<dynamic>.from(deliveryCompanyModel.map((x) => x.toJson())),
         "DeliveryCoItemPrices": List<dynamic>.from(deliveryCompanyItemPriceModel.map((x) => x.toJson())),
+        "CashInOutTypes": List<dynamic>.from(cashInOutTypesModel.map((x) => x.toJson())),
       };
 }

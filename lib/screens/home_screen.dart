@@ -8,12 +8,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restaurant_system/models/all_data/cash_in_out_types_model.dart';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/end_cash_model.dart';
 import 'package:restaurant_system/models/printer_image_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/printer/printer.dart';
+import 'package:restaurant_system/screens/history_pay_in_out_screen.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/screens/reports_screen.dart';
 import 'package:restaurant_system/screens/sorting_categories_screen.dart';
@@ -106,6 +108,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               }
             }
+          },
+        ),
+        HomeMenu(
+          name: 'History Pay In / Out'.tr,
+          icon: const Icon(Icons.history, color: ColorsApp.gray),
+          onTab: () async {
+            Get.to(() => const HistoryPayInOutScreen());
           },
         ),
         HomeMenu(
@@ -220,6 +229,84 @@ class _HomeScreenState extends State<HomeScreen> {
       ];
       setState(() {});
     });
+  }
+
+  Future<int?> _showCashInOutTypeDialog({required InOutType kindType}) async {
+    int kind = 0;
+    if(kindType == InOutType.payIn){
+      kind = 0;
+    } else if(kindType == InOutType.payOut){
+      kind = 1;
+    }
+    int? _selectedTypeId;
+    await Get.dialog(
+      WillPopScope(
+        onWillPop: () async => false,
+        child: CustomDialog(
+          builder: (context, setState, constraints) => Column(
+            children: [
+              Text(
+                'Cash In / Out Types'.tr,
+                style: kStyleTextTitle,
+              ),
+              const Divider(thickness: 2),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: allDataModel.cashInOutTypesModel.length,
+                itemBuilder: (context, index) => kind != allDataModel.cashInOutTypesModel[index].kind
+                    ? Container()
+                    : RadioListTile(
+                        title: Text(
+                          allDataModel.cashInOutTypesModel[index].description,
+                          style: kStyleForceQuestion,
+                        ),
+                        value: allDataModel.cashInOutTypesModel[index].id,
+                        groupValue: _selectedTypeId,
+                        onChanged: (value) {
+                          _selectedTypeId = value as int;
+                          setState(() {});
+                        },
+                      ),
+              ),
+              Row(
+                children: [
+                  Expanded(child: Container()),
+                  Expanded(
+                    child: CustomButton(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('Cancel'.tr),
+                      backgroundColor: ColorsApp.primaryColor,
+                      onPressed: () {
+                        _selectedTypeId = null;
+                        Get.back();
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomButton(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('Save'.tr),
+                      backgroundColor: ColorsApp.primaryColor,
+                      onPressed: () {
+                        if (_selectedTypeId == null) {
+                          Fluttertoast.showToast(msg: 'Please select cash In / Out Type'.tr);
+                        } else {
+                          Get.back();
+                        }
+                      },
+                    ),
+                  ),
+                  Expanded(child: Container()),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return _selectedTypeId;
   }
 
   _showDailyCloseDialog() {
@@ -598,8 +685,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             }
                           },
                           onSubmit: () async {
-                            var result = await Utils.showAreYouSureDialog(title: 'Save'.tr);
-                            if (result) {
+                            // var result = await Utils.showAreYouSureDialog(title: 'Save'.tr);
+                            var _selectDescId = await _showCashInOutTypeDialog(kindType: type);
+                            if (_selectDescId != null) {
                               if (_typeInputCash == 1 ? double.parse(_controllerManual.text) > 0 : moneyCount > 0) {
                                 switch (type) {
                                   case InOutType.payIn:
@@ -607,6 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
                                       remark: _controllerRemark.text,
                                       type: 1,
+                                      descId: _selectDescId,
                                     );
                                     break;
                                   case InOutType.payOut:
@@ -614,6 +703,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
                                       remark: _controllerRemark.text,
                                       type: 2,
+                                      descId: _selectDescId,
                                     );
                                     break;
                                   case InOutType.cashIn:
@@ -1195,16 +1285,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     SizedBox(width: 10.w),
-
                   ],
                 ),
               ),
             ),
-            SizedBox(width: 50.w,height: 70.h,),
+            SizedBox(
+              width: 50.w,
+              height: 70.h,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(width: 50.w,height: 50.h,),
+                SizedBox(
+                  width: 50.w,
+                  height: 50.h,
+                ),
                 Expanded(
                   child: CustomButton(
                     fixed: true,
@@ -1417,12 +1512,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(3.r),
               ),
               child: Column(
-
                 children: [
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                    child:
-                    Row(
+                    child: Row(
                       children: [
                         Expanded(
                           child: Text(
@@ -1473,126 +1566,126 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const Divider(color: Colors.black, height: 1),
                   if (_refundModel != null)
-                   ListView.separated(
-                        itemCount: _refundModel!.items.length,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        separatorBuilder: (context, index) => _refundModel!.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
-                        itemBuilder: (context, index) {
-                          if (_refundModel!.items[index].parentUuid.isNotEmpty) {
-                            return Container();
-                          } else {
-                            var subItem = _refundModel!.items.where((element) => element.parentUuid.isNotEmpty && element.parentUuid == _refundModel!.items[index].uuid).toList();
-                            return Column(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          '${_refundModel!.items[index].id}',
-                                          style: kStyleDataTable,
-                                          textAlign: TextAlign.center,
+                    ListView.separated(
+                      itemCount: _refundModel!.items.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      separatorBuilder: (context, index) => _refundModel!.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
+                      itemBuilder: (context, index) {
+                        if (_refundModel!.items[index].parentUuid.isNotEmpty) {
+                          return Container();
+                        } else {
+                          var subItem = _refundModel!.items.where((element) => element.parentUuid.isNotEmpty && element.parentUuid == _refundModel!.items[index].uuid).toList();
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '${_refundModel!.items[index].id}',
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 5,
+                                      child: Text(
+                                        _refundModel!.items[index].name,
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        '${_refundModel!.items[index].qty}',
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        (_refundModel!.items[index].returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(3),
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: InkWell(
+                                        onTap: () async {
+                                          _refundModel!.items[index].returnedQty = await _showQtyDialog(decimal: false, rQty: _refundModel!.items[index].returnedQty, maxQty: _refundModel!.items[index].qty);
+                                          for (var element in subItem) {
+                                            element.returnedQty = _refundModel!.items[index].returnedQty;
+                                          }
+                                          _refundModel = Utils.calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
+                                          setState(() {});
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              '${_refundModel!.items[index].returnedQty}',
+                                              style: kStyleDataTable,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            const Icon(Icons.edit),
+                                          ],
                                         ),
                                       ),
-                                      Expanded(
-                                        flex: 5,
-                                        child: Text(
-                                          _refundModel!.items[index].name,
-                                          style: kStyleDataTable,
-                                          textAlign: TextAlign.center,
-                                        ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        (_refundModel!.items[index].returnedTotal + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal)).toStringAsFixed(3),
+                                        style: kStyleDataTable,
+                                        textAlign: TextAlign.center,
                                       ),
-                                      Expanded(
-                                        child: Text(
-                                          '${_refundModel!.items[index].qty}',
-                                          style: kStyleDataTable,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          (_refundModel!.items[index].returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(3),
-                                          style: kStyleDataTable,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: InkWell(
-                                          onTap: () async {
-                                            _refundModel!.items[index].returnedQty = await _showQtyDialog(decimal: false, rQty: _refundModel!.items[index].returnedQty, maxQty: _refundModel!.items[index].qty);
-                                            for (var element in subItem) {
-                                              element.returnedQty = _refundModel!.items[index].returnedQty;
-                                            }
-                                            _refundModel = Utils.calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
-                                            setState(() {});
-                                          },
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                '${_refundModel!.items[index].returnedQty}',
-                                                style: kStyleDataTable,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              const SizedBox(width: 10),
-                                              const Icon(Icons.edit),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          (_refundModel!.items[index].returnedTotal + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal)).toStringAsFixed(3),
-                                          style: kStyleDataTable,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                  child: Column(
-                                    children: [
-                                      if (subItem.isNotEmpty)
-                                        ListView.builder(
-                                          itemCount: subItem.length,
-                                          shrinkWrap: true,
-                                          physics: const NeverScrollableScrollPhysics(),
-                                          itemBuilder: (context, indexSubItem) {
-                                            return Row(
-                                              children: [
-                                                Expanded(child: Container()),
-                                                Expanded(
-                                                  flex: 5,
-                                                  child: Text(
-                                                    subItem[indexSubItem].name,
-                                                    style: kStyleDataTableModifiers,
-                                                    textAlign: TextAlign.center,
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                child: Column(
+                                  children: [
+                                    if (subItem.isNotEmpty)
+                                      ListView.builder(
+                                        itemCount: subItem.length,
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        itemBuilder: (context, indexSubItem) {
+                                          return Row(
+                                            children: [
+                                              Expanded(child: Container()),
+                                              Expanded(
+                                                flex: 5,
+                                                child: Text(
+                                                  subItem[indexSubItem].name,
+                                                  style: kStyleDataTableModifiers,
+                                                  textAlign: TextAlign.center,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
-                                                Expanded(child: Container()),
-                                                Expanded(child: Container()),
-                                                Expanded(flex: 2, child: Container()),
-                                                Expanded(child: Container()),
-                                              ],
-                                            );
-                                          },
-                                        ),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            );
-                          }
-                        },
-                      ),
+                                              ),
+                                              Expanded(child: Container()),
+                                              Expanded(child: Container()),
+                                              Expanded(flex: 2, child: Container()),
+                                              Expanded(child: Container()),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          );
+                        }
+                      },
+                    ),
                 ],
               ),
             ),
@@ -1669,36 +1762,36 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                  _refundModel == null?  Container(
-                      width: 100.w,
-                      height: 30.h,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(3.r),
-                      )) :
-                      Container(
-                        width: 100.w,
-                        height: 30.h,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(),
-                          borderRadius: BorderRadius.circular(3.r),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Center(
-                              child: Text(
-                                _refundModel!.items.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal).toStringAsFixed(3),
-                                style: kStyleTextTitle,
-                              ),
+                    _refundModel == null
+                        ? Container(
+                            width: 100.w,
+                            height: 30.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(),
+                              borderRadius: BorderRadius.circular(3.r),
+                            ))
+                        : Container(
+                            width: 100.w,
+                            height: 30.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(),
+                              borderRadius: BorderRadius.circular(3.r),
                             ),
-                          ],
-                        ),
-                      ),
-
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Center(
+                                  child: Text(
+                                    _refundModel!.items.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal).toStringAsFixed(3),
+                                    style: kStyleTextTitle,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                   ],
                 ),
               ],

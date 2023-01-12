@@ -45,4 +45,8 @@ class ApiUrl{
   static String GET_END_CASH = "/api/GetData/GetEndCash";
   // ignore: non_constant_identifier_names
   static String GET_TABLES = "/api/GetData/GetTables";
+  // ignore: non_constant_identifier_names
+  static String GET_PAY_IN_OUT = "/api/GetData/GetPaidInOut";
+  // ignore: non_constant_identifier_names
+  static String DELETE_PAY_IN_OUT = "/api/postData/DeletePayInOut";
 }
