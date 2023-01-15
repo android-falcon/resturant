@@ -291,7 +291,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table_ellipse.png',
+                                                kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -432,7 +432,7 @@ class _TableScreenState extends State<TableScreen> {
                                               ),
                                             ),
                                             Image.asset(
-                                              'assets/images/table_ellipse.png',
+                                              kAssetsTable,
                                               height: 80.h,
                                             )
                                           ],
@@ -548,7 +548,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table_ellipse.png',
+                                                kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -599,7 +599,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/user.png',
+                                                kAssetsUser,
                                                 height: 80.h,
                                               )
                                             ],
@@ -748,7 +748,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table_ellipse.png',
+                                                kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -836,7 +836,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table_ellipse.png',
+                                                kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -997,7 +997,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table_ellipse.png',
+                                                kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -1089,7 +1089,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                'assets/images/table_ellipse.png',
+                                                kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -1223,9 +1223,9 @@ class _TableScreenState extends State<TableScreen> {
               SizedBox(height: 10.h),
 
                 Container(
-                  decoration: const BoxDecoration(
+                  decoration:  BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage('assets/images/image_placeholder.png'),
+                      image: AssetImage(kAssetsPlaceholder),
                     ),
                   ),
                   height: 200.h,
@@ -1378,7 +1378,7 @@ class _TableScreenState extends State<TableScreen> {
               height: 1.sh,
             ),
             Image.asset(
-              'assets/images/dinin_group.png',
+              kAssetsDinInBackground,
               width: 1.sw,
               height: 1.sh,
               fit: BoxFit.cover,
@@ -1542,9 +1542,9 @@ class _TableScreenState extends State<TableScreen> {
                                                         child: Column(
                                                           children: [
                                                             Container(
-                                                              decoration: const BoxDecoration(
+                                                              decoration: BoxDecoration(
                                                                 image: DecorationImage(
-                                                                  image: AssetImage('assets/images/table_ellipse.png'),
+                                                                  image: AssetImage(kAssetsTable),
                                                                 ),
                                                               ),
                                                               height: 70.h,

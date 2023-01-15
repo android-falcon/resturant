@@ -498,7 +498,7 @@ class Printer {
                               ),
                             SizedBox(height: 15.h),
                             Image.asset(
-                              'assets/images/welcome.png',
+                              kAssetsWelcome,
                               height: 80.h,
                             ),
                           ],
@@ -1100,16 +1100,16 @@ class Printer {
           printer.disconnect();
           await Future.delayed(const Duration(milliseconds: 200));
           log('printer catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
-          try {
-            printImage(printer, invoice.invoice!, openCashDrawer: invoice.openCashDrawer);
-            await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
-            printer.disconnect();
-            await Future.delayed(const Duration(milliseconds: 200));
-          } catch (e) {
-            printer.disconnect();
-            await Future.delayed(const Duration(milliseconds: 200));
-            log('printer catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
-          }
+          // try {
+          //   printImage(printer, invoice.invoice!, openCashDrawer: invoice.openCashDrawer);
+          //   await Future.delayed(const Duration(seconds: 2, milliseconds: 500));
+          //   printer.disconnect();
+          //   await Future.delayed(const Duration(milliseconds: 200));
+          // } catch (e) {
+          //   printer.disconnect();
+          //   await Future.delayed(const Duration(milliseconds: 200));
+          //   log('printer catch ${e.toString()} || ${invoice.ipAddress}:${invoice.port}');
+          // }
         }
       } else {
         log('printer else ${printerResult.msg} || ${invoice.ipAddress}:${invoice.port}');

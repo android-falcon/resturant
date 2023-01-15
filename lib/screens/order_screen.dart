@@ -378,7 +378,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 ],
               ),
             ),
-            SizedBox(height:50.h),
+            SizedBox(height: 50.h),
             Row(
               children: [
                 Expanded(child: Container()),
@@ -438,7 +438,6 @@ class _OrderScreenState extends State<OrderScreen> {
                                 mySharedPreferences.park = park;
                                 Get.back();
                               },
-
                               child: Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
                                 child: Text(
@@ -452,7 +451,9 @@ class _OrderScreenState extends State<OrderScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 50.h,),
+            SizedBox(
+              height: 50.h,
+            ),
             Row(
               children: [
                 Expanded(child: Container()),
@@ -481,7 +482,7 @@ class _OrderScreenState extends State<OrderScreen> {
     TextEditingController _controllerPark = TextEditingController();
     await Get.dialog(
       CustomDialog(
-        width:  250.w,
+        width: 250.w,
         height: 300.h,
         builder: (context, setState, constraints) => Form(
           key: _keyForm,
@@ -1575,47 +1576,6 @@ class _OrderScreenState extends State<OrderScreen> {
                       },
                       icon: Icon(Icons.menu),
                     ),
-                    // if (widget.type == OrderType.dineIn)
-                    //   Row(
-                    //     children: [
-                    //       const VerticalDivider(
-                    //         width: 1,
-                    //         thickness: 2,
-                    //       ),
-                    //       Image.asset(
-                    //         'assets/images/waiter.png',
-                    //         height: 45.h,
-                    //       ),
-                    //       Text(
-                    //         'Ali Ahmad',
-                    //         textAlign: TextAlign.center,
-                    //         overflow: TextOverflow.ellipsis,
-                    //         maxLines: 1,
-                    //         style: kStyleTextDefault,
-                    //       ),
-                    //     ],
-                    //   ),
-                    // if (widget.type == OrderType.dineIn)
-                    //   Row(
-                    //     children: [
-                    //       SizedBox(width: 4.w),
-                    //       const VerticalDivider(
-                    //         width: 1,
-                    //         thickness: 2,
-                    //       ),
-                    //       Image.asset(
-                    //         'assets/images/kitchen.png',
-                    //         height: 45.h,
-                    //       ),
-                    //       Text(
-                    //         '${widget.numberSeats}',
-                    //         textAlign: TextAlign.center,
-                    //         overflow: TextOverflow.ellipsis,
-                    //         maxLines: 1,
-                    //         style: kStyleTextDefault,
-                    //       ),
-                    //     ],
-                    //   ),
                     if (widget.type == OrderType.dineIn)
                       Row(
                         children: [
@@ -1625,7 +1585,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             thickness: 2,
                           ),
                           Image.asset(
-                            'assets/images/guests.png',
+                            kAssetsGuests,
                             height: 45.h,
                           ),
                           Text(
@@ -1727,116 +1687,102 @@ class _OrderScreenState extends State<OrderScreen> {
                                           _dineInChangedOrder = true;
                                           setState(() {});
                                         },
-                                        child: SizedBox(
-                                          // height: maxHeightItem == 0 ? null : maxHeightItem,
-                                          child: MeasureSize(
-                                            onChange: (size) {
-                                              // if (size.height > maxHeightItem) {
-                                              //   maxHeightItem = size.height;
-                                              //   setState(() {});
-                                              // }
-                                            },
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Stack(
                                                 children: [
-                                                  Stack(
-                                                    children: [
-
-                                                      // e.itemPicture.isNotEmpty?
-                                                      //   CachedNetworkImage(
-                                                      //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
-                                                      //     height: 80.h,
-                                                      //       width: 300.h,
-                                                      //       fit: BoxFit.fill,
-                                                      //
-                                                      //     placeholder: (context, url) => Container(),
-                                                      //     errorWidget: (context, url, error) => Container(),
-                                                      //   ):
-                                                      Image.asset(
-                                          'assets/images/Image_2.png',
-                                          height: 80.h,
-                                          width: 300.h,
-                                          fit: BoxFit.fill,
-                                        ),
-                                                      Padding(
-                                                        padding: const EdgeInsets.all(5.0),
-                                                        child: Align(
-                                                          alignment: Alignment.centerRight,
-                                                          child: Image.asset(
-                                                            'assets/images/Favorite.png',
-                                                            height: 30.h,
-                                                            width: 30.w,
-                                                            fit: BoxFit.fitHeight,
-                                                          ),
-                                                        ),
-                                                      )
-                                                    ],
-                                                  ),
-                                                  // if (e.itemPicture.isNotEmpty)
+                                                  // e.itemPicture.isNotEmpty?
                                                   //   CachedNetworkImage(
                                                   //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
-                                                  //     height: 50.h,
-                                                  //     width: 50.w,
-                                                  //     fit: BoxFit.contain,
+                                                  //     height: 80.h,
+                                                  //       width: 300.h,
+                                                  //       fit: BoxFit.fill,
+                                                  //
                                                   //     placeholder: (context, url) => Container(),
                                                   //     errorWidget: (context, url, error) => Container(),
-                                                  //   ),
-                                                  Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.start,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      SizedBox(height: 5.h,),
-                                                      Container(
-                                                        height: 45.h,
-                                                        width: 300.h,
-                                                        child: Text(
-                                                          e.menuName,
-                                                          style: kStyleTextTitle,
-                                                          textAlign: TextAlign.left,
-                                                          overflow: TextOverflow.ellipsis,
-                                                        ),
+                                                  //   ):
+                                                  Image.asset(
+                                                    kAssetsItem,
+                                                    height: 80.h,
+                                                    width: 300.h,
+                                                    fit: BoxFit.fill,
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.only(top: 8.h),
+                                                    child: Align(
+                                                      alignment: Alignment.topRight,
+                                                      child: Image.asset(
+                                                        kAssetsFavorite,
+                                                        height: 30.h,
+                                                        width: 30.w,
+                                                        fit: BoxFit.fitHeight,
                                                       ),
-                                                      // if (e.description.isNotEmpty)
-                                                      //   Text(
-                                                      //     e.description,
-                                                      //     style: kStyleTextDefault,
-                                                      //   ),
-                                                      Row(
-                                                        children: [
-                                                          Text(
-                                                            _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(3) + " JD" : e.companyPrice.toStringAsFixed(3) + " JD",
-                                                            style: kStyleTextTitle.copyWith(color: ColorsApp.orange_2),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                              // if (e.itemPicture.isNotEmpty)
+                                              //   CachedNetworkImage(
+                                              //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
+                                              //     height: 50.h,
+                                              //     width: 50.w,
+                                              //     fit: BoxFit.contain,
+                                              //     placeholder: (context, url) => Container(),
+                                              //     errorWidget: (context, url, error) => Container(),
+                                              //   ),
+                                              Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  SizedBox(
+                                                    height: 5.h,
+                                                  ),
+                                                  Text(
+                                                    e.menuName,
+                                                    maxLines: 2,
+                                                    style: kStyleTextTitle,
+                                                    textAlign: TextAlign.left,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  // if (e.description.isNotEmpty)
+                                                  //   Text(
+                                                  //     e.description,
+                                                  //     style: kStyleTextDefault,
+                                                  //   ),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(3) + " JD" : e.companyPrice.toStringAsFixed(3) + " JD",
+                                                        style: kStyleTextTitle.copyWith(color: ColorsApp.orange_2),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10.w,
+                                                      ),
+                                                      Container(
+                                                        decoration: BoxDecoration(
+                                                          color: ColorsApp.orange_2,
+                                                          borderRadius: BorderRadius.circular(15.r),
+                                                          border: Border.all(color: ColorsApp.orange_2),
+                                                        ),
+                                                        width: 30.w,
+                                                        height: 40.h,
+                                                        margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                                        child: Center(
+                                                          child: Text(
+                                                            'Add + '.tr,
+                                                            style: kStyleTextDefault.copyWith(color: Colors.white),
                                                           ),
-                                                          SizedBox(
-                                                            width: 10.w,
-                                                          ),
-                                                          Container(
-                                                            decoration: BoxDecoration(
-                                                                color: ColorsApp.orange_2,
-                                                                borderRadius: BorderRadius.circular(
-                                                                  15.0,
-                                                                ),
-                                                                border: Border.all(color: ColorsApp.orange_2)),
-                                                            width: 30.w,
-                                                            height: 40.h,
-                                                            margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                                            child: Center(
-                                                              child: Text(
-                                                                'Add + '.tr,
-                                                                style: kStyleTextDefault.copyWith(color: Colors.white),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
                                                 ],
                                               ),
-                                            ),
+                                            ],
                                           ),
                                         ),
                                       ),
@@ -1845,120 +1791,80 @@ class _OrderScreenState extends State<OrderScreen> {
                                   .toList()
                               : allDataModel.categories
                                   .map((e) => InkWell(
-                            onTap: () async {
-                              _selectedCategoryId = e.id;
-                              _isShowItem = true;
-                              setState(() {});
-                            },
-                                    child: Card(
+                                        onTap: () async {
+                                          _selectedCategoryId = e.id;
+                                          _isShowItem = true;
+                                          setState(() {});
+                                        },
+                                        child: Card(
                                           color: ColorsApp.gray_light,
                                           shadowColor: ColorsApp.gray_light,
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(5.r),
                                           ),
                                           elevation: 0,
-                                          child: Container(
-                                            height: 200.h,
-                                            width: 100.h,
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                                              child: SingleChildScrollView(
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                            child: Stack(
+                                              children: [
+                                                // CachedNetworkImage(
+                                                //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                                //   height: 180.h,
+                                                //   width: 300.h,
+                                                //   fit: BoxFit.fill,
+                                                //   placeholder: (context, url) => SizedBox(
+                                                //     height: 180.h,
+                                                //     width: 300.h,
+                                                //   ),
+                                                //   errorWidget: (context, url, error) => SizedBox(
+                                                //     height: 180.h,
+                                                //     width: 300.h,
+                                                //   ),
+                                                // ),
+                                                Image.asset(
+                                                  kAssetsCategory,
+                                                  height: 180.h,
+                                                  width: 300.h,
+                                                  fit: BoxFit.fill,
+                                                ),
+                                                Align(
+                                                  alignment: Alignment.topRight,
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(top: 8.h),
+                                                    child: Image.asset(
+                                                      kAssetsFavorite,
+                                                      height: 30.h,
+                                                      width: 30.w,
+                                                      fit: BoxFit.fitHeight,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Column(
                                                   children: [
-                                                    Stack(
-                                                      children: [
-
-                                              //           e.categoryPic.isNotEmpty?
-                                              //           CachedNetworkImage(
-                                              //             imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
-                                              //             height: 80.h,
-                                              //             width: 100.w,
-                                              //             fit: BoxFit.fitHeight,
-                                              //             placeholder: (context, url) => SizedBox(
-                                              //               height: 50.h,
-                                              //               width: 50.w,
-                                              //             ),
-                                              // errorWidget: (context, url, error) => SizedBox(
-                                              //       height: 50.h,
-                                              //       width: 50.w,
-                                              //     )):
-                                                        Image.asset(
-                                            'assets/images/Image_1.png',
-                                                          height: 180.h,
-                                                          width: 300.h,
-                                                          fit: BoxFit.fill,
-                                          ),
-                                                        Align(
-                                                          alignment: Alignment.topRight,
-                                                          child: Image.asset(
-                                                            'assets/images/Favorite.png',
-                                                            height: 30.h,
-                                                            width: 30.w,
-                                                            fit: BoxFit.fitHeight,
+                                                    SizedBox(height: 115.h),
+                                                    Opacity(
+                                                      opacity: 0.7,
+                                                      child: Container(
+                                                        decoration: BoxDecoration(color: ColorsApp.orange_light, borderRadius: BorderRadius.all(Radius.circular(5.r))),
+                                                        height: 65.h,
+                                                        child: Center(
+                                                          child: Text(
+                                                            e.categoryName,
+                                                            maxLines: 2,
+                                                            overflow: TextOverflow.ellipsis,
+                                                            textAlign: TextAlign.center,
+                                                            style: kStyleButtonPayment.copyWith(color: ColorsApp.orange_2, fontSize: 20.sp),
                                                           ),
                                                         ),
-
-                                                        Column(
-                                                          children: [
-                                                            SizedBox(height: 120.h,),
-                                                            Align(
-
-                                                              child: Opacity(
-                                                                opacity: 0.7,
-                                                                child: CustomButton(
-                                                                  borderRadius: 8,
-                                                                  height: 65.h,
-                                                                  width: 300.h,
-
-                                                                  child:
-                                                                  Center(
-                                                                    child: Text(
-                                                                      '${e.categoryName}',
-                                                                      style: kStyleButtonPayment.copyWith(color: ColorsApp.orange_2,fontSize: 20.sp),
-                                                                    ),
-                                                                  ),
-                                                                  fixed: true,
-
-                                                                  backgroundColor: ColorsApp.orange_light,
-                                                                  onPressed: () async {
-                                                                    _selectedCategoryId = e.id;
-                                                                    _isShowItem = true;
-                                                                    setState(() {});
-                                                                  },
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
+                                                      ),
                                                     ),
-                                                    // CachedNetworkImage(
-                                                    //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
-                                                    //   height: 50.h,
-                                                    //   width: 50.w,
-                                                    //   fit: BoxFit.contain,
-                                                    //   placeholder: (context, url) => SizedBox(
-                                                    //     height: 50.h,
-                                                    //     width: 50.w,
-                                                    //   ),
-                                                    //   errorWidget: (context, url, error) => SizedBox(
-                                                    //     height: 50.h,
-                                                    //     width: 50.w,
-                                                    //   ),
-                                                    // ),
-                                                    // SizedBox(
-                                                    //   height: 10.h,
-                                                    // ),
-
-
                                                   ],
                                                 ),
-                                              ),
+                                              ],
                                             ),
                                           ),
                                         ),
-                                  ))
+                                      ))
                                   .toList(),
                         ),
                       ),
@@ -2017,11 +1923,9 @@ class _OrderScreenState extends State<OrderScreen> {
                                           }
                                         }
                                       },
-                                      child:
-                                      SingleChildScrollView(
+                                      child: SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
-                                        child:
-                                        Row(
+                                        child: Row(
                                           crossAxisAlignment: CrossAxisAlignment.center,
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
@@ -2035,7 +1939,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                               ),
                                             ),
                                             Image.asset(
-                                              'assets/images/arrowchevronright.png',
+                                              kAssetsArrowRight,
                                               height: 20.h,
                                             ),
                                           ],
@@ -2050,18 +1954,16 @@ class _OrderScreenState extends State<OrderScreen> {
                               if (mySharedPreferences.employee.hasVoidAllPermission)
                                 Expanded(
                                     child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: Container(
-
-                                  height: 30.h,
-                                  decoration: BoxDecoration(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Container(
+                                    height: 30.h,
+                                    decoration: BoxDecoration(
                                       border: Border.all(color: ColorsApp.orange_2),
                                       borderRadius: BorderRadius.circular(
                                         10.0,
                                       ),
-                                  ),
-                                  child:
-                                  InkWell(
+                                    ),
+                                    child: InkWell(
                                       onTap: () async {
                                         var permission = false;
                                         if (mySharedPreferences.employee.hasVoidAllPermission) {
@@ -2109,35 +2011,33 @@ class _OrderScreenState extends State<OrderScreen> {
                                           }
                                         }
                                       },
-                                      child:
-                                        SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Center(
-                                            child: Row(
-                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Center(
-                                                  child: Text(
-                                                    'Void All'.tr,
-                                                    textAlign: TextAlign.center,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                    style: kStyleTextOrange,
-                                                  ),
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Center(
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Center(
+                                                child: Text(
+                                                  'Void All'.tr,
+                                                  textAlign: TextAlign.center,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                  style: kStyleTextOrange,
                                                 ),
-                                                Image.asset(
-                                                  'assets/images/arrowchevronright.png',
-                                                  height: 20.h,
-                                                ),
-                                              ],
-                                            ),
+                                              ),
+                                              Image.asset(
+                                                kAssetsArrowRight,
+                                                height: 20.h,
+                                              ),
+                                            ],
                                           ),
                                         ),
-
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                    )),
+                                )),
                               SizedBox(
                                 width: 5.w,
                               ),
@@ -2165,7 +2065,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                       },
                                       child: Text(
                                         'Delivery'.tr,
-                                        style:kStyleTextOrange,
+                                        style: kStyleTextOrange,
                                       ),
                                     ),
                                   ),
@@ -2481,7 +2381,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 },
                                 child: Container(
                                   child: Image.asset(
-                                    'assets/images/drop_dark.png',
+                                    kAssetsArrowBottom,
                                     height: 20.h,
                                   ),
                                 ),

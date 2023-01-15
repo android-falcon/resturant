@@ -24,32 +24,68 @@ const placeholderImage = 'assets/images/logo.png';
 const companyType = CompanyType.falcons;
 
 String kAssetsLoginBackground = "";
+String kAssetsDinInBackground = "";
 String kAssetsLoginBack = "";
 String kAssetsDrawerHeader = "";
 String kAssetsHomeScreen = "";
 String kAssetsChoose = "";
 String kAssetsTakeAway = "";
 String kAssetsDineIn = "";
+String kAssetsCategory = "";
+String kAssetsItem = "";
+String kAssetsFavorite = "";
+String kAssetsWelcome = "";
+String kAssetsSplash = "";
+String kAssetsTable = "";
+String kAssetsGuests = "";
+String kAssetsArrowRight = "";
+String kAssetsArrowBottom = "";
+String kAssetsUser = "";
+String kAssetsPlaceholder = "";
 
 loadAssets() {
   switch (companyType) {
     case CompanyType.falcons:
       kAssetsLoginBackground = "assets/images/rectangle60.png";
+      kAssetsDinInBackground = "assets/images/dinin_group.png";
       kAssetsLoginBack = "assets/images/home_back.png";
       kAssetsDrawerHeader = "assets/images/rectangle60.png";
       kAssetsHomeScreen = "assets/images/takeway108.png";
       kAssetsChoose = "assets/images/choose109.png";
       kAssetsTakeAway = "assets/images/take_away_.png";
       kAssetsDineIn = "assets/images/dine_in_.png";
+      kAssetsCategory = "assets/images/Image_1.png";
+      kAssetsItem = "assets/images/Image_2.png";
+      kAssetsFavorite = "assets/images/Favorite.png";
+      kAssetsWelcome = "assets/images/welcome.png";
+      kAssetsSplash = "assets/images/logo.png";
+      kAssetsTable = "assets/images/table_ellipse.png";
+      kAssetsGuests = "assets/images/guests";
+      kAssetsArrowRight = "assets/images/arrowchevronright.png";
+      kAssetsArrowBottom = "assets/images/drop_dark.png";
+      kAssetsUser = "assets/images/user.png";
+      kAssetsPlaceholder = "assets/images/image_placeholder.png";
       break;
     case CompanyType.umniah:
       kAssetsLoginBackground = "assets/images/rectangle602.png";
+      kAssetsDinInBackground = "assets/images/dinin_group.png";
       kAssetsLoginBack = "assets/images/login_back_umnia.png";
       kAssetsDrawerHeader = "assets/images/logo_arabic.png";
       kAssetsHomeScreen = "assets/images/takeway108.png";
       kAssetsChoose = "assets/images/choose109.png";
       kAssetsTakeAway = "assets/images/take_away_.png";
       kAssetsDineIn = "assets/images/dine_in_.png";
+      kAssetsCategory = "assets/images/Image_1.png";
+      kAssetsItem = "assets/images/Image_2.png";
+      kAssetsFavorite = "assets/images/Favorite.png";
+      kAssetsWelcome = "assets/images/welcome.png";
+      kAssetsSplash = "assets/images/logo.png";
+      kAssetsTable = "assets/images/table_ellipse.png";
+      kAssetsGuests = "assets/images/guests";
+      kAssetsArrowRight = "assets/images/arrowchevronright.png";
+      kAssetsArrowBottom = "assets/images/drop_dark.png";
+      kAssetsUser = "assets/images/user.png";
+      kAssetsPlaceholder = "assets/images/image_placeholder.png";
       break;
   }
 }
