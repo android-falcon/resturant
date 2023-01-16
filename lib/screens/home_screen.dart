@@ -435,6 +435,7 @@ class _HomeScreenState extends State<HomeScreen> {
     TextEditingController? _controllerSelectEdit = _controllerManual;
     int _typeInputCash = 1;
     double moneyCount = 0;
+    int? _selectDescId;
 
     bool result = await Get.dialog(
       CustomDialog(
@@ -686,7 +687,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                           onSubmit: () async {
                             // var result = await Utils.showAreYouSureDialog(title: 'Save'.tr);
-                            var _selectDescId = await _showCashInOutTypeDialog(kindType: type);
+                            _selectDescId = await _showCashInOutTypeDialog(kindType: type);
                             if (_selectDescId != null) {
                               if (_typeInputCash == 1 ? double.parse(_controllerManual.text) > 0 : moneyCount > 0) {
                                 switch (type) {
@@ -695,7 +696,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
                                       remark: _controllerRemark.text,
                                       type: 1,
-                                      descId: _selectDescId,
+                                      descId: _selectDescId!,
                                     );
                                     break;
                                   case InOutType.payOut:
@@ -703,7 +704,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       value: _typeInputCash == 1 ? double.parse(_controllerManual.text) : moneyCount,
                                       remark: _controllerRemark.text,
                                       type: 2,
-                                      descId: _selectDescId,
+                                      descId: _selectDescId!,
                                     );
                                     break;
                                   case InOutType.cashIn:
@@ -811,7 +812,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: kStyleDataPrinter,
                                   ),
                                   Text(
-                                    '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
+                                    '${'Type'.tr} : ${_selectDescId == null ? '' : allDataModel.cashInOutTypesModel.firstWhereOrNull((element) => element.id == _selectDescId)?.description ?? ''}',
+                                    style: kStyleDataPrinter,
+                                  ),
+                                  Text(
+                                    '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
                                     style: kStyleDataPrinter,
                                   ),
                                   Text(

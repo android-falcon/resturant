@@ -60,7 +60,7 @@ loadAssets() {
       kAssetsWelcome = "assets/images/welcome.png";
       kAssetsSplash = "assets/images/logo.png";
       kAssetsTable = "assets/images/table_ellipse.png";
-      kAssetsGuests = "assets/images/guests";
+      kAssetsGuests = "assets/images/guests.png";
       kAssetsArrowRight = "assets/images/arrowchevronright.png";
       kAssetsArrowBottom = "assets/images/drop_dark.png";
       kAssetsUser = "assets/images/user.png";
@@ -81,7 +81,7 @@ loadAssets() {
       kAssetsWelcome = "assets/images/welcome.png";
       kAssetsSplash = "assets/images/logo.png";
       kAssetsTable = "assets/images/table_ellipse.png";
-      kAssetsGuests = "assets/images/guests";
+      kAssetsGuests = "assets/images/guests.png";
       kAssetsArrowRight = "assets/images/arrowchevronright.png";
       kAssetsArrowBottom = "assets/images/drop_dark.png";
       kAssetsUser = "assets/images/user.png";

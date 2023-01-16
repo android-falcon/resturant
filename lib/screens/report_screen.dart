@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:restaurant_system/database/network_table.dart';
 import 'package:restaurant_system/models/report_sold_qty_model.dart';
+import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_data_table.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/utils/constant.dart';
@@ -234,7 +235,10 @@ class _ReportScreenState extends State<ReportScreen> {
                 DataRow(
                   cells: [
                     const DataCell(Text('')),
-                    DataCell(Text('Totals'.tr, style: kStyleHeaderTable,)),
+                    DataCell(Text(
+                      'Totals'.tr,
+                      style: kStyleHeaderTable,
+                    )),
                     DataCell(Text(soldQty.toStringAsFixed(3))),
                     DataCell(Text(disc.toStringAsFixed(3))),
                     DataCell(Text(serviceValue.toStringAsFixed(3))),
@@ -306,7 +310,6 @@ class _ReportScreenState extends State<ReportScreen> {
                     if (pickedDate != null) {
                       String formattedDate = intl.DateFormat(dateFormat).format(pickedDate);
                       _controllerFromDate.text = formattedDate; //set output date to TextField value.
-                      _init();
                     }
                   },
                 ),
@@ -331,10 +334,18 @@ class _ReportScreenState extends State<ReportScreen> {
                     if (pickedDate != null) {
                       String formattedDate = intl.DateFormat(dateFormat).format(pickedDate);
                       _controllerToDate.text = formattedDate; //set output date to TextField value.
-                      _init();
+
                     }
                   },
                 ),
+              ),
+              CustomButton(
+                margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                fixed: true,
+                onPressed: () {
+                  _init();
+                },
+                child: Text('Submit'.tr),
               ),
             ],
           ),
