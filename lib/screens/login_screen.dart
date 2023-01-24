@@ -120,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             'Log In'.tr,
                             style: const TextStyle(color: Colors.white),
                           ),
-                          backgroundColor: ColorsApp.orange_2,
+                          backgroundColor: ColorsApp.primaryColor,
                           borderRadius: 5,
                           margin: const EdgeInsets.symmetric(vertical: 20),
                           onPressed: () {
@@ -189,9 +189,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 5, left: 5, right: 5),
                       child: Text(
-                        'clarify'.tr,
+                        'Restaurant Management System.'.tr,
                         textAlign: TextAlign.left,
-                        style: kStyleTextDefault.copyWith(color: ColorsApp.orange_2),
+                        style: kStyleTextDefault.copyWith(color: ColorsApp.primaryColor),
                       ),
                     ),
                   ],

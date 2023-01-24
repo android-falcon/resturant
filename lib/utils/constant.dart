@@ -5,7 +5,7 @@ import 'package:restaurant_system/utils/enums/enum_company_type.dart';
 
 final kStyleTextDefault = TextStyle(fontWeight: FontWeight.normal, fontSize: 14.sp);
 final kStyleTextTitle = TextStyle(fontWeight: FontWeight.normal, fontSize: 20.sp);
-final kStyleHeaderTable = TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: ColorsApp.red);
+final kStyleHeaderTable = TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: companyType == CompanyType.umniah ? ColorsApp.black : ColorsApp.red);
 final kStyleDataTable = TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: Colors.black);
 final kStyleDataTableModifiers = TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: Colors.redAccent);
 final kStyleTextButton = TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, color: Colors.white);
@@ -17,11 +17,10 @@ final kStyleTitlePrinter = TextStyle(fontWeight: FontWeight.bold, fontSize: 27.s
 final kStyleDataPrinter = TextStyle(fontSize: 23.sp);
 
 final kStyleHint = TextStyle(fontWeight: FontWeight.normal, fontSize: 13.sp, color: Colors.grey);
-final kStyleTextOrange = TextStyle(fontWeight: FontWeight.normal, fontSize: 14.sp, color: ColorsApp.orange_2);
+final kStyleTextOrange = TextStyle(fontWeight: FontWeight.normal, fontSize: 14.sp, color: ColorsApp.primaryColor);
 
-const placeholderImage = 'assets/images/logo.png';
 
-const companyType = CompanyType.falcons;
+const companyType = CompanyType.umniah;
 
 String kAssetsLoginBackground = "";
 String kAssetsDinInBackground = "";
@@ -54,7 +53,7 @@ loadAssets() {
       kAssetsChoose = "assets/images/choose109.png";
       kAssetsTakeAway = "assets/images/take_away_.png";
       kAssetsDineIn = "assets/images/dine_in_.png";
-      kAssetsCategory = "assets/images/Image_1.png";
+      kAssetsCategory = "assets/images/Image_1.jpg";
       kAssetsItem = "assets/images/Image_2.png";
       kAssetsFavorite = "assets/images/Favorite.png";
       kAssetsWelcome = "assets/images/welcome.png";
@@ -75,17 +74,96 @@ loadAssets() {
       kAssetsChoose = "assets/images/choose109.png";
       kAssetsTakeAway = "assets/images/take_away_.png";
       kAssetsDineIn = "assets/images/dine_in_.png";
-      kAssetsCategory = "assets/images/Image_1.png";
+      kAssetsCategory = "assets/images/Image_1.jpg";
       kAssetsItem = "assets/images/Image_2.png";
       kAssetsFavorite = "assets/images/Favorite.png";
       kAssetsWelcome = "assets/images/welcome.png";
-      kAssetsSplash = "assets/images/logo.png";
+      kAssetsSplash = "assets/images/u_logo.png";
       kAssetsTable = "assets/images/table_ellipse.png";
       kAssetsGuests = "assets/images/guests.png";
       kAssetsArrowRight = "assets/images/arrowchevronright.png";
       kAssetsArrowBottom = "assets/images/drop_dark.png";
       kAssetsUser = "assets/images/user.png";
       kAssetsPlaceholder = "assets/images/image_placeholder.png";
+      break;
+  }
+}
+
+loadColor() {
+  switch (companyType) {
+    case CompanyType.falcons:
+      ColorsApp.primaryColor = const MaterialColor(
+        0xFFFF9A3F,
+        <int, Color>{
+          50: Color(0xFFFF9A3F),
+          100: Color(0xFFFF9A3F),
+          200: Color(0xFFFF9A3F),
+          300: Color(0xFFFF9A3F),
+          350: Color(0xFFFF9A3F),
+          400: Color(0xFFFF9A3F),
+          500: Color(0xFFFF9A3F),
+          600: Color(0xFFFF9A3F),
+          700: Color(0xFFFF9A3F),
+          800: Color(0xFFFF9A3F),
+          850: Color(0xFFFF9A3F),
+          900: Color(0xFFFF9A3F),
+        },
+      );
+      ColorsApp.accentColor = const MaterialColor(
+        0xFFFF9A3F,
+        <int, Color>{
+          50: Color(0xFFFF9A3F),
+          100: Color(0xFFFF9A3F),
+          200: Color(0xFFFF9A3F),
+          300: Color(0xFFFF9A3F),
+          350: Color(0xFFFF9A3F),
+          400: Color(0xFFFF9A3F),
+          500: Color(0xFFFF9A3F),
+          600: Color(0xFFFF9A3F),
+          700: Color(0xFFFF9A3F),
+          800: Color(0xFFFF9A3F),
+          850: Color(0xFFFF9A3F),
+          900: Color(0xFFFF9A3F),
+        },
+      );
+      break;
+    case CompanyType.umniah:
+      ColorsApp.primaryColor = const MaterialColor(
+        //
+        0xFFDCE324,
+        <int, Color>{
+          50: Color(0xFFDCE324),
+          100: Color(0xFFDCE324),
+          200: Color(0xFFDCE324),
+          300: Color(0xFFDCE324),
+          350: Color(0xFFDCE324), // only for raised button while pressed in light theme
+          400: Color(0xFFDCE324),
+          500: Color(0xFFDCE324),
+          600: Color(0xFFDCE324),
+          700: Color(0xFFDCE324),
+          800: Color(0xFFDCE324),
+          850: Color(0xFFDCE324), // only for background color in dark theme
+          900: Color(0xFFDCE324),
+        },
+      );
+      ColorsApp.accentColor = const MaterialColor(
+        //
+        0xFFDCE324,
+        <int, Color>{
+          50: Color(0xFFDCE324),
+          100: Color(0xFFDCE324),
+          200: Color(0xFFDCE324),
+          300: Color(0xFFDCE324),
+          350: Color(0xFFDCE324), // only for raised button while pressed in light theme
+          400: Color(0xFFDCE324),
+          500: Color(0xFFDCE324),
+          600: Color(0xFFDCE324),
+          700: Color(0xFFDCE324),
+          800: Color(0xFFDCE324),
+          850: Color(0xFFDCE324), // only for background color in dark theme
+          900: Color(0xFFDCE324),
+        },
+      );
       break;
   }
 }

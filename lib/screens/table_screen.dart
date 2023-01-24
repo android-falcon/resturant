@@ -24,6 +24,7 @@ import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
 import 'package:restaurant_system/utils/app_config/home_menu.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/enums/enum_company_type.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
@@ -55,7 +56,7 @@ class _TableScreenState extends State<TableScreen> {
     _menu = <HomeMenu>[
       HomeMenu(
         name: 'Move'.tr,
-        icon: Icon(Icons.move_down, color: ColorsApp.orange_2),
+        icon: Icon(Icons.move_down, color: ColorsApp.primaryColor),
         onTab: () async {
           if (mySharedPreferences.employee.hasMoveTablePermission) {
             await _showMoveDialog();
@@ -238,7 +239,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectFloor == e ? ColorsApp.orange_2 : null,
+                                              color: _selectFloor == e ? ColorsApp.primaryColor : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectFloor = e;
@@ -341,7 +342,7 @@ class _TableScreenState extends State<TableScreen> {
                 SizedBox(width: 10.w),
                 CustomButton(
                   fixed: true,
-                  backgroundColor: ColorsApp.red_light,
+                  backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.redLight,
                   child: Text('Close'.tr),
                   onPressed: () {
                     Get.back();
@@ -376,7 +377,7 @@ class _TableScreenState extends State<TableScreen> {
                         Container(
                           width: double.infinity,
                           height: 35.h,
-                          color:ColorsApp.orange_light,
+                          color:ColorsApp.orangeLight,
                           child: Row(
                               children: floors
                                   .map(
@@ -450,7 +451,7 @@ class _TableScreenState extends State<TableScreen> {
             ),
             CustomButton(
               fixed: true,
-              backgroundColor: ColorsApp.red_light,
+              backgroundColor:companyType == CompanyType.umniah ? ColorsApp.darkBlue :  ColorsApp.redLight,
               child: Text('Close'.tr),
               onPressed: () {
                 Get.back();
@@ -495,7 +496,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectFloor == e ? ColorsApp.orange_2 : null,
+                                              color: _selectFloor == e ? ColorsApp.primaryColor : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectFloor = e;
@@ -646,7 +647,7 @@ class _TableScreenState extends State<TableScreen> {
                 ),
                 SizedBox(width: 10.w),
                 CustomButton(
-                  backgroundColor: ColorsApp.red_light,
+                  backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.redLight,
                   fixed: true,
                   child: Text('Close'.tr),
                   onPressed: () {
@@ -695,7 +696,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectFromFloor == e ? ColorsApp.orange_2 : null,
+                                              color: _selectFromFloor == e ? ColorsApp.primaryColor : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectFromFloor = e;
@@ -783,7 +784,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectToFloor == e ? ColorsApp.orange_2 : null,
+                                              color: _selectToFloor == e ? ColorsApp.primaryColor : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectToFloor = e;
@@ -892,7 +893,7 @@ class _TableScreenState extends State<TableScreen> {
                 SizedBox(width: 10.w),
                 CustomButton(
                   fixed: true,
-                  backgroundColor: ColorsApp.red_light,
+                  backgroundColor:companyType == CompanyType.umniah ? ColorsApp.darkBlue :  ColorsApp.redLight,
                   child: Text('Close'.tr),
                   onPressed: () {
                     Get.back();
@@ -940,7 +941,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectFromFloor == e ? ColorsApp.orange_2 : null,
+                                              color: _selectFromFloor == e ? ColorsApp.primaryColor : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectFromFloor = e;
@@ -1032,7 +1033,7 @@ class _TableScreenState extends State<TableScreen> {
                                           Expanded(
                                             child: Container(
                                               height: 35.h,
-                                              color: _selectToFloor == e ? ColorsApp.orange_2 : null,
+                                              color: _selectToFloor == e ? ColorsApp.primaryColor : null,
                                               child: InkWell(
                                                 onTap: () {
                                                   _selectToFloor = e;
@@ -1142,7 +1143,7 @@ class _TableScreenState extends State<TableScreen> {
                 SizedBox(width: 10.w),
                 CustomButton(
                   fixed: true,
-                  backgroundColor: ColorsApp.red_light,
+                  backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.redLight,
                   child: Text('Close'.tr),
                   onPressed: () {
                     Get.back();
@@ -1373,7 +1374,7 @@ class _TableScreenState extends State<TableScreen> {
         child: Stack(
           children: [
             Container(
-              color: ColorsApp.backgroundDialog,
+              color: companyType == CompanyType.umniah ? Colors.white :  ColorsApp.backgroundDialog,
               width: 1.sw,
               height: 1.sh,
             ),
@@ -1393,7 +1394,7 @@ class _TableScreenState extends State<TableScreen> {
                       Container(
                         width: double.infinity,
                         height: 50.h,
-                        color: ColorsApp.backgroundDialog,
+                        color: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.backgroundDialog,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -1403,12 +1404,12 @@ class _TableScreenState extends State<TableScreen> {
                               },
                               icon: Icon(
                                 Icons.arrow_back_ios,
-                                color: ColorsApp.black,
+                                color: companyType == CompanyType.umniah ? ColorsApp.primaryColor : ColorsApp.black,
                               ),
                             ),
                             Text(
                               'Dine In'.tr,
-                              style: TextStyle(color: ColorsApp.black),
+                              style: TextStyle(color: companyType == CompanyType.umniah ? ColorsApp.primaryColor : ColorsApp.black),
                             ),
                             Align(
                               alignment: Alignment.center,
@@ -1416,7 +1417,7 @@ class _TableScreenState extends State<TableScreen> {
                                 onPressed: () {
                                   _scaffoldKey.currentState?.openEndDrawer();
                                 },
-                                icon: Icon(Icons.menu, color: ColorsApp.black),
+                                icon: Icon(Icons.menu, color: companyType == CompanyType.umniah ? ColorsApp.primaryColor : ColorsApp.black),
                               ),
                             ),
                           ],
@@ -1425,7 +1426,7 @@ class _TableScreenState extends State<TableScreen> {
                       Container(
                         width: double.infinity,
                         height: 35.h,
-                        color: ColorsApp.orange_light,
+                        color: ColorsApp.orangeLight,
                         child: Row(
                             children: floors
                                 .map(
@@ -1435,7 +1436,7 @@ class _TableScreenState extends State<TableScreen> {
                                         Expanded(
                                           child: Container(
                                             height: 35.h,
-                                            color: _selectFloor == e ? ColorsApp.orange_2 : null,
+                                            color: _selectFloor == e ? ColorsApp.primaryColor : null,
                                             child: InkWell(
                                               onTap: () {
                                                 _selectFloor = e;
@@ -1472,6 +1473,7 @@ class _TableScreenState extends State<TableScreen> {
                                         onTap: () async {
                                           if (e.isOpen) {
                                             if (mySharedPreferences.employee.id == e.userId) {
+                                              await RestApi.openTable(e.tableId);
                                               Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
                                                 RestApi.unlockTable(e.tableId);
                                                 _initData(false);
@@ -1515,7 +1517,7 @@ class _TableScreenState extends State<TableScreen> {
                                                   margin: const EdgeInsets.symmetric(horizontal: 2),
                                                   decoration: BoxDecoration(
 
-                                                    border: Border.all(width: 2, color: ColorsApp.orange_light),
+                                                    border: Border.all(width: 2, color: ColorsApp.orangeLight),
                                                     borderRadius:  BorderRadius.circular(5) ,
                                                     boxShadow: [
                                                       if (e.isOpen) //  && mySharedPreferences.employee.id == e.userId
@@ -1560,13 +1562,13 @@ class _TableScreenState extends State<TableScreen> {
                                                               width: 50.w,
                                                               decoration: BoxDecoration(
                                                                 color: ColorsApp.backgroundDialog,
-                                                                border: Border.all(width: 1, color: ColorsApp.orange_2),
+                                                                border: Border.all(width: 1, color: ColorsApp.primaryColor),
                                                                 borderRadius: BorderRadius.circular(5.r),
                                                               ),
                                                               child: Center(
                                                                 child: Text(
                                                                   'View ',
-                                                                  style: kStyleTextTable.copyWith(color: ColorsApp.red_light),
+                                                                  style: kStyleTextTable.copyWith(color: ColorsApp.redLight),
                                                                 ),
                                                               ),
                                                             ),

@@ -32,32 +32,32 @@ class _ConfigScreenState extends State<ConfigScreen> {
             child: Column(
               children: [
                 CustomTextField(
-                  borderColor: ColorsApp.orange_2,
+                  borderColor: ColorsApp.primaryColor,
                   controller: _controllerBaseUrl,
                   label: Text('Base URL'.tr),
                 ),
                 CustomTextField(
-                  borderColor: ColorsApp.orange_2,
+                  borderColor: ColorsApp.primaryColor,
                   controller: _controllerPosNo,
                   label: Text('POS No'.tr),
                 ),
                 CustomTextField(
-                  borderColor: ColorsApp.orange_2,
+                  borderColor: ColorsApp.primaryColor,
                   controller: _controllerCashNo,
                   label: Text('Cash No'.tr),
                 ),
                 CustomTextField(
-                  borderColor: ColorsApp.orange_2,
+                  borderColor: ColorsApp.primaryColor,
                   controller: _controllerStoreNo,
                   label: Text('Store No'.tr),
                 ),
                 CustomTextField(
-                  borderColor: ColorsApp.orange_2,
+                  borderColor: ColorsApp.primaryColor,
                   controller: _controllerInVocNo,
                   label: Text('In Voc No'.tr),
                 ),
                 CustomTextField(
-                  borderColor: ColorsApp.orange_2,
+                  borderColor: ColorsApp.primaryColor,
                   controller: _controllerOutVocNo,
                   label: Text('Pay In Out No'.tr),
                 ),
@@ -67,7 +67,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
                     children: [
                       Expanded(
                         child: CustomButton(
-                          backgroundColor: ColorsApp.orange_2,
+                          backgroundColor: ColorsApp.primaryColor,
                           child: Text(
                             'Save'.tr,
                             style: const TextStyle(color: Colors.white),
@@ -87,7 +87,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
                       ),
                       Expanded(
                         child: CustomButton(
-                          backgroundColor: ColorsApp.red_light,
+                          backgroundColor: ColorsApp.redLight,
                           child: Text(
                             'Cancel'.tr,
                             style: const TextStyle(color: Colors.white),

@@ -1196,7 +1196,7 @@ class _HomeScreenState extends State<HomeScreen> {
               constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(3.r),
-                border: Border.all(width: 2, color: ColorsApp.orange_2),
+                border: Border.all(width: 2, color: ColorsApp.primaryColor),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -1220,6 +1220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: CustomTextFieldNum(
                                   controller: _controllerVoucherNumber,
                                   fillColor: Colors.white,
+
                                   decimal: false,
                                   validator: (value) {
                                     return Validation.isRequired(value);
@@ -1308,7 +1309,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: CustomButton(
                     fixed: true,
-                    backgroundColor: ColorsApp.red_light,
+                    backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue :  ColorsApp.redLight,
                     child: Text(
                       'Exit'.tr,
                       style: kStyleTextButton,
@@ -1360,7 +1361,7 @@ class _HomeScreenState extends State<HomeScreen> {
               constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(3.r),
-                border: Border.all(width: 2, color: ColorsApp.orange_2),
+                border: Border.all(width: 2, color: ColorsApp.primaryColor),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -1808,7 +1809,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: CustomButton(
                     fixed: true,
-                    backgroundColor: ColorsApp.red_light,
+                    backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.redLight,
                     child: Text(
                       'Exit'.tr,
                       style: kStyleTextButton,
@@ -1923,8 +1924,8 @@ class _HomeScreenState extends State<HomeScreen> {
       onWillPop: () async => false,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: companyType == CompanyType.umniah ? ColorsApp.black : ColorsApp.backgroundDialog,
-          iconTheme: IconThemeData(color: companyType == CompanyType.umniah ? ColorsApp.orange_2 : ColorsApp.black),
+          backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.backgroundDialog,
+          iconTheme: IconThemeData(color: companyType == CompanyType.umniah ? ColorsApp.primaryColor : ColorsApp.black),
           title: Text(
             '${'Branch'.tr}: ${allDataModel.companyConfig.first.companyName}  \t\t\t${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
             textAlign: TextAlign.center,
@@ -1977,7 +1978,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   width: 70.w,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(15.0),
-                                    border: Border.all(color: ColorsApp.orange_2),
+                                    border: Border.all(color: ColorsApp.primaryColor),
                                   ),
                                   child: Column(
                                     children: [
@@ -2008,7 +2009,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   width: 70.w,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(15.0),
-                                    border: Border.all(color: ColorsApp.orange_2),
+                                    border: Border.all(color: ColorsApp.primaryColor),
                                   ),
                                   child: Column(
                                     children: [

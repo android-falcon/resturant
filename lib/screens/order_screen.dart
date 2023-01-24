@@ -70,7 +70,7 @@ class _OrderScreenState extends State<OrderScreen> {
       if (widget.type == OrderType.takeAway)
         HomeMenu(
           name: 'Park List'.tr,
-          icon: Icon(Icons.local_parking_outlined, color: ColorsApp.orange_2),
+          icon: Icon(Icons.local_parking_outlined, color: ColorsApp.primaryColor),
           onTab: () async {
             if (_cartModel.items.isNotEmpty) {
               Fluttertoast.showToast(msg: 'The cart must be emptied, in order to be able to get park'.tr);
@@ -344,7 +344,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   borderRadius: BorderRadius.circular(
                     15.0,
                   ),
-                  border: Border.all(color: ColorsApp.orange_2)),
+                  border: Border.all(color: ColorsApp.primaryColor)),
               height: 250.h,
               child: StaggeredGrid.count(
                 crossAxisCount: 3,
@@ -417,7 +417,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   borderRadius: BorderRadius.circular(
                     15.0,
                   ),
-                  border: Border.all(color: ColorsApp.orange_2)),
+                  border: Border.all(color: ColorsApp.primaryColor)),
               height: 250.h,
               child: StaggeredGrid.count(
                 crossAxisCount: 3,
@@ -495,7 +495,7 @@ class _OrderScreenState extends State<OrderScreen> {
               const Divider(thickness: 2),
               SizedBox(height: 20.h),
               CustomTextField(
-                borderColor: ColorsApp.orange_2,
+                borderColor: ColorsApp.primaryColor,
                 controller: _controllerPark,
                 label: Text('Name'.tr),
                 fillColor: Colors.white,
@@ -511,7 +511,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     child: CustomButton(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text('Save'.tr),
-                      backgroundColor: ColorsApp.orange_2,
+                      backgroundColor: ColorsApp.primaryColor,
                       onPressed: () {
                         if (_keyForm.currentState!.validate()) {
                           Get.back();
@@ -523,7 +523,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     child: CustomButton(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text('Exit'.tr),
-                      backgroundColor: ColorsApp.red_light,
+                      backgroundColor: ColorsApp.redLight,
                       onPressed: () {
                         _controllerPark.text = '';
                         Get.back();
@@ -1463,7 +1463,7 @@ class _OrderScreenState extends State<OrderScreen> {
               Container(
                 width: double.infinity,
                 height: 50.h,
-                color: companyType == CompanyType.falcons ? ColorsApp.backgroundDialog : ColorsApp.black,
+                color: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.backgroundDialog,
                 child: Row(
                   children: [
                     IconButton(
@@ -1509,7 +1509,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       icon: Icon(
                         Icons.arrow_back_ios,
                         size: 20,
-                        color: companyType == CompanyType.falcons ? ColorsApp.black : ColorsApp.orange_2,
+                        color: companyType == CompanyType.umniah ? ColorsApp.primaryColor : ColorsApp.black,
                       ),
                     ),
                     SizedBox(width: 4.w),
@@ -1518,7 +1518,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
-                      style: kStyleTextDefault,
+                      style: kStyleTextDefault.copyWith(color: companyType == CompanyType.umniah ? Colors.white : null),
                     ),
                     SizedBox(width: 4.w),
                     Expanded(
@@ -1527,10 +1527,9 @@ class _OrderScreenState extends State<OrderScreen> {
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
-                        style: kStyleTextDefault,
+                        style: kStyleTextDefault.copyWith(color: companyType == CompanyType.umniah ? Colors.white : null),
                       ),
                     ),
-
                     if (widget.type == OrderType.dineIn)
                       Expanded(
                         child: Text(
@@ -1538,7 +1537,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
-                          style: kStyleTextDefault,
+                          style: kStyleTextDefault.copyWith(color: companyType == CompanyType.umniah ? Colors.white : null),
                         ),
                       ),
                     if (widget.type == OrderType.dineIn)
@@ -1553,7 +1552,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
-                          style: kStyleTextDefault,
+                          style: kStyleTextDefault.copyWith(color: companyType == CompanyType.umniah ? Colors.white : null),
                         ),
                       ),
                     if (widget.type == OrderType.dineIn)
@@ -1567,14 +1566,14 @@ class _OrderScreenState extends State<OrderScreen> {
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
-                        style: kStyleTextDefault,
+                        style: kStyleTextDefault.copyWith(color: companyType == CompanyType.umniah ? Colors.white : null),
                       ),
                     ),
                     IconButton(
                       onPressed: () {
                         _scaffoldKey.currentState?.openEndDrawer();
                       },
-                      icon: Icon(Icons.menu),
+                      icon: Icon(Icons.menu, color: companyType == CompanyType.umniah ? ColorsApp.primaryColor : ColorsApp.black),
                     ),
                     if (widget.type == OrderType.dineIn)
                       Row(
@@ -1608,12 +1607,10 @@ class _OrderScreenState extends State<OrderScreen> {
                     Expanded(
                       child: SingleChildScrollView(
                         child: StaggeredGrid.count(
-                          crossAxisCount: deviceType == DeviceType.phone
-                              ? _isShowItem
-                                  ? 2
-                                  : 2
-                              : _isShowItem
-                                  ? 2
+                          crossAxisCount: _isShowItem
+                              ? 2
+                              : companyType == CompanyType.umniah
+                                  ? 3
                                   : 2,
                           children: _isShowItem
                               ? allDataModel.items
@@ -1757,16 +1754,16 @@ class _OrderScreenState extends State<OrderScreen> {
                                                     children: [
                                                       Text(
                                                         _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(3) + " JD" : e.companyPrice.toStringAsFixed(3) + " JD",
-                                                        style: kStyleTextTitle.copyWith(color: ColorsApp.orange_2),
+                                                        style: kStyleTextTitle.copyWith(color: ColorsApp.primaryColor),
                                                       ),
                                                       SizedBox(
                                                         width: 10.w,
                                                       ),
                                                       Container(
                                                         decoration: BoxDecoration(
-                                                          color: ColorsApp.orange_2,
+                                                          color: ColorsApp.primaryColor,
                                                           borderRadius: BorderRadius.circular(15.r),
-                                                          border: Border.all(color: ColorsApp.orange_2),
+                                                          border: Border.all(color: ColorsApp.primaryColor),
                                                         ),
                                                         width: 30.w,
                                                         height: 40.h,
@@ -1796,74 +1793,156 @@ class _OrderScreenState extends State<OrderScreen> {
                                           _isShowItem = true;
                                           setState(() {});
                                         },
-                                        child: Card(
-                                          color: ColorsApp.gray_light,
-                                          shadowColor: ColorsApp.gray_light,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(5.r),
-                                          ),
-                                          elevation: 0,
-                                          child: Padding(
-                                            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                                            child: Stack(
-                                              children: [
-                                                // CachedNetworkImage(
-                                                //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
-                                                //   height: 180.h,
-                                                //   width: 300.h,
-                                                //   fit: BoxFit.fill,
-                                                //   placeholder: (context, url) => SizedBox(
-                                                //     height: 180.h,
-                                                //     width: 300.h,
-                                                //   ),
-                                                //   errorWidget: (context, url, error) => SizedBox(
-                                                //     height: 180.h,
-                                                //     width: 300.h,
-                                                //   ),
-                                                // ),
-                                                Image.asset(
-                                                  kAssetsCategory,
-                                                  height: 180.h,
-                                                  width: 300.h,
-                                                  fit: BoxFit.fill,
+                                        child: companyType == CompanyType.umniah
+                                            ? Card(
+                                                color: ColorsApp.gray_light,
+                                                shadowColor: ColorsApp.gray_light,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(5.r),
                                                 ),
-                                                Align(
-                                                  alignment: Alignment.topRight,
+                                                elevation: 0,
+                                                child: Container(
+                                                  height: 200.h,
+                                                  width: 100.h,
                                                   child: Padding(
-                                                    padding: EdgeInsets.only(top: 8.h),
-                                                    child: Image.asset(
-                                                      kAssetsFavorite,
-                                                      height: 30.h,
-                                                      width: 30.w,
-                                                      fit: BoxFit.fitHeight,
+                                                    padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                                    child: SingleChildScrollView(
+                                                      child: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Stack(
+                                                            children: [
+                                                              Image.asset(
+                                                                'assets/images/Image_1.png',
+                                                                height: 80.h,
+                                                                width: 100.w,
+                                                                fit: BoxFit.fitHeight,
+                                                              ),
+                                                              Align(
+                                                                alignment: Alignment.topRight,
+                                                                child: Image.asset(
+                                                                  'assets/images/Favorite.png',
+                                                                  height: 30.h,
+                                                                  width: 30.w,
+                                                                  fit: BoxFit.fitHeight,
+                                                                ),
+                                                              )
+                                                            ],
+                                                          ),
+                                                          // CachedNetworkImage(
+                                                          //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                                          //   height: 50.h,
+                                                          //   width: 50.w,
+                                                          //   fit: BoxFit.contain,
+                                                          //   placeholder: (context, url) => SizedBox(
+                                                          //     height: 50.h,
+                                                          //     width: 50.w,
+                                                          //   ),
+                                                          //   errorWidget: (context, url, error) => SizedBox(
+                                                          //     height: 50.h,
+                                                          //     width: 50.w,
+                                                          //   ),
+                                                          // ),
+                                                          SizedBox(
+                                                            height: 10.h,
+                                                          ),
+                                                          Text(
+                                                            '${e.categoryName}',
+                                                            maxLines: 2,
+                                                            textAlign: TextAlign.center,
+                                                            style: kStyleTextTitle,
+                                                          ),
+                                                          SizedBox(
+                                                            height: 10.h,
+                                                          ),
+                                                          CustomButton(
+                                                            borderRadius: 8,
+                                                            width: 50.w,
+                                                            margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                                            child: Text(
+                                                              'View Items'.tr,
+                                                              style: kStyleTextButton,
+                                                            ),
+                                                            fixed: true,
+                                                            backgroundColor: ColorsApp.primaryColor,
+                                                            onPressed: () async {
+                                                              _selectedCategoryId = e.id;
+                                                              _isShowItem = true;
+                                                              setState(() {});
+                                                            },
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                                Column(
-                                                  children: [
-                                                    SizedBox(height: 115.h),
-                                                    Opacity(
-                                                      opacity: 0.7,
-                                                      child: Container(
-                                                        decoration: BoxDecoration(color: ColorsApp.orange_light, borderRadius: BorderRadius.all(Radius.circular(5.r))),
-                                                        height: 65.h,
-                                                        child: Center(
-                                                          child: Text(
-                                                            e.categoryName,
-                                                            maxLines: 2,
-                                                            overflow: TextOverflow.ellipsis,
-                                                            textAlign: TextAlign.center,
-                                                            style: kStyleButtonPayment.copyWith(color: ColorsApp.orange_2, fontSize: 20.sp),
+                                              )
+                                            : Card(
+                                                color: ColorsApp.gray_light,
+                                                shadowColor: ColorsApp.gray_light,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(5.r),
+                                                ),
+                                                elevation: 0,
+                                                child: Padding(
+                                                  padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                                  child: Stack(
+                                                    children: [
+                                                      CachedNetworkImage(
+                                                        imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                                        height: 120.h,
+                                                        width: 300.h,
+                                                        fit: BoxFit.cover,
+                                                        placeholder: (context, url) => Image.asset(
+                                                          kAssetsCategory,
+                                                          height: 120.h,
+                                                          width: 300.h,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                        errorWidget: (context, url, error) => Image.asset(
+                                                          kAssetsCategory,
+                                                          height: 120.h,
+                                                          width: 300.h,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                      Align(
+                                                        alignment: Alignment.topRight,
+                                                        child: Padding(
+                                                          padding: EdgeInsets.only(top: 8.h),
+                                                          child: Image.asset(
+                                                            kAssetsFavorite,
+                                                            height: 30.h,
+                                                            width: 30.w,
+                                                            fit: BoxFit.fitHeight,
                                                           ),
                                                         ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                      Column(
+                                                        children: [
+                                                          SizedBox(height: 55.h),
+                                                          Opacity(
+                                                            opacity: 0.7,
+                                                            child: Container(
+                                                              decoration: BoxDecoration(color: ColorsApp.orangeLight, borderRadius: BorderRadius.all(Radius.circular(5.r))),
+                                                              height: 65.h,
+                                                              child: Center(
+                                                                child: Text(
+                                                                  e.categoryName,
+                                                                  maxLines: 2,
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                  textAlign: TextAlign.center,
+                                                                  style: kStyleButtonPayment.copyWith(color: ColorsApp.primaryColor, fontSize: 20.sp),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
+                                              ),
                                       ))
                                   .toList(),
                         ),
@@ -1871,7 +1950,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                     Container(
                       width: 130.w,
-                      color: ColorsApp.orange_light,
+                      color: ColorsApp.orangeLight,
                       padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
                       child: Column(
                         children: [
@@ -1886,7 +1965,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                     width: 50.w,
                                     height: 30.h,
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: ColorsApp.orange_2),
+                                      border: Border.all(color: ColorsApp.primaryColor),
                                       borderRadius: BorderRadius.circular(
                                         10.0,
                                       ),
@@ -1958,7 +2037,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                   child: Container(
                                     height: 30.h,
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: ColorsApp.orange_2),
+                                      border: Border.all(color: ColorsApp.primaryColor),
                                       borderRadius: BorderRadius.circular(
                                         10.0,
                                       ),
@@ -2047,7 +2126,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                   width: 50.w,
                                   height: 30.h,
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: ColorsApp.orange_2),
+                                    border: Border.all(color: ColorsApp.primaryColor),
                                     borderRadius: BorderRadius.circular(
                                       10.0,
                                     ),
@@ -2081,7 +2160,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                     style: kStyleTextButton,
                                   ),
                                   fixed: true,
-                                  backgroundColor: ColorsApp.red_light,
+                                  backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.redLight,
                                   onPressed: () async {
                                     if (_cartModel.items.isNotEmpty) {
                                       var result = await _showAddParkDialog();
@@ -2155,214 +2234,211 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ),
                                       ),
                                       const Divider(color: Colors.grey, height: 1),
-                                      SizedBox(
-                                        height: 300.h,
-                                        child: ListView.separated(
-                                          itemCount: _cartModel.items.length,
-                                          shrinkWrap: true,
-                                          physics: const NeverScrollableScrollPhysics(),
-                                          separatorBuilder: (context, index) => _cartModel.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
-                                          itemBuilder: (context, index) {
-                                            if (_cartModel.items[index].parentUuid.isNotEmpty) {
-                                              return Container();
-                                            } else {
-                                              var subItem = _cartModel.items.where((element) => element.parentUuid == _cartModel.items[index].uuid).toList();
-                                              return InkWell(
-                                                onTap: () {
-                                                  _indexItemSelect = index;
-                                                  setState(() {});
-                                                },
-                                                onLongPress: () async {
-                                                  var note = await _showNoteItemDialog(note: _cartModel.items[index].note);
-                                                  _cartModel.items[index].note = note;
-                                                },
-                                                child: Container(
-                                                  color: index == _indexItemSelect ? ColorsApp.primaryColor : null,
-                                                  child: Column(
-                                                    children: [
-                                                      Padding(
-                                                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                                        child: Row(
-                                                          children: [
-                                                            Expanded(
-                                                              child: Text(
-                                                                '${_cartModel.items[index].qty}',
-                                                                style: kStyleDataTable,
-                                                                textAlign: TextAlign.center,
-                                                              ),
+                                      ListView.separated(
+                                        itemCount: _cartModel.items.length,
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        separatorBuilder: (context, index) => _cartModel.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
+                                        itemBuilder: (context, index) {
+                                          if (_cartModel.items[index].parentUuid.isNotEmpty) {
+                                            return Container();
+                                          } else {
+                                            var subItem = _cartModel.items.where((element) => element.parentUuid == _cartModel.items[index].uuid).toList();
+                                            return InkWell(
+                                              onTap: () {
+                                                _indexItemSelect = index;
+                                                setState(() {});
+                                              },
+                                              onLongPress: () async {
+                                                var note = await _showNoteItemDialog(note: _cartModel.items[index].note);
+                                                _cartModel.items[index].note = note;
+                                              },
+                                              child: Container(
+                                                color: index == _indexItemSelect ? ColorsApp.primaryColor : null,
+                                                child: Column(
+                                                  children: [
+                                                    Padding(
+                                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                                      child: Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: Text(
+                                                              '${_cartModel.items[index].qty}',
+                                                              style: kStyleDataTable,
+                                                              textAlign: TextAlign.center,
                                                             ),
-                                                            Expanded(
-                                                              flex: 3,
-                                                              child: Text(
-                                                                _cartModel.items[index].name,
-                                                                style: kStyleDataTable,
-                                                                textAlign: TextAlign.center,
-                                                              ),
+                                                          ),
+                                                          Expanded(
+                                                            flex: 3,
+                                                            child: Text(
+                                                              _cartModel.items[index].name,
+                                                              style: kStyleDataTable,
+                                                              textAlign: TextAlign.center,
                                                             ),
-                                                            Expanded(
-                                                              child: Text(
-                                                                _cartModel.items[index].priceChange.toStringAsFixed(3),
-                                                                style: kStyleDataTable,
-                                                                textAlign: TextAlign.center,
-                                                              ),
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              _cartModel.items[index].priceChange.toStringAsFixed(3),
+                                                              style: kStyleDataTable,
+                                                              textAlign: TextAlign.center,
                                                             ),
-                                                            Expanded(
-                                                              child: Text(
-                                                                (_cartModel.items[index].priceChange * _cartModel.items[index].qty).toStringAsFixed(3),
-                                                                style: kStyleDataTable,
-                                                                textAlign: TextAlign.center,
-                                                              ),
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              (_cartModel.items[index].priceChange * _cartModel.items[index].qty).toStringAsFixed(3),
+                                                              style: kStyleDataTable,
+                                                              textAlign: TextAlign.center,
                                                             ),
-                                                            PopupMenuButton(
-                                                              itemBuilder: (context) {
-                                                                return [
-                                                                  PopupMenuItem(
-                                                                    value: 'Qty',
-                                                                    child: Text(
-                                                                      'Qty'.tr,
-                                                                      style: kStyleTextDefault,
-                                                                    ),
+                                                          ),
+                                                          PopupMenuButton(
+                                                            itemBuilder: (context) {
+                                                              return [
+                                                                PopupMenuItem(
+                                                                  value: 'Qty',
+                                                                  child: Text(
+                                                                    'Qty'.tr,
+                                                                    style: kStyleTextDefault,
                                                                   ),
-                                                                  PopupMenuItem(
-                                                                    value: 'Modifier',
-                                                                    child: Text(
-                                                                      'Modifier'.tr,
-                                                                      style: kStyleTextDefault,
-                                                                    ),
+                                                                ),
+                                                                PopupMenuItem(
+                                                                  value: 'Modifier',
+                                                                  child: Text(
+                                                                    'Modifier'.tr,
+                                                                    style: kStyleTextDefault,
                                                                   ),
-                                                                  PopupMenuItem(
-                                                                    value: 'Void',
-                                                                    child: Text(
-                                                                      'Void'.tr,
-                                                                      style: kStyleTextDefault,
-                                                                    ),
+                                                                ),
+                                                                PopupMenuItem(
+                                                                  value: 'Void',
+                                                                  child: Text(
+                                                                    'Void'.tr,
+                                                                    style: kStyleTextDefault,
                                                                   ),
-                                                                  PopupMenuItem(
-                                                                    value: 'Line Discount',
-                                                                    child: Text(
-                                                                      'Line Discount'.tr,
-                                                                      style: kStyleTextDefault,
-                                                                    ),
+                                                                ),
+                                                                PopupMenuItem(
+                                                                  value: 'Line Discount',
+                                                                  child: Text(
+                                                                    'Line Discount'.tr,
+                                                                    style: kStyleTextDefault,
                                                                   ),
-                                                                  PopupMenuItem(
-                                                                    value: 'Price Change',
-                                                                    child: Text(
-                                                                      'Price Change'.tr,
-                                                                      style: kStyleTextDefault,
-                                                                    ),
+                                                                ),
+                                                                PopupMenuItem(
+                                                                  value: 'Price Change',
+                                                                  child: Text(
+                                                                    'Price Change'.tr,
+                                                                    style: kStyleTextDefault,
                                                                   ),
-                                                                ];
-                                                              },
-                                                              onSelected: (String value) {
-                                                                _actionPopUpItemSelected(value, index);
-                                                              },
-                                                            ),
-                                                          ],
-                                                        ),
+                                                                ),
+                                                              ];
+                                                            },
+                                                            onSelected: (String value) {
+                                                              _actionPopUpItemSelected(value, index);
+                                                            },
+                                                          ),
+                                                        ],
                                                       ),
-                                                      Padding(
-                                                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                                        child: Column(
-                                                          children: [
-                                                            ListView.builder(
-                                                              itemCount: _cartModel.items[index].questions.length,
-                                                              shrinkWrap: true,
-                                                              physics: const NeverScrollableScrollPhysics(),
-                                                              itemBuilder: (context, indexQuestions) => Column(
-                                                                children: [
-                                                                  Row(
-                                                                    children: [
-                                                                      Expanded(
-                                                                        child: Text(
-                                                                          _cartModel.items[index].questions[indexQuestions].question.trim(),
-                                                                          style: kStyleDataTableModifiers,
-                                                                        ),
+                                                    ),
+                                                    Padding(
+                                                      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                                      child: Column(
+                                                        children: [
+                                                          ListView.builder(
+                                                            itemCount: _cartModel.items[index].questions.length,
+                                                            shrinkWrap: true,
+                                                            physics: const NeverScrollableScrollPhysics(),
+                                                            itemBuilder: (context, indexQuestions) => Column(
+                                                              children: [
+                                                                Row(
+                                                                  children: [
+                                                                    Expanded(
+                                                                      child: Text(
+                                                                        _cartModel.items[index].questions[indexQuestions].question.trim(),
+                                                                        style: kStyleDataTableModifiers,
                                                                       ),
-                                                                    ],
-                                                                  ),
-                                                                  ListView.builder(
-                                                                    itemCount: _cartModel.items[index].questions[indexQuestions].modifiers.length,
-                                                                    shrinkWrap: true,
-                                                                    physics: const NeverScrollableScrollPhysics(),
-                                                                    itemBuilder: (context, indexModifiers) => Column(
-                                                                      children: [
-                                                                        Row(
-                                                                          children: [
-                                                                            Expanded(
-                                                                              child: Text(
-                                                                                '* ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
-                                                                                style: kStyleDataTableModifiers,
-                                                                              ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                ListView.builder(
+                                                                  itemCount: _cartModel.items[index].questions[indexQuestions].modifiers.length,
+                                                                  shrinkWrap: true,
+                                                                  physics: const NeverScrollableScrollPhysics(),
+                                                                  itemBuilder: (context, indexModifiers) => Column(
+                                                                    children: [
+                                                                      Row(
+                                                                        children: [
+                                                                          Expanded(
+                                                                            child: Text(
+                                                                              '* ${_cartModel.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
+                                                                              style: kStyleDataTableModifiers,
                                                                             ),
-                                                                          ],
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            ListView.builder(
-                                                              itemCount: _cartModel.items[index].modifiers.length,
-                                                              shrinkWrap: true,
-                                                              physics: const NeverScrollableScrollPhysics(),
-                                                              itemBuilder: (context, indexModifiers) => Row(
-                                                                children: [
-                                                                  Expanded(
-                                                                    child: Text(
-                                                                      '${_cartModel.items[index].modifiers[indexModifiers].name}\n* ${_cartModel.items[index].modifiers[indexModifiers].modifier}',
-                                                                      style: kStyleDataTableModifiers,
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            if (subItem.isNotEmpty)
-                                                              ListView.builder(
-                                                                itemCount: subItem.length,
-                                                                shrinkWrap: true,
-                                                                physics: const NeverScrollableScrollPhysics(),
-                                                                itemBuilder: (context, indexSubItem) {
-                                                                  return Row(
-                                                                    children: [
-                                                                      Expanded(
-                                                                        flex: 4,
-                                                                        child: Text(
-                                                                          subItem[indexSubItem].name,
-                                                                          style: kStyleDataTableModifiers,
-                                                                          textAlign: TextAlign.center,
-                                                                          maxLines: 1,
-                                                                          overflow: TextOverflow.ellipsis,
-                                                                        ),
-                                                                      ),
-                                                                      Expanded(
-                                                                        child: Text(
-                                                                          subItem[indexSubItem].priceChange.toStringAsFixed(3),
-                                                                          style: kStyleDataTableModifiers,
-                                                                          textAlign: TextAlign.center,
-                                                                        ),
-                                                                      ),
-                                                                      Expanded(
-                                                                        child: Text(
-                                                                          (subItem[indexSubItem].priceChange * subItem[indexSubItem].qty).toStringAsFixed(3),
-                                                                          style: kStyleDataTableModifiers,
-                                                                          textAlign: TextAlign.center,
-                                                                        ),
+                                                                          ),
+                                                                        ],
                                                                       ),
                                                                     ],
-                                                                  );
-                                                                },
-                                                              ),
-                                                          ],
-                                                        ),
-                                                      )
-                                                    ],
-                                                  ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          ListView.builder(
+                                                            itemCount: _cartModel.items[index].modifiers.length,
+                                                            shrinkWrap: true,
+                                                            physics: const NeverScrollableScrollPhysics(),
+                                                            itemBuilder: (context, indexModifiers) => Row(
+                                                              children: [
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    '${_cartModel.items[index].modifiers[indexModifiers].name}\n* ${_cartModel.items[index].modifiers[indexModifiers].modifier}',
+                                                                    style: kStyleDataTableModifiers,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          if (subItem.isNotEmpty)
+                                                            ListView.builder(
+                                                              itemCount: subItem.length,
+                                                              shrinkWrap: true,
+                                                              physics: const NeverScrollableScrollPhysics(),
+                                                              itemBuilder: (context, indexSubItem) {
+                                                                return Row(
+                                                                  children: [
+                                                                    Expanded(
+                                                                      flex: 4,
+                                                                      child: Text(
+                                                                        subItem[indexSubItem].name,
+                                                                        style: kStyleDataTableModifiers,
+                                                                        textAlign: TextAlign.center,
+                                                                        maxLines: 1,
+                                                                        overflow: TextOverflow.ellipsis,
+                                                                      ),
+                                                                    ),
+                                                                    Expanded(
+                                                                      child: Text(
+                                                                        subItem[indexSubItem].priceChange.toStringAsFixed(3),
+                                                                        style: kStyleDataTableModifiers,
+                                                                        textAlign: TextAlign.center,
+                                                                      ),
+                                                                    ),
+                                                                    Expanded(
+                                                                      child: Text(
+                                                                        (subItem[indexSubItem].priceChange * subItem[indexSubItem].qty).toStringAsFixed(3),
+                                                                        style: kStyleDataTableModifiers,
+                                                                        textAlign: TextAlign.center,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                );
+                                                              },
+                                                            ),
+                                                        ],
+                                                      ),
+                                                    )
+                                                  ],
                                                 ),
-                                              );
-                                            }
-                                          },
-                                        ),
+                                              ),
+                                            );
+                                          }
+                                        },
                                       ),
                                     ],
                                   ),
@@ -2393,7 +2469,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                   margin: EdgeInsets.symmetric(vertical: 4.h),
                                   padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
                                   decoration: BoxDecoration(
-                                    color: ColorsApp.orange_light,
+                                    color: ColorsApp.orangeLight,
                                     border: Border.all(),
                                     borderRadius: BorderRadius.circular(3.r),
                                   ),
@@ -2546,7 +2622,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                       style: kStyleTextButton,
                                     ),
                                     fixed: true,
-                                    backgroundColor: ColorsApp.orange_2,
+                                    backgroundColor: ColorsApp.primaryColor,
                                     onPressed: () async {
                                       if (_cartModel.items.isNotEmpty) {
                                         Get.to(() => PayScreen(
@@ -2568,7 +2644,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                       style: kStyleTextButton,
                                     ),
                                     fixed: true,
-                                    backgroundColor: ColorsApp.orange_2,
+                                    backgroundColor: ColorsApp.primaryColor,
                                     onPressed: () async {
                                       if (_cartModel.items.isNotEmpty) {
                                         Get.to(() => PayScreen(
@@ -2591,7 +2667,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     fixed: true,
-                                    backgroundColor: ColorsApp.orange_2,
+                                    backgroundColor: ColorsApp.primaryColor,
                                     onPressed: () {
                                       if (_cartModel.items.isNotEmpty) {
                                         Get.to(() => PayScreen(

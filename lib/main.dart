@@ -39,6 +39,7 @@ class _RestaurantSystemState extends State<RestaurantSystem> {
     // TODO: implement initState
     super.initState();
     loadAssets();
+    loadColor();
     Utils.packageInfo().then((value) {
       packageInfo = value;
     });

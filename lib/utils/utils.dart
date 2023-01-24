@@ -208,7 +208,7 @@ class Utils {
                         Expanded(
                           child: CustomButton(
                             fixed: true,
-                            backgroundColor: ColorsApp.red_light,
+                            backgroundColor: ColorsApp.redLight,
                             child: Text(
                               'Exit'.tr,
                               style: kStyleTextButton,

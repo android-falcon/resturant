@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/enums/enum_company_type.dart';
 
 class NumPad extends StatelessWidget {
   final TextEditingController? controller;
@@ -176,7 +177,7 @@ class NumPad extends StatelessWidget {
                     'Exit'.tr,
                     style: kStyleTextButton,
                   ),
-                  backgroundColor: ColorsApp.red_light,
+                  backgroundColor:companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.redLight,
                   onPressed: onExit,
                 ),
               ),

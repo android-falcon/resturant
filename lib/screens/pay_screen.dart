@@ -25,6 +25,7 @@ import 'package:restaurant_system/socket/kitchen_socket_client.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/credit_card_type_detector.dart';
+import 'package:restaurant_system/utils/enums/enum_company_type.dart';
 import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
@@ -408,7 +409,7 @@ class _PayScreenState extends State<PayScreen> {
                     onPressed: () {
 
                     },
-                    icon:  Icon(Icons.print,color: ColorsApp.orange_2,size: 30,),
+                    icon:  Icon(Icons.print,color: ColorsApp.primaryColor,size: 30,),
                   ),
                   SizedBox(width: 4.w),
                 ],
@@ -425,7 +426,7 @@ class _PayScreenState extends State<PayScreen> {
                           margin: EdgeInsets.all(10),
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(5.r),
-                              border: Border.all(color: ColorsApp.orange_2)),
+                              border: Border.all(color: ColorsApp.primaryColor)),
                           height: Get.height * 0.4,
                           padding: EdgeInsets.all(16.h),
                           child: Align(
@@ -448,7 +449,7 @@ class _PayScreenState extends State<PayScreen> {
                                         visible: (widget.openTypeDialog != 0),
                                         child: Expanded(
                                           child: CustomButton(
-                                            backgroundColor: ColorsApp.orange_2,
+                                            backgroundColor: ColorsApp.primaryColor,
                                             margin: EdgeInsets.all(10.h),
                                             height: 50.h,
                                             child: Text(
@@ -586,7 +587,7 @@ class _PayScreenState extends State<PayScreen> {
                             margin: EdgeInsets.symmetric(vertical: 4.h),
                             padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              border: Border.all(color: ColorsApp.orange_2),
+                              border: Border.all(color: ColorsApp.primaryColor),
                               borderRadius: BorderRadius.circular(3.r),
                             ),
                             child: Column(
@@ -714,7 +715,7 @@ class _PayScreenState extends State<PayScreen> {
                                     ),
                                     Text(
                                       widget.cart.amountDue.toStringAsFixed(3),
-                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red_light, fontWeight: FontWeight.bold),
+                                      style: kStyleTextDefault.copyWith(color: companyType == CompanyType.umniah ? ColorsApp.black : ColorsApp.redLight, fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -728,7 +729,7 @@ class _PayScreenState extends State<PayScreen> {
                                     ),
                                     Text(
                                       (widget.cart.cash + widget.cart.credit + widget.cart.cheque + widget.cart.gift + widget.cart.coupon + widget.cart.point).toStringAsFixed(3),
-                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red_light, fontWeight: FontWeight.bold),
+                                      style: kStyleTextDefault.copyWith(color: companyType == CompanyType.umniah ? ColorsApp.black : ColorsApp.redLight, fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -742,7 +743,7 @@ class _PayScreenState extends State<PayScreen> {
                                     ),
                                     Text(
                                       remaining.toStringAsFixed(3),
-                                      style: kStyleTextDefault.copyWith(color: ColorsApp.red_light, fontWeight: FontWeight.bold),
+                                      style: kStyleTextDefault.copyWith(color: companyType == CompanyType.umniah ? ColorsApp.black : ColorsApp.redLight, fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -758,7 +759,7 @@ class _PayScreenState extends State<PayScreen> {
                                             style: kStyleTextButton,
                                           ),
                                           fixed: true,
-                                          backgroundColor: ColorsApp.orange_2,
+                                          backgroundColor: ColorsApp.primaryColor,
                                           onPressed: () {
                                             _finishInvoice();
                                           },
