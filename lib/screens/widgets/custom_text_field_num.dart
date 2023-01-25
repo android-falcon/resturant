@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/enums/enum_company_type.dart';
 import 'package:restaurant_system/utils/text_input_formatters.dart';
 
 class CustomTextFieldNum extends StatelessWidget {
@@ -54,8 +56,9 @@ class CustomTextFieldNum extends StatelessWidget {
           filled: true,
           contentPadding: const EdgeInsets.only(top: -14.0),
           hintStyle: Theme.of(context).textTheme.bodyText2!.copyWith(color: textColor),
-          border: InputBorder.none,
-          focusedBorder: InputBorder.none,
+          border: companyType == CompanyType.umniah ? OutlineInputBorder(borderSide: BorderSide(color: ColorsApp.primaryColor)) : InputBorder.none,
+          focusedBorder: companyType == CompanyType.umniah ? OutlineInputBorder(borderSide: BorderSide(color: ColorsApp.primaryColor)) : InputBorder.none,
+          enabledBorder:  companyType == CompanyType.umniah ? OutlineInputBorder(borderSide: BorderSide(color: ColorsApp.primaryColor)) : InputBorder.none,
         ),
         enabled: enabled,
         onTap: onTap,

@@ -233,9 +233,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<int?> _showCashInOutTypeDialog({required InOutType kindType}) async {
     int kind = 0;
-    if(kindType == InOutType.payIn){
+    if (kindType == InOutType.payIn) {
       kind = 0;
-    } else if(kindType == InOutType.payOut){
+    } else if (kindType == InOutType.payOut) {
       kind = 1;
     }
     int? _selectedTypeId;
@@ -1190,115 +1190,92 @@ class _HomeScreenState extends State<HomeScreen> {
         gestureDetectorOnTap: () {},
         builder: (context, setState, constraints) => Column(
           children: [
-            Container(
-              width: 1.sw,
-              height: 200.h,
-              constraints: BoxConstraints(maxHeight: Get.height, maxWidth: Get.width),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3.r),
-                border: Border.all(width: 2, color: ColorsApp.primaryColor),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  '${'Voucher Number'.tr} : ',
-                                  textAlign: TextAlign.end,
-                                  style: kStyleTextDefault,
-                                ),
-                              ),
-                              Expanded(
-                                child: CustomTextFieldNum(
-                                  controller: _controllerVoucherNumber,
-                                  fillColor: Colors.white,
-
-                                  decimal: false,
-                                  validator: (value) {
-                                    return Validation.isRequired(value);
-                                  },
-                                  onChanged: (value) {
-                                    _reprintModel = null;
-                                    setState(() {});
-                                  },
-                                ),
-                              ),
-                              CustomButton(
-                                fixed: true,
-                                child: Text('Show'.tr),
-                                backgroundColor: ColorsApp.orange,
-                                onPressed: () async {
-                                  FocusScope.of(context).requestFocus(FocusNode());
-                                  _reprintModel = await RestApi.getInvoice(invNo: int.parse(_controllerVoucherNumber.text));
-                                  _reprintModel = Utils.calculateOrder(cart: _reprintModel!, orderType: _reprintModel!.orderType, invoiceKind: InvoiceKind.invoicePay);
-                                  setState(() {});
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  '${'Original Data'.tr} : ',
-                                  textAlign: TextAlign.end,
-                                  style: kStyleTextDefault,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  _reprintModel == null ? '' : DateFormat('yyyy-MM-dd').format(DateTime.parse(_reprintModel!.invDate)),
-                                  style: kStyleTextDefault,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  '${'Original Time'.tr} : ',
-                                  textAlign: TextAlign.end,
-                                  style: kStyleTextDefault,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  _reprintModel == null ? '' : DateFormat('hh:mm:ss a').format(DateTime.parse(_reprintModel!.invDate)),
-                                  style: kStyleTextDefault,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 10.w),
-                  ],
+            Text(
+              'Reprint Invoice'.tr,
+              textAlign: TextAlign.end,
+              style: kStyleTextTitle.copyWith(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 30.h),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${'Voucher Number'.tr} : ',
+                    textAlign: TextAlign.center,
+                    style: kStyleTextDefault,
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CustomTextFieldNum(
+                          controller: _controllerVoucherNumber,
+                          fillColor: Colors.white,
+                          decimal: false,
+                          validator: (value) {
+                            return Validation.isRequired(value);
+                          },
+                          onChanged: (value) {
+                            _reprintModel = null;
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      CustomButton(
+                        fixed: true,
+                        child: Text('Show'.tr),
+                        backgroundColor: ColorsApp.orange,
+                        onPressed: () async {
+                          FocusScope.of(context).requestFocus(FocusNode());
+                          _reprintModel = await RestApi.getInvoice(invNo: int.parse(_controllerVoucherNumber.text));
+                          _reprintModel = Utils.calculateOrder(cart: _reprintModel!, orderType: _reprintModel!.orderType, invoiceKind: InvoiceKind.invoicePay);
+                          setState(() {});
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            SizedBox(
-              width: 50.w,
-              height: 70.h,
+            SizedBox(height: 30.h),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${'Original Data'.tr} : ',
+                    textAlign: TextAlign.center,
+                    style: kStyleTextDefault,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    _reprintModel == null ? '' : DateFormat('yyyy-MM-dd').format(DateTime.parse(_reprintModel!.invDate)),
+                    style: kStyleTextDefault,
+                  ),
+                ),
+              ],
             ),
+            SizedBox(height: 30.h),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${'Original Time'.tr} : ',
+                    textAlign: TextAlign.center,
+                    style: kStyleTextDefault,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    _reprintModel == null ? '' : DateFormat('hh:mm:ss a').format(DateTime.parse(_reprintModel!.invDate)),
+                    style: kStyleTextDefault,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 40.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -1309,7 +1286,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: CustomButton(
                     fixed: true,
-                    backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue :  ColorsApp.redLight,
+                    backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.redLight,
                     child: Text(
                       'Exit'.tr,
                       style: kStyleTextButton,

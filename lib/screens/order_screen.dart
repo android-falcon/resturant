@@ -339,46 +339,40 @@ class _OrderScreenState extends State<OrderScreen> {
               style: kStyleTextTitle,
             ),
             const Divider(thickness: 2),
-            Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                    15.0,
+            StaggeredGrid.count(
+              crossAxisCount: 3,
+              children: [
+                CustomButton(
+                  margin: EdgeInsets.symmetric(horizontal: 4.w),
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Text(
+                    'No Delivery Company'.tr,
+                    style: kStyleTextDefault,
                   ),
-                  border: Border.all(color: ColorsApp.primaryColor)),
-              height: 250.h,
-              child: StaggeredGrid.count(
-                crossAxisCount: 3,
-                children: [
-                  CustomButton(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Text(
-                      'No Delivery Company'.tr,
-                      style: kStyleTextDefault,
-                    ),
-                    backgroundColor: ColorsApp.backgroundDialog,
-                    onPressed: () {
-                      _cartModel.deliveryCompanyId = 0;
-                      Get.back();
-                    },
-                  ),
-                  ...allDataModel.deliveryCompanyModel
-                      .map((e) => CustomButton(
-                            padding: const EdgeInsets.symmetric(vertical: 24),
-                            child: Text(
-                              e.coName,
-                              style: kStyleTextDefault,
-                            ),
-                            backgroundColor: ColorsApp.backgroundDialog,
-                            onPressed: () {
-                              _cartModel.deliveryCompanyId = e.id;
-                              Get.back();
-                            },
-                          ))
-                      .toList()
-                ],
-              ),
+                  backgroundColor:  ColorsApp.primaryColor.withOpacity(0.2),
+                  onPressed: () {
+                    _cartModel.deliveryCompanyId = 0;
+                    Get.back();
+                  },
+                ),
+                ...allDataModel.deliveryCompanyModel
+                    .map((e) => CustomButton(
+                  margin: EdgeInsets.symmetric(horizontal: 4.w),
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Text(
+                            e.coName,
+                            style: kStyleTextDefault,
+                          ),
+                          backgroundColor:  ColorsApp.primaryColor.withOpacity(0.2),
+                          onPressed: () {
+                            _cartModel.deliveryCompanyId = e.id;
+                            Get.back();
+                          },
+                        ))
+                    .toList()
+              ],
             ),
-            SizedBox(height: 50.h),
+            SizedBox(height: 80.h),
             Row(
               children: [
                 Expanded(child: Container()),
@@ -1801,79 +1795,73 @@ class _OrderScreenState extends State<OrderScreen> {
                                                   borderRadius: BorderRadius.circular(5.r),
                                                 ),
                                                 elevation: 0,
-                                                child: Container(
-                                                  height: 200.h,
-                                                  width: 100.h,
-                                                  child: Padding(
-                                                    padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
-                                                    child: SingleChildScrollView(
-                                                      child: Column(
-                                                        mainAxisSize: MainAxisSize.min,
+                                                child: Padding(
+                                                  padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Stack(
                                                         children: [
-                                                          Stack(
-                                                            children: [
-                                                              Image.asset(
-                                                                'assets/images/Image_1.png',
-                                                                height: 80.h,
-                                                                width: 100.w,
-                                                                fit: BoxFit.fitHeight,
-                                                              ),
-                                                              Align(
-                                                                alignment: Alignment.topRight,
-                                                                child: Image.asset(
-                                                                  'assets/images/Favorite.png',
-                                                                  height: 30.h,
-                                                                  width: 30.w,
-                                                                  fit: BoxFit.fitHeight,
-                                                                ),
-                                                              )
-                                                            ],
+                                                          Image.asset(
+                                                            'assets/images/Image_1.png',
+                                                            height: 80.h,
+                                                            width: 100.w,
+                                                            fit: BoxFit.fitHeight,
                                                           ),
-                                                          // CachedNetworkImage(
-                                                          //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
-                                                          //   height: 50.h,
-                                                          //   width: 50.w,
-                                                          //   fit: BoxFit.contain,
-                                                          //   placeholder: (context, url) => SizedBox(
-                                                          //     height: 50.h,
-                                                          //     width: 50.w,
-                                                          //   ),
-                                                          //   errorWidget: (context, url, error) => SizedBox(
-                                                          //     height: 50.h,
-                                                          //     width: 50.w,
-                                                          //   ),
-                                                          // ),
-                                                          SizedBox(
-                                                            height: 10.h,
-                                                          ),
-                                                          Text(
-                                                            '${e.categoryName}',
-                                                            maxLines: 2,
-                                                            textAlign: TextAlign.center,
-                                                            style: kStyleTextTitle,
-                                                          ),
-                                                          SizedBox(
-                                                            height: 10.h,
-                                                          ),
-                                                          CustomButton(
-                                                            borderRadius: 8,
-                                                            width: 50.w,
-                                                            margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                                            child: Text(
-                                                              'View Items'.tr,
-                                                              style: kStyleTextButton,
+                                                          Align(
+                                                            alignment: Alignment.topRight,
+                                                            child: Image.asset(
+                                                              'assets/images/Favorite.png',
+                                                              height: 30.h,
+                                                              width: 30.w,
+                                                              fit: BoxFit.fitHeight,
                                                             ),
-                                                            fixed: true,
-                                                            backgroundColor: ColorsApp.primaryColor,
-                                                            onPressed: () async {
-                                                              _selectedCategoryId = e.id;
-                                                              _isShowItem = true;
-                                                              setState(() {});
-                                                            },
-                                                          ),
+                                                          )
                                                         ],
                                                       ),
-                                                    ),
+                                                      // CachedNetworkImage(
+                                                      //   imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                                      //   height: 50.h,
+                                                      //   width: 50.w,
+                                                      //   fit: BoxFit.contain,
+                                                      //   placeholder: (context, url) => SizedBox(
+                                                      //     height: 50.h,
+                                                      //     width: 50.w,
+                                                      //   ),
+                                                      //   errorWidget: (context, url, error) => SizedBox(
+                                                      //     height: 50.h,
+                                                      //     width: 50.w,
+                                                      //   ),
+                                                      // ),
+                                                      SizedBox(
+                                                        height: 10.h,
+                                                      ),
+                                                      Text(
+                                                        '${e.categoryName}',
+                                                        maxLines: 2,
+                                                        textAlign: TextAlign.center,
+                                                        style: kStyleTextTitle,
+                                                      ),
+                                                      SizedBox(
+                                                        height: 10.h,
+                                                      ),
+                                                      CustomButton(
+                                                        borderRadius: 8,
+                                                        width: 50.w,
+                                                        margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                                        child: Text(
+                                                          'View Items'.tr,
+                                                          style: kStyleTextButton,
+                                                        ),
+                                                        fixed: true,
+                                                        backgroundColor: ColorsApp.primaryColor,
+                                                        onPressed: () async {
+                                                          _selectedCategoryId = e.id;
+                                                          _isShowItem = true;
+                                                          setState(() {});
+                                                        },
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               )
