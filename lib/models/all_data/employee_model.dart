@@ -34,6 +34,8 @@ class EmployeeModel {
     required this.hasMoveTablePermission,
     required this.hasMergeTablePermission,
     required this.hasChangeTableCaptinPermission,
+    required this.hasReportsPermission,
+    required this.hasSeeEndCashPermission,
     required this.deviceIp,
     required this.devicePort,
   });
@@ -61,6 +63,8 @@ class EmployeeModel {
   bool hasMoveTablePermission;
   bool hasMergeTablePermission;
   bool hasChangeTableCaptinPermission;
+  bool hasReportsPermission;
+  bool hasSeeEndCashPermission;
   String deviceIp;
   int devicePort;
 
@@ -88,6 +92,8 @@ class EmployeeModel {
         hasMoveTablePermission: json["HasMoveTablePermission"] ?? false,
         hasMergeTablePermission: json["HasMergeTablePermission"] ?? false,
         hasChangeTableCaptinPermission: json["HasChangeTableCaptinPermission"] ?? false,
+        hasReportsPermission: json["HasReportsPermission"] ?? false,
+        hasSeeEndCashPermission: json["HasSeeEndCashPermission"] ?? false,
         deviceIp: json["DeviceIp"] ?? "",
         devicePort: json["DevicePort"] ?? 3000,
       );
@@ -116,6 +122,8 @@ class EmployeeModel {
         "HasMoveTablePermission": hasMoveTablePermission,
         "HasMergeTablePermission": hasMergeTablePermission,
         "HasChangeTableCaptinPermission": hasChangeTableCaptinPermission,
+        "HasReportsPermission": hasReportsPermission,
+        "HasSeeEndCashPermission": hasSeeEndCashPermission,
         "DeviceIp": deviceIp,
         "DevicePort": devicePort,
       };

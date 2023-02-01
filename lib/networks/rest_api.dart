@@ -78,9 +78,9 @@ class RestApi {
         receiveTimeout: 30000,
         headers: model.headers.isEmpty
             ? {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ${mySharedPreferences.accessToken}',
-              }
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${mySharedPreferences.accessToken}',
+        }
             : jsonDecode(model.headers),
       ));
       late dio.Response response;
@@ -588,6 +588,20 @@ class RestApi {
         dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
+      List<NetworkTableModel> data = await NetworkTable.queryRowsReports(
+          types: ['PAY_IN_OUT']
+      );
+      var payIn = data.firstWhereOrNull((element) {
+        var body = jsonDecode(element.body);
+        if (body['VoucherNo'] == model.voucherNo && body['PosNo'] == mySharedPreferences.posNo && body['CashNo'] == mySharedPreferences.cashNo) {
+          return true;
+        }
+        return false;
+      });
+      if(payIn != null){
+        developer.log('ana ${payIn.id}');
+        await NetworkTable.delete(payIn.id);
+      }
       final response = await restDio.delete(ApiUrl.DELETE_PAY_IN_OUT, queryParameters: queryParameters);
       _networkLog(response);
       if (networkModel != null) {
@@ -1148,17 +1162,18 @@ class RestApi {
   static Future<void> saveVoidAllItems({required List<CartItemModel> items, required String reason}) async {
     try {
       var body = jsonEncode(items
-          .map((e) => {
-                "CoYear": mySharedPreferences.dailyClose.year,
-                "PosNo": mySharedPreferences.posNo,
-                "CashNo": mySharedPreferences.cashNo,
-                "VoidDate": mySharedPreferences.dailyClose.toIso8601String(),
-                "RowNo": e.rowSerial,
-                "Reason": reason,
-                "ItemID": e.id,
-                "Qty": e.qty,
-                "UserID": mySharedPreferences.employee.id,
-              })
+          .map((e) =>
+      {
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "PosNo": mySharedPreferences.posNo,
+        "CashNo": mySharedPreferences.cashNo,
+        "VoidDate": mySharedPreferences.dailyClose.toIso8601String(),
+        "RowNo": e.rowSerial,
+        "Reason": reason,
+        "ItemID": e.id,
+        "Qty": e.qty,
+        "UserID": mySharedPreferences.employee.id,
+      })
           .toList());
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,

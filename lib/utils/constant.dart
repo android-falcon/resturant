@@ -20,7 +20,7 @@ final kStyleHint = TextStyle(fontWeight: FontWeight.normal, fontSize: 13.sp, col
 final kStyleTextOrange = TextStyle(fontWeight: FontWeight.normal, fontSize: 14.sp, color: ColorsApp.primaryColor);
 
 
-const companyType = CompanyType.umniah;
+const companyType = CompanyType.falcons;
 
 String kAssetsLoginBackground = "";
 String kAssetsDinInBackground = "";

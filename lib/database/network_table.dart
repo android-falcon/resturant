@@ -66,9 +66,9 @@ class NetworkTable {
     return List<NetworkTableModel>.from(query.map((e) => NetworkTableModel.fromMap(e))); // LIKE '%$name%'
   }
 
-  static Future<List<NetworkTableModel>> queryRowsReports({required List<String> types, required int fromDate, required int toDate}) async {
+  static Future<List<NetworkTableModel>> queryRowsReports({required List<String> types, int? fromDate, int? toDate}) async {
     Database db = await DatabaseHelper.instance.database;
-    var query = await db.query(tableName, where: "((${types.map((e) => "$columnType = '$e'").toList().join(' OR ')}) AND $columnDailyClose >= $fromDate AND $columnDailyClose <= $toDate)"); //
+    var query = await db.query(tableName, where: "((${types.map((e) => "$columnType = '$e'").toList().join(' OR ')}) ${fromDate != null ? 'AND $columnDailyClose >= $fromDate' : ''} ${toDate != null ? 'AND $columnDailyClose <= $toDate' : ''})"); //
     return List<NetworkTableModel>.from(query.map((e) => NetworkTableModel.fromMap(e))); // LIKE '%$name%'
   }
 

@@ -121,9 +121,20 @@ class _HomeScreenState extends State<HomeScreen> {
           name: 'End Cash'.tr,
           icon: const Icon(Icons.pin_end_rounded, color: ColorsApp.gray),
           onTab: () async {
-            EndCashModel? model = await RestApi.getEndCash();
-            if (model != null) {
-              _showEndCashDialog(endCash: model);
+            if (mySharedPreferences.employee.hasSeeEndCashPermission) {
+              _showInOutDialog(type: InOutType.payIn);
+            } else {
+              EmployeeModel? employee = await Utils.showLoginDialog();
+              if (employee != null) {
+                if (employee.hasSeeEndCashPermission) {
+                  EndCashModel? model = await RestApi.getEndCash();
+                  if (model != null) {
+                    _showEndCashDialog(endCash: model);
+                  }
+                } else {
+                  Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                }
+              }
             }
           },
         ),
@@ -196,6 +207,18 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: const Icon(Icons.analytics_rounded, color: ColorsApp.gray),
           onTab: () async {
             Get.to(() => const ReportsScreen());
+            // if (mySharedPreferences.employee.hasReportsPermission) {
+            //   _showInOutDialog(type: InOutType.payIn);
+            // } else {
+            //   EmployeeModel? employee = await Utils.showLoginDialog();
+            //   if (employee != null) {
+            //     if (employee.hasReportsPermission) {
+            //       Get.to(() => const ReportsScreen());
+            //     } else {
+            //       Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+            //     }
+            //   }
+            // }
           },
         ),
         HomeMenu(

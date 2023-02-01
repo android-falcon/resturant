@@ -349,7 +349,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     'No Delivery Company'.tr,
                     style: kStyleTextDefault,
                   ),
-                  backgroundColor:  ColorsApp.primaryColor.withOpacity(0.2),
+                  backgroundColor: ColorsApp.primaryColor.withOpacity(0.2),
                   onPressed: () {
                     _cartModel.deliveryCompanyId = 0;
                     Get.back();
@@ -357,13 +357,13 @@ class _OrderScreenState extends State<OrderScreen> {
                 ),
                 ...allDataModel.deliveryCompanyModel
                     .map((e) => CustomButton(
-                  margin: EdgeInsets.symmetric(horizontal: 4.w),
+                          margin: EdgeInsets.symmetric(horizontal: 4.w),
                           padding: const EdgeInsets.symmetric(vertical: 24),
                           child: Text(
                             e.coName,
                             style: kStyleTextDefault,
                           ),
-                          backgroundColor:  ColorsApp.primaryColor.withOpacity(0.2),
+                          backgroundColor: ColorsApp.primaryColor.withOpacity(0.2),
                           onPressed: () {
                             _cartModel.deliveryCompanyId = e.id;
                             Get.back();
@@ -1685,22 +1685,26 @@ class _OrderScreenState extends State<OrderScreen> {
                                             children: [
                                               Stack(
                                                 children: [
-                                                  // e.itemPicture.isNotEmpty?
-                                                  //   CachedNetworkImage(
-                                                  //     imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
-                                                  //     height: 80.h,
-                                                  //       width: 300.h,
-                                                  //       fit: BoxFit.fill,
-                                                  //
-                                                  //     placeholder: (context, url) => Container(),
-                                                  //     errorWidget: (context, url, error) => Container(),
-                                                  //   ):
-                                                  Image.asset(
-                                                    kAssetsItem,
-                                                    height: 80.h,
-                                                    width: 300.h,
-                                                    fit: BoxFit.fill,
-                                                  ),
+                                                  e.itemPicture.isNotEmpty
+                                                      ? CachedNetworkImage(
+                                                          imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
+                                                          height: 80.h,
+                                                          width: 300.h,
+                                                          fit: BoxFit.fill,
+                                                          placeholder: (context, url) => Container(),
+                                                          errorWidget: (context, url, error) => Image.asset(
+                                                            kAssetsItem,
+                                                            height: 80.h,
+                                                            width: 300.h,
+                                                            fit: BoxFit.fill,
+                                                          ),
+                                                        )
+                                                      : Image.asset(
+                                                          kAssetsItem,
+                                                          height: 80.h,
+                                                          width: 300.h,
+                                                          fit: BoxFit.fill,
+                                                        ),
                                                   Padding(
                                                     padding: EdgeInsets.only(top: 8.h),
                                                     child: Align(
@@ -1802,21 +1806,29 @@ class _OrderScreenState extends State<OrderScreen> {
                                                     children: [
                                                       Stack(
                                                         children: [
-                                                          Image.asset(
-                                                            'assets/images/Image_1.png',
-                                                            height: 80.h,
-                                                            width: 100.w,
-                                                            fit: BoxFit.fitHeight,
-                                                          ),
                                                           Align(
                                                             alignment: Alignment.topRight,
-                                                            child: Image.asset(
-                                                              'assets/images/Favorite.png',
-                                                              height: 30.h,
-                                                              width: 30.w,
-                                                              fit: BoxFit.fitHeight,
-                                                            ),
-                                                          )
+                                                            child: e.categoryPic.isNotEmpty
+                                                                ? CachedNetworkImage(
+                                                                    imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                                                    height: 80.h,
+                                                                    width: 300.h,
+                                                                    fit: BoxFit.fill,
+                                                                    placeholder: (context, url) => Container(),
+                                                                    errorWidget: (context, url, error) => Image.asset(
+                                                                      kAssetsCategory,
+                                                                      height: 80.h,
+                                                                      width: 300.h,
+                                                                      fit: BoxFit.fill,
+                                                                    ),
+                                                                  )
+                                                                : Image.asset(
+                                                                    kAssetsCategory,
+                                                                    height: 80.h,
+                                                                    width: 100.w,
+                                                                    fit: BoxFit.fitHeight,
+                                                                  ),
+                                                          ),
                                                         ],
                                                       ),
                                                       // CachedNetworkImage(
