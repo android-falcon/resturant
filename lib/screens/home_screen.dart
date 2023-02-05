@@ -206,19 +206,18 @@ class _HomeScreenState extends State<HomeScreen> {
           name: 'Reports'.tr,
           icon: const Icon(Icons.analytics_rounded, color: ColorsApp.gray),
           onTab: () async {
-            Get.to(() => const ReportsScreen());
-            // if (mySharedPreferences.employee.hasReportsPermission) {
-            //   _showInOutDialog(type: InOutType.payIn);
-            // } else {
-            //   EmployeeModel? employee = await Utils.showLoginDialog();
-            //   if (employee != null) {
-            //     if (employee.hasReportsPermission) {
-            //       Get.to(() => const ReportsScreen());
-            //     } else {
-            //       Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
-            //     }
-            //   }
-            // }
+            if (mySharedPreferences.employee.hasReportsPermission) {
+              _showInOutDialog(type: InOutType.payIn);
+            } else {
+              EmployeeModel? employee = await Utils.showLoginDialog();
+              if (employee != null) {
+                if (employee.hasReportsPermission) {
+                  Get.to(() => const ReportsScreen());
+                } else {
+                  Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                }
+              }
+            }
           },
         ),
         HomeMenu(

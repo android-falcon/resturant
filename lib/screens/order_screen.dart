@@ -1605,7 +1605,7 @@ class _OrderScreenState extends State<OrderScreen> {
                               ? 2
                               : companyType == CompanyType.umniah
                                   ? 3
-                                  : 2,
+                                  : 3,
                           children: _isShowItem
                               ? allDataModel.items
                                   .where((element) => element.category.id == _selectedCategoryId)
