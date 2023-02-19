@@ -122,7 +122,10 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: const Icon(Icons.pin_end_rounded, color: ColorsApp.gray),
           onTab: () async {
             if (mySharedPreferences.employee.hasSeeEndCashPermission) {
-              _showInOutDialog(type: InOutType.payIn);
+              EndCashModel? model = await RestApi.getEndCash();
+              if (model != null) {
+                _showEndCashDialog(endCash: model);
+              }
             } else {
               EmployeeModel? employee = await Utils.showLoginDialog();
               if (employee != null) {
@@ -207,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: const Icon(Icons.analytics_rounded, color: ColorsApp.gray),
           onTab: () async {
             if (mySharedPreferences.employee.hasReportsPermission) {
-              _showInOutDialog(type: InOutType.payIn);
+              Get.to(() => const ReportsScreen());
             } else {
               EmployeeModel? employee = await Utils.showLoginDialog();
               if (employee != null) {

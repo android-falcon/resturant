@@ -406,10 +406,12 @@ class _PayScreenState extends State<PayScreen> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {
-
-                    },
-                    icon:  Icon(Icons.print,color: ColorsApp.primaryColor,size: 30,),
+                    onPressed: () {},
+                    icon: Icon(
+                      Icons.print,
+                      color: ColorsApp.primaryColor,
+                      size: 30,
+                    ),
                   ),
                   SizedBox(width: 4.w),
                 ],
@@ -424,9 +426,7 @@ class _PayScreenState extends State<PayScreen> {
                       children: [
                         Container(
                           margin: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5.r),
-                              border: Border.all(color: ColorsApp.primaryColor)),
+                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(5.r), border: Border.all(color: ColorsApp.primaryColor)),
                           height: Get.height * 0.4,
                           padding: EdgeInsets.all(16.h),
                           child: Align(
@@ -458,7 +458,11 @@ class _PayScreenState extends State<PayScreen> {
                                               textAlign: TextAlign.center,
                                             ),
                                             onPressed: () async {
-                                              var result = await _showPayDialog(balance: remaining + widget.cart.cash, received: widget.cart.cash, enableReturnValue: true);
+                                              var result = await _showPayDialog(
+                                                balance: remaining + widget.cart.cash,
+                                                received: widget.cart.cash,
+                                                enableReturnValue: true,
+                                              );
                                               widget.cart.cash = result['received'];
                                               _calculateRemaining();
                                               if (remaining == 0) {
