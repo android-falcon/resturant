@@ -767,7 +767,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await Get.dialog(
         CustomDialog(
-          width: 150.w,
+          width: 450,
           builder: (context, setState, constraints) {
             return Column(
               children: [
@@ -796,7 +796,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Screenshot(
                   controller: _screenshotController,
                   child: SizedBox(
-                    width: 215.w,
+                    width: 450,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1044,7 +1044,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await Get.dialog(
         CustomDialog(
-          width: 150.w,
+          width: 450,
           builder: (context, setState, constraints) {
             return Column(
               children: [
@@ -1073,7 +1073,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Screenshot(
                   controller: _screenshotController,
                   child: SizedBox(
-                    width: 215.w,
+                    width: 450,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,

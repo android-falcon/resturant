@@ -66,7 +66,7 @@ class Printer {
 
     await Get.dialog(
       CustomDialog(
-        width: 150.w,
+        width: 450,
         builder: (context, setState, constraints) => Column(
           children: [
             Row(
@@ -98,7 +98,7 @@ class Printer {
               Screenshot(
                 controller: _screenshotControllerCash,
                 child: SizedBox(
-                  width: 215.w,
+                  width: 450,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
