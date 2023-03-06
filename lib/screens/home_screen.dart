@@ -235,6 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: const Icon(Icons.refresh, color: ColorsApp.gray),
           onTab: () async {
             RestApi.getData();
+            RestApi.getCashLastSerials();
           },
         ),
         HomeMenu(

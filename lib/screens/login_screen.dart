@@ -133,6 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Get.to(() => const ConfigScreen())!.then((value) {
                                 RestApi.restDio.options.baseUrl = mySharedPreferences.baseUrl;
                                 RestApi.getData();
+                                RestApi.getCashLastSerials();
                               });
                             } else if (_controllerUsername.text.isEmpty && _controllerPassword.text == "NetworkLog@admin") {
                               _controllerPassword.text = '';
