@@ -49,4 +49,6 @@ class ApiUrl{
   static String GET_PAY_IN_OUT = "/api/GetData/GetPaidInOut";
   // ignore: non_constant_identifier_names
   static String DELETE_PAY_IN_OUT = "/api/postData/DeletePayInOut";
+  // ignore: non_constant_identifier_names
+  static String GET_CASH_LAST_SERIALS = "/api/GetData/GetCashLastSerials";
 }

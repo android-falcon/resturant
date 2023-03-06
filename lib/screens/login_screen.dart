@@ -34,7 +34,10 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_) => RestApi.getData());
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      RestApi.getData();
+      RestApi.getCashLastSerials();
+    });
   }
 
   @override

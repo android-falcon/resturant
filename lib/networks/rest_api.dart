@@ -8,6 +8,7 @@ import 'package:restaurant_system/database/network_table.dart';
 import 'package:restaurant_system/models/all_data/tables_model.dart';
 import 'package:restaurant_system/models/all_data_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
+import 'package:restaurant_system/models/cash_last_serials_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:restaurant_system/models/end_cash_model.dart';
 import 'package:restaurant_system/models/get_pay_in_out_model.dart';
@@ -22,8 +23,8 @@ import 'package:restaurant_system/utils/utils.dart';
 class RestApi {
   static final dio.Dio restDio = dio.Dio(dio.BaseOptions(
     baseUrl: mySharedPreferences.baseUrl,
-    connectTimeout: 30000,
-    receiveTimeout: 30000,
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 30),
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ${mySharedPreferences.accessToken}',
@@ -74,13 +75,13 @@ class RestApi {
     try {
       final dio.Dio uploadNetworkTableDio = dio.Dio(dio.BaseOptions(
         baseUrl: model.baseUrl,
-        connectTimeout: 30000,
-        receiveTimeout: 30000,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
         headers: model.headers.isEmpty
             ? {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${mySharedPreferences.accessToken}',
-        }
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ${mySharedPreferences.accessToken}',
+              }
             : jsonDecode(model.headers),
       ));
       late dio.Response response;
@@ -588,9 +589,7 @@ class RestApi {
         dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
-      List<NetworkTableModel> data = await NetworkTable.queryRowsReports(
-          types: ['PAY_IN_OUT']
-      );
+      List<NetworkTableModel> data = await NetworkTable.queryRowsReports(types: ['PAY_IN_OUT']);
       var payIn = data.firstWhereOrNull((element) {
         var body = jsonDecode(element.body);
         if (body['VoucherNo'] == model.voucherNo && body['PosNo'] == mySharedPreferences.posNo && body['CashNo'] == mySharedPreferences.cashNo) {
@@ -598,7 +597,7 @@ class RestApi {
         }
         return false;
       });
-      if(payIn != null){
+      if (payIn != null) {
         developer.log('ana ${payIn.id}');
         await NetworkTable.delete(payIn.id);
       }
@@ -1162,18 +1161,17 @@ class RestApi {
   static Future<void> saveVoidAllItems({required List<CartItemModel> items, required String reason}) async {
     try {
       var body = jsonEncode(items
-          .map((e) =>
-      {
-        "CoYear": mySharedPreferences.dailyClose.year,
-        "PosNo": mySharedPreferences.posNo,
-        "CashNo": mySharedPreferences.cashNo,
-        "VoidDate": mySharedPreferences.dailyClose.toIso8601String(),
-        "RowNo": e.rowSerial,
-        "Reason": reason,
-        "ItemID": e.id,
-        "Qty": e.qty,
-        "UserID": mySharedPreferences.employee.id,
-      })
+          .map((e) => {
+                "CoYear": mySharedPreferences.dailyClose.year,
+                "PosNo": mySharedPreferences.posNo,
+                "CashNo": mySharedPreferences.cashNo,
+                "VoidDate": mySharedPreferences.dailyClose.toIso8601String(),
+                "RowNo": e.rowSerial,
+                "Reason": reason,
+                "ItemID": e.id,
+                "Qty": e.qty,
+                "UserID": mySharedPreferences.employee.id,
+              })
           .toList());
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
@@ -1367,6 +1365,59 @@ class RestApi {
       Utils.hideLoadingDialog();
       Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
       return null;
+    }
+  }
+
+  static Future<void> getCashLastSerials() async {
+    try {
+      var queryParameters = {
+        "PosNo": mySharedPreferences.posNo,
+        "CashNo": mySharedPreferences.cashNo,
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'GET_CASH_LAST_SERIALS',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.GET_CASH_LAST_SERIALS,
+        method: 'GET',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.get(ApiUrl.GET_CASH_LAST_SERIALS, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      if (response.statusCode == 200) {
+        var model = CashLastSerialsModel.fromJson(response.data);
+        if (mySharedPreferences.inVocNo <= model.invNo) {
+          mySharedPreferences.inVocNo = model.invNo + 1;
+        }
+        if (mySharedPreferences.payInOutNo <= model.cashInOutNo) {
+          mySharedPreferences.payInOutNo = model.cashInOutNo + 1;
+        }
+      } else {
+        Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      // Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
+    } catch (e) {
+      _traceCatch(e);
+      // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
     }
   }
 }

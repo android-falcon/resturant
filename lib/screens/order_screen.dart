@@ -1602,7 +1602,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       child: SingleChildScrollView(
                         child: StaggeredGrid.count(
                           crossAxisCount: _isShowItem
-                              ? 2
+                              ? 3
                               : companyType == CompanyType.umniah
                                   ? 3
                                   : 3,
