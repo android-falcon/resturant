@@ -62,15 +62,15 @@ class _ConfigScreenState extends State<ConfigScreen> {
                   controller: _controllerOutVocNo,
                   label: Text('Pay In Out No'.tr),
                 ),
-                CheckboxListTile(
-                  title: Text('Printer Bluetooth'.tr),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  onChanged: (value) {
-                    printerBluetooth = value!;
-                    setState(() {});
-                  },
-                  value: printerBluetooth,
-                ),
+                // CheckboxListTile(
+                //   title: Text('Printer Bluetooth'.tr),
+                //   controlAffinity: ListTileControlAffinity.leading,
+                //   onChanged: (value) {
+                //     printerBluetooth = value!;
+                //     setState(() {});
+                //   },
+                //   value: printerBluetooth,
+                // ),
                 Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Row(

@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:typed_data';
+// import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart' as esc_bluetooth;
 import 'package:restaurant_system/utils/assets.dart';
 
 import 'package:flutter/material.dart';
@@ -21,14 +22,23 @@ import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:screenshot/screenshot.dart';
 
 class Printer {
-  static Future<void> printInvoicesDialog({required CartModel cart, bool kitchenPrinter = true, bool cashPrinter = true, bool reprint = false, bool showPrintButton = true, bool showOrderNo = true, bool showInvoiceNo = true, String invNo = ''}) async {
+  static Future<void> printInvoicesDialog(
+      {required CartModel cart,
+      bool kitchenPrinter = true,
+      bool cashPrinter = true,
+      bool reprint = false,
+      bool showPrintButton = true,
+      bool showOrderNo = true,
+      bool showInvoiceNo = true,
+      String invNo = ''}) async {
     ScreenshotController _screenshotControllerCash = ScreenshotController();
     List<PrinterInvoiceModel> invoices = [];
 
     for (var printer in allDataModel.printers) {
       if (cashPrinter) {
         if (printer.cashNo == mySharedPreferences.cashNo) {
-          invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: true, screenshotController: ScreenshotController(), items: []));
+          invoices.add(PrinterInvoiceModel(
+              ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: true, screenshotController: ScreenshotController(), items: []));
         }
       }
       if (kitchenPrinter) {
@@ -36,13 +46,16 @@ class Printer {
           var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
           List<CartItemModel> cartItems = cart.items.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
           if (cartItems.isNotEmpty) {
-            invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: false, screenshotController: ScreenshotController(), items: cartItems));
+            invoices.add(PrinterInvoiceModel(
+                ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: false, screenshotController: ScreenshotController(), items: cartItems));
           }
         } else if (cart.orderType == OrderType.dineIn) {
           var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
-          List<CartItemModel> cartItems = cart.items.where((element) => !element.dineInSavedOrder && itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
+          List<CartItemModel> cartItems =
+              cart.items.where((element) => !element.dineInSavedOrder && itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
           if (cartItems.isNotEmpty) {
-            invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: false, screenshotController: ScreenshotController(), items: cartItems));
+            invoices.add(PrinterInvoiceModel(
+                ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: false, screenshotController: ScreenshotController(), items: cartItems));
           }
         }
       }
@@ -791,7 +804,8 @@ class Printer {
       var itemsPrinter = allDataModel.itemsPrintersModel.where((element) => element.kitchenPrinter.id == printer.id).toList();
       List<CartItemModel> cartItems = itemsVoid.where((element) => itemsPrinter.any((elementPrinter) => element.id == elementPrinter.itemId)).toList();
       if (cartItems.isNotEmpty) {
-        invoices.add(PrinterInvoiceModel(ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: false, screenshotController: ScreenshotController(), items: cartItems));
+        invoices.add(PrinterInvoiceModel(
+            ipAddress: printer.ipAddress, port: printer.port, openCashDrawer: false, screenshotController: ScreenshotController(), items: cartItems));
       }
     }
     Future.delayed(const Duration(milliseconds: 100)).then((value) async {
@@ -1087,8 +1101,17 @@ class Printer {
   }
 
   static Future<void> invoices({required List<PrinterInvoiceModel> invoices}) async {
-    final profile = await CapabilityProfile.load(); //name: 'TP806L'
     for (var invoice in invoices) {
+      // if(mySharedPreferences.printerBluetooth){
+      // esc_bluetooth.PrinterBluetoothManager printerManager = esc_bluetooth.PrinterBluetoothManager();
+      // printerManager.scanResults.listen((printers) async {
+      //   // store found printers
+      // });
+      // printerManager.startScan(const Duration(seconds: 4));
+      // printerManager.selectPrinter(printer);
+      // printImageBluetooth(printerManager, invoice.invoice!);
+      // } else {
+      final profile = await CapabilityProfile.load(); //name: 'TP806L'
       final printer = NetworkPrinter(PaperSize.mm80, profile);
       var printerResult = await printer.connect(invoice.ipAddress, port: invoice.port);
       if (printerResult == PosPrintResult.success) {
@@ -1131,6 +1154,7 @@ class Printer {
           log('printer catch ${printerResult.msg} || ${invoice.ipAddress}:${invoice.port}');
         }
       }
+      // }
     }
   }
 
@@ -1172,6 +1196,17 @@ class Printer {
       printer.drawer();
     }
   }
+
+  // static void printImageBluetooth(esc_bluetooth.PrinterBluetoothManager printer, Uint8List invoice, {bool openCashDrawer = false}) async{
+  //   final profile = await CapabilityProfile.load();
+  //   final generator = Generator(PaperSize.mm80, profile);
+  //   final img.Image? image = img.decodeImage(invoice);
+  //   await printer.printTicket(generator.image(image!, align: PosAlign.center));
+  //   await printer.printTicket(generator.cut());
+  //   if (openCashDrawer) {
+  //     await printer.printTicket(generator.drawer());
+  //   }
+  // }
 
   static void openCash(String ipAddress, int port) async {
     final profile = await CapabilityProfile.load(); //name: 'TP806L'
