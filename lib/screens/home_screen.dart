@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -255,6 +256,17 @@ class _HomeScreenState extends State<HomeScreen> {
       ];
       setState(() {});
     });
+    loadImageCompany();
+  }
+
+  loadImageCompany() async {
+    try {
+      Assets.kAssetsCompanyLogo = [];
+      String imageUrl =
+          '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'COMPANY_LOGO')?.imgPath ?? ''}${allDataModel.companyConfig.first.companyLogo}';
+      Uint8List bytes = (await NetworkAssetBundle(Uri.parse(imageUrl)).load(imageUrl)).buffer.asUint8List();
+      Assets.kAssetsCompanyLogo = bytes.toList();
+    } catch (e) {}
   }
 
   Future<int?> _showCashInOutTypeDialog({required InOutType kindType}) async {
@@ -469,7 +481,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _controllerSelectEdit = null;
         },
         builder: (context, setState, constraints) {
-          moneyCount = MoneyCount.moneyCount.fold(0.0, (previousValue, element) => (previousValue) + ((element.value * element.rate) * double.parse(element.qty.text)));
+          moneyCount =
+              MoneyCount.moneyCount.fold(0.0, (previousValue, element) => (previousValue) + ((element.value * element.rate) * double.parse(element.qty.text)));
           return Column(
             children: [
               Row(
@@ -653,7 +666,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                               child: Row(
                                                 children: [
                                                   CachedNetworkImage(
-                                                    imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Currencies')?.imgPath ?? ''}${MoneyCount.moneyCount[index].icon}',
+                                                    imageUrl:
+                                                        '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Currencies')?.imgPath ?? ''}${MoneyCount.moneyCount[index].icon}',
                                                     height: 20.h,
                                                     fit: BoxFit.contain,
                                                     placeholder: (context, url) => Container(),
@@ -675,7 +689,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                           child: CustomTextFieldNum(
                                             enableInteractiveSelection: false,
                                             controller: MoneyCount.moneyCount[index].qty,
-                                            fillColor: _controllerSelectEdit == MoneyCount.moneyCount[index].qty ? ColorsApp.primaryColor.withOpacity(0.2) : null,
+                                            fillColor:
+                                                _controllerSelectEdit == MoneyCount.moneyCount[index].qty ? ColorsApp.primaryColor.withOpacity(0.2) : null,
                                             onTap: () {
                                               FocusScope.of(context).requestFocus(FocusNode());
                                               _controllerSelectEdit = MoneyCount.moneyCount[index].qty;
@@ -685,7 +700,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                         Expanded(
                                           child: Text(
-                                            ((MoneyCount.moneyCount[index].value * MoneyCount.moneyCount[index].rate) * double.parse(MoneyCount.moneyCount[index].qty.text)).toStringAsFixed(3),
+                                            ((MoneyCount.moneyCount[index].value * MoneyCount.moneyCount[index].rate) *
+                                                    double.parse(MoneyCount.moneyCount[index].qty.text))
+                                                .toStringAsFixed(3),
                                             textAlign: TextAlign.center,
                                             style: kStyleTextDefault,
                                           ),
@@ -768,7 +785,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await Get.dialog(
         CustomDialog(
-          width: 450,
+          width: mySharedPreferences.printerWidth.toDouble(),
           builder: (context, setState, constraints) {
             return Column(
               children: [
@@ -797,7 +814,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Screenshot(
                   controller: _screenshotController,
                   child: SizedBox(
-                    width: 450,
+                    width: mySharedPreferences.printerWidth.toDouble(),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -815,7 +832,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             : type == InOutType.cashOut
                                                 ? 'Cash Out'
                                                 : '',
-                                style: kStyleLargePrinter,
+                                style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                               ),
                             ],
                           ),
@@ -831,23 +848,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Text(
                                     '${'Value'.tr} : ${_typeInputCash == 1 ? double.parse(_controllerManual.text).toStringAsFixed(3) : moneyCount.toStringAsFixed(3)}',
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                   Text(
                                     '${'Remark'.tr} : ${_controllerRemark.text}',
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                   Text(
                                     '${'Type'.tr} : ${_selectDescId == null ? '' : allDataModel.cashInOutTypesModel.firstWhereOrNull((element) => element.id == _selectDescId)?.description ?? ''}',
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                   Text(
                                     '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                   Text(
                                     '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 ],
                               ),
@@ -1045,7 +1062,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await Get.dialog(
         CustomDialog(
-          width: 450,
+          width: mySharedPreferences.printerWidth.toDouble(),
           builder: (context, setState, constraints) {
             return Column(
               children: [
@@ -1074,7 +1091,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Screenshot(
                   controller: _screenshotController,
                   child: SizedBox(
-                    width: 450,
+                    width: mySharedPreferences.printerWidth.toDouble(),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1084,7 +1101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Text(
                                 'End Cash'.tr,
-                                style: kStyleLargePrinter,
+                                style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                               ),
                             ],
                           ),
@@ -1101,7 +1118,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Center(
                                     child: Text(
                                       'Total Cash'.tr,
-                                      style: kStyleTitlePrinter,
+                                      style: kStyleTitlePrinter.copyWith(fontSize: mySharedPreferences.sizeTitlePrinter.toDouble()),
                                     ),
                                   ),
                                   Row(
@@ -1109,18 +1126,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     children: [
                                       Text(
                                         '${'Input'.tr} : ${double.parse(_controllerTotalCash.text).toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
+                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                       ),
                                       Text(
                                         '${'Actual Value'.tr} : ${endCash.totalCash.toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
+                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                       ),
                                     ],
                                   ),
                                   Center(
                                     child: Text(
                                       '${'Different'.tr} : ${(double.parse(_controllerTotalCash.text) - double.parse(endCash.totalCash.toString())).toStringAsFixed(3)}',
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                     ),
                                   ),
                                   const SizedBox(height: 15),
@@ -1128,7 +1145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Center(
                                     child: Text(
                                       'Total Credit Card'.tr,
-                                      style: kStyleTitlePrinter,
+                                      style: kStyleTitlePrinter.copyWith(fontSize: mySharedPreferences.sizeTitlePrinter.toDouble()),
                                     ),
                                   ),
                                   Row(
@@ -1136,18 +1153,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     children: [
                                       Text(
                                         '${'Input'.tr} : ${double.parse(_controllerTotalCreditCard.text).toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
+                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                       ),
                                       Text(
                                         '${'Actual Value'.tr} : ${endCash.totalCreditCard.toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
+                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                       ),
                                     ],
                                   ),
                                   Center(
                                     child: Text(
                                       '${'Different'.tr} : ${double.parse(double.parse(_controllerTotalCreditCard.text).toStringAsFixed(3)) - double.parse(endCash.totalCreditCard.toStringAsFixed(3))}',
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                     ),
                                   ),
                                   const SizedBox(height: 15),
@@ -1155,7 +1172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Center(
                                     child: Text(
                                       'Net Total'.tr,
-                                      style: kStyleTitlePrinter,
+                                      style: kStyleTitlePrinter.copyWith(fontSize: mySharedPreferences.sizeTitlePrinter.toDouble()),
                                     ),
                                   ),
                                   Row(
@@ -1163,29 +1180,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                     children: [
                                       Text(
                                         '${'Input'.tr} : ${double.parse(_controllerNetTotal.text).toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
+                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                       ),
                                       Text(
                                         '${'Actual Value'.tr} : ${endCash.netTotal.toStringAsFixed(3)}',
-                                        style: kStyleDataPrinter,
+                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                       ),
                                     ],
                                   ),
                                   Center(
                                     child: Text(
                                       '${'Different'.tr} : ${double.parse(double.parse(_controllerNetTotal.text).toStringAsFixed(3)) - double.parse(endCash.netTotal.toStringAsFixed(3))}',
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                     ),
                                   ),
                                   const SizedBox(height: 15),
                                   const Divider(color: Colors.black, thickness: 2),
                                   Text(
                                     '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose)}',
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                   Text(
                                     '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 ],
                               ),
@@ -1579,12 +1596,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: _refundModel!.items.length,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      separatorBuilder: (context, index) => _refundModel!.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
+                      separatorBuilder: (context, index) =>
+                          _refundModel!.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
                       itemBuilder: (context, index) {
                         if (_refundModel!.items[index].parentUuid.isNotEmpty) {
                           return Container();
                         } else {
-                          var subItem = _refundModel!.items.where((element) => element.parentUuid.isNotEmpty && element.parentUuid == _refundModel!.items[index].uuid).toList();
+                          var subItem = _refundModel!.items
+                              .where((element) => element.parentUuid.isNotEmpty && element.parentUuid == _refundModel!.items[index].uuid)
+                              .toList();
                           return Column(
                             children: [
                               Padding(
@@ -1615,7 +1635,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     Expanded(
                                       child: Text(
-                                        (_refundModel!.items[index].returnedPrice + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice)).toStringAsFixed(3),
+                                        (_refundModel!.items[index].returnedPrice +
+                                                subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedPrice))
+                                            .toStringAsFixed(3),
                                         style: kStyleDataTable,
                                         textAlign: TextAlign.center,
                                       ),
@@ -1624,11 +1646,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                       flex: 2,
                                       child: InkWell(
                                         onTap: () async {
-                                          _refundModel!.items[index].returnedQty = await _showQtyDialog(decimal: false, rQty: _refundModel!.items[index].returnedQty, maxQty: _refundModel!.items[index].qty);
+                                          _refundModel!.items[index].returnedQty = await _showQtyDialog(
+                                              decimal: false, rQty: _refundModel!.items[index].returnedQty, maxQty: _refundModel!.items[index].qty);
                                           for (var element in subItem) {
                                             element.returnedQty = _refundModel!.items[index].returnedQty;
                                           }
-                                          _refundModel = Utils.calculateOrder(cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
+                                          _refundModel = Utils.calculateOrder(
+                                              cart: _refundModel!, orderType: _refundModel!.orderType, invoiceKind: InvoiceKind.invoiceReturn);
                                           setState(() {});
                                         },
                                         child: Row(
@@ -1648,7 +1672,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     Expanded(
                                       child: Text(
-                                        (_refundModel!.items[index].returnedTotal + subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal)).toStringAsFixed(3),
+                                        (_refundModel!.items[index].returnedTotal +
+                                                subItem.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal))
+                                            .toStringAsFixed(3),
                                         style: kStyleDataTable,
                                         textAlign: TextAlign.center,
                                       ),
@@ -1794,7 +1820,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 Center(
                                   child: Text(
-                                    _refundModel!.items.fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal).toStringAsFixed(3),
+                                    _refundModel!.items
+                                        .fold(0.0, (previousValue, element) => (previousValue as double) + element.returnedTotal)
+                                        .toStringAsFixed(3),
                                     style: kStyleTextTitle,
                                   ),
                                 ),
@@ -1937,6 +1965,13 @@ class _HomeScreenState extends State<HomeScreen> {
             style: companyType == CompanyType.umniah ? kStyleTextButton : kStyleTextDefault,
           ),
           centerTitle: true,
+          leading: Padding(
+            padding: EdgeInsets.all(2.sp),
+            child: CachedNetworkImage(
+              imageUrl:
+                  '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'COMPANY_LOGO')?.imgPath ?? ''}${allDataModel.companyConfig.first.companyLogo}',
+            ),
+          ),
         ),
         endDrawer: CustomDrawer(
           menu: _menu,

@@ -79,20 +79,17 @@ class MySharedPreferences {
   //   _sharedPreferences.setString(keyDineIn, jsonEncode(List<dynamic>.from(value.map((e) => e.toJson()))));
   // }
 
-
   List<CartModel> get park => List<CartModel>.from(jsonDecode(_sharedPreferences.getString(keyPark) ?? "[]").map((e) => CartModel.fromJson(e)));
 
   set park(List<CartModel> value) {
     _sharedPreferences.setString(keyPark, jsonEncode(List<dynamic>.from(value.map((e) => e.toJson()))));
   }
 
-
   DateTime get dailyClose => DateTime.parse(_sharedPreferences.getString(keyDailyClose) ?? "0000-00-00T00:00:00.000");
 
   set dailyClose(DateTime value) {
     _sharedPreferences.setString(keyDailyClose, value.toIso8601String());
   }
-
 
   String get baseUrl => _sharedPreferences.getString(keyBaseUrl) ?? "";
 
@@ -141,6 +138,30 @@ class MySharedPreferences {
   set printerBluetooth(bool value) {
     _sharedPreferences.setBool(keyStoreNo, value);
   }
+
+  int get printerWidth => _sharedPreferences.getInt(keyPrinterWidth) ?? 450;
+
+  set printerWidth(int value) {
+    _sharedPreferences.setInt(keyPrinterWidth, value);
+  }
+
+  int get sizeDataPrinter => _sharedPreferences.getInt(keySizeDataPrinter) ?? 23;
+
+  set sizeDataPrinter(int value) {
+    _sharedPreferences.setInt(keySizeDataPrinter, value);
+  }
+
+  int get sizeTitlePrinter => _sharedPreferences.getInt(keySizeTitlePrinter) ?? 27;
+
+  set sizeTitlePrinter(int value) {
+    _sharedPreferences.setInt(keySizeTitlePrinter, value);
+  }
+
+  int get sizeLargePrinter => _sharedPreferences.getInt(keySizeLargePrinter) ?? 34;
+
+  set sizeLargePrinter(int value) {
+    _sharedPreferences.setInt(keySizeLargePrinter, value);
+  }
 }
 
 final mySharedPreferences = MySharedPreferences();
@@ -164,3 +185,7 @@ const String keyPosNo = "key_pos_no";
 const String keyCashNo = "key_cash_no";
 const String keyStoreNo = "key_store_no";
 const String keyPrinterBluetooth = "key_printer_bluetooth";
+const String keyPrinterWidth = "key_printer_width";
+const String keySizeDataPrinter = "key_size_data_printer";
+const String keySizeTitlePrinter = "key_size_title_printer";
+const String keySizeLargePrinter = "key_size_large_printer";

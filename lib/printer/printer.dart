@@ -80,7 +80,7 @@ class Printer {
 
     await Get.dialog(
       CustomDialog(
-        width: 450,
+        width: mySharedPreferences.printerWidth.toDouble(),
         builder: (context, setState, constraints) => Column(
           children: [
             Row(
@@ -112,22 +112,30 @@ class Printer {
               Screenshot(
                 controller: _screenshotControllerCash,
                 child: SizedBox(
-                  width: 450,
+                  width: mySharedPreferences.printerWidth.toDouble(),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (Assets.kAssetsCompanyLogo.isNotEmpty)
+                        Center(
+                          child: Image.memory(
+                            Uint8List.fromList(Assets.kAssetsCompanyLogo),
+                            height: 120,
+                          ),
+                        ),
+                      if (Assets.kAssetsCompanyLogo.isNotEmpty) const SizedBox(height: 25),
                       Center(
                         child: Column(
                           children: [
                             if (reprint)
                               Text(
                                 'Reprint'.tr,
-                                style: kStyleLargePrinter,
+                                style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                               ),
                             Text(
                               cart.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
-                              style: kStyleLargePrinter,
+                              style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                             ),
                           ],
                         ),
@@ -139,11 +147,11 @@ class Printer {
                             children: [
                               Text(
                                 'Order No'.tr,
-                                style: kStyleLargePrinter,
+                                style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                               ),
                               Text(
                                 '${cart.orderNo}',
-                                style: kStyleLargePrinter,
+                                style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                               ),
                             ],
                           ),
@@ -159,15 +167,15 @@ class Printer {
                                 if (showInvoiceNo)
                                   Text(
                                     '${'Invoice No'.tr} : $invNo',
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 Text(
                                   '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
-                                  style: kStyleDataPrinter,
+                                  style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                 ),
                                 Text(
                                   '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                  style: kStyleDataPrinter,
+                                  style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                 ),
                               ],
                             ),
@@ -180,17 +188,17 @@ class Printer {
                                 if (cart.orderType == OrderType.dineIn)
                                   Text(
                                     '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == cart.tableId)?.tableNo ?? ''}',
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                     maxLines: 1,
                                   ),
                                 Text(
                                   '${'User'.tr} : ${mySharedPreferences.employee.empName}',
-                                  style: kStyleDataPrinter,
+                                  style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   maxLines: 1,
                                 ),
                                 Text(
                                   '${'Phone'.tr} : ${allDataModel.companyConfig[0].phoneNo}',
-                                  style: kStyleDataPrinter,
+                                  style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   maxLines: 1,
                                 ),
                               ],
@@ -209,21 +217,21 @@ class Printer {
                                   flex: 4,
                                   child: Text(
                                     'Pro-Nam'.tr,
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
                                 Expanded(
                                   child: Text(
                                     'Qty'.tr,
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
                                 Expanded(
                                   child: Text(
                                     'Total'.tr,
-                                    style: kStyleDataPrinter,
+                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
@@ -251,21 +259,21 @@ class Printer {
                                             flex: 4,
                                             child: Text(
                                               cart.items[index].name,
-                                              style: kStyleDataPrinter,
+                                              style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
                                           Expanded(
                                             child: Text(
                                               '${cart.items[index].qty}',
-                                              style: kStyleDataPrinter,
+                                              style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
                                           Expanded(
                                             child: Text(
                                               cart.items[index].total.toStringAsFixed(3),
-                                              style: kStyleDataPrinter,
+                                              style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -287,7 +295,7 @@ class Printer {
                                                 //     Expanded(
                                                 //       child: Text(
                                                 //         '- ${widget.cart.items[index].questions[indexQuestions].question.trim()}',
-                                                //         style: kStyleDataPrinter,
+                                                //         style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                 //       ),
                                                 //     ),
                                                 //   ],
@@ -303,7 +311,7 @@ class Printer {
                                                           Expanded(
                                                             child: Text(
                                                               '  • ${cart.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
-                                                              style: kStyleDataPrinter,
+                                                              style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                             ),
                                                           ),
                                                         ],
@@ -323,7 +331,7 @@ class Printer {
                                                 Expanded(
                                                   child: Text(
                                                     '• ${cart.items[index].modifiers[indexModifiers].name} * ${cart.items[index].modifiers[indexModifiers].modifier}',
-                                                    style: kStyleDataPrinter,
+                                                    style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                   ),
                                                 ),
                                               ],
@@ -341,7 +349,7 @@ class Printer {
                                                       flex: 4,
                                                       child: Text(
                                                         subItem[indexSubItem].name,
-                                                        style: kStyleDataPrinter,
+                                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                         textAlign: TextAlign.center,
                                                         maxLines: 1,
                                                         overflow: TextOverflow.ellipsis,
@@ -350,14 +358,14 @@ class Printer {
                                                     Expanded(
                                                       child: Text(
                                                         '${subItem[indexSubItem].qty}',
-                                                        style: kStyleDataPrinter,
+                                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                         textAlign: TextAlign.center,
                                                       ),
                                                     ),
                                                     Expanded(
                                                       child: Text(
                                                         subItem[indexSubItem].total.toStringAsFixed(3),
-                                                        style: kStyleDataPrinter,
+                                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                         textAlign: TextAlign.center,
                                                       ),
                                                     ),
@@ -386,12 +394,12 @@ class Printer {
                                 Expanded(
                                   child: Text(
                                     'Total'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 ),
                                 Text(
                                   cart.total.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                 ),
                               ],
                             ),
@@ -400,12 +408,12 @@ class Printer {
                                 Expanded(
                                   child: Text(
                                     'Discount'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 ),
                                 Text(
                                   cart.totalDiscount.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                 ),
                               ],
                             ),
@@ -414,12 +422,12 @@ class Printer {
                                 Expanded(
                                   child: Text(
                                     'Line Discount'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 ),
                                 Text(
                                   cart.totalLineDiscount.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                 ),
                               ],
                             ),
@@ -428,12 +436,12 @@ class Printer {
                                 Expanded(
                                   child: Text(
                                     'Delivery Charge'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 ),
                                 Text(
                                   cart.deliveryCharge.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                 ),
                               ],
                             ),
@@ -442,12 +450,12 @@ class Printer {
                                 Expanded(
                                   child: Text(
                                     'Service'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 ),
                                 Text(
                                   cart.service.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                 ),
                               ],
                             ),
@@ -456,12 +464,12 @@ class Printer {
                                 Expanded(
                                   child: Text(
                                     'Tax'.tr,
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 ),
                                 Text(
                                   cart.tax.toStringAsFixed(3),
-                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                  style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                 ),
                               ],
                             ),
@@ -470,12 +478,12 @@ class Printer {
                                 Expanded(
                                   child: Text(
                                     'Amount Due'.tr,
-                                    style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                    style: kStyleTitlePrinter.copyWith(fontSize: mySharedPreferences.sizeTitlePrinter.toDouble()),
                                   ),
                                 ),
                                 Text(
                                   cart.amountDue.toStringAsFixed(3),
-                                  style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                  style: kStyleTitlePrinter.copyWith(fontSize: mySharedPreferences.sizeTitlePrinter.toDouble()),
                                 ),
                               ],
                             ),
@@ -486,12 +494,12 @@ class Printer {
                                   Expanded(
                                     child: Text(
                                       'Cash'.tr,
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                     ),
                                   ),
                                   Text(
                                     cart.cash.toStringAsFixed(3),
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 ],
                               ),
@@ -501,12 +509,12 @@ class Printer {
                                   Expanded(
                                     child: Text(
                                       'Credit'.tr,
-                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                      style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                     ),
                                   ),
                                   Text(
                                     cart.credit.toStringAsFixed(3),
-                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold),
+                                    style: kStyleDataPrinter.copyWith(fontWeight: FontWeight.bold, fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                   ),
                                 ],
                               ),
@@ -528,7 +536,7 @@ class Printer {
                   const Divider(thickness: 2),
                   Text(
                     'Kitchens Invoices'.tr,
-                    style: kStyleLargePrinter,
+                    style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                   ),
                   const Divider(thickness: 2),
                   Padding(
@@ -553,7 +561,7 @@ class Printer {
                                         children: [
                                           Text(
                                             cart.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
-                                            style: kStyleLargePrinter,
+                                            style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                                           ),
                                         ],
                                       ),
@@ -567,20 +575,20 @@ class Printer {
                                         children: [
                                           Text(
                                             '${'Order No'.tr} : ${cart.orderNo}',
-                                            style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                            style: kStyleTitlePrinter.copyWith(fontSize: mySharedPreferences.sizeTitlePrinter.toDouble()),
                                           ),
                                           if (cart.orderType == OrderType.dineIn)
                                             Text(
                                               '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == cart.tableId)?.tableNo ?? ''}',
-                                              style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                              style: kStyleTitlePrinter.copyWith(fontSize: mySharedPreferences.sizeTitlePrinter.toDouble()),
                                             ),
                                           Text(
                                             '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
-                                            style: kStyleDataPrinter,
+                                            style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                           ),
                                           Text(
                                             '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                            style: kStyleDataPrinter,
+                                            style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                           ),
                                         ],
                                       ),
@@ -598,14 +606,14 @@ class Printer {
                                             flex: 4,
                                             child: Text(
                                               'Item Name'.tr,
-                                              style: kStyleDataPrinter,
+                                              style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
                                           Expanded(
                                             child: Text(
                                               'Qty'.tr,
-                                              style: kStyleDataPrinter,
+                                              style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -613,7 +621,7 @@ class Printer {
                                             flex: 2,
                                             child: Text(
                                               'Note'.tr,
-                                              style: kStyleDataPrinter,
+                                              style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                               textAlign: TextAlign.center,
                                             ),
                                           ),
@@ -643,14 +651,14 @@ class Printer {
                                                       flex: 4,
                                                       child: Text(
                                                         invoices[index].items[indexItem].name,
-                                                        style: kStyleDataPrinter,
+                                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                         textAlign: TextAlign.center,
                                                       ),
                                                     ),
                                                     Expanded(
                                                       child: Text(
                                                         '${invoices[index].items[indexItem].qty}',
-                                                        style: kStyleDataPrinter,
+                                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                         textAlign: TextAlign.center,
                                                       ),
                                                     ),
@@ -658,7 +666,7 @@ class Printer {
                                                       flex: 2,
                                                       child: Text(
                                                         invoices[index].items[indexItem].note,
-                                                        style: kStyleDataPrinter,
+                                                        style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                         textAlign: TextAlign.center,
                                                       ),
                                                     ),
@@ -680,7 +688,7 @@ class Printer {
                                                           //     Expanded(
                                                           //       child: Text(
                                                           //         '- ${cart.items[index].questions[indexQuestions].question.trim()}',
-                                                          //         style: kStyleDataPrinter,
+                                                          //         style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                           //       ),
                                                           //     ),
                                                           //   ],
@@ -696,7 +704,8 @@ class Printer {
                                                                     Expanded(
                                                                       child: Text(
                                                                         '  • ${invoices[index].items[indexItem].questions[indexQuestions].modifiers[indexModifiers].modifier}',
-                                                                        style: kStyleDataPrinter,
+                                                                        style: kStyleDataPrinter.copyWith(
+                                                                            fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                                       ),
                                                                     ),
                                                                   ],
@@ -716,7 +725,7 @@ class Printer {
                                                           Expanded(
                                                             child: Text(
                                                               '• ${invoices[index].items[indexItem].modifiers[indexModifiers].name} * ${invoices[index].items[indexItem].modifiers[indexModifiers].modifier}',
-                                                              style: kStyleDataPrinter,
+                                                              style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                             ),
                                                           ),
                                                         ],
@@ -734,7 +743,7 @@ class Printer {
                                                                 flex: 4,
                                                                 child: Text(
                                                                   subItem[indexSubItem].name,
-                                                                  style: kStyleDataPrinter,
+                                                                  style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                                   textAlign: TextAlign.center,
                                                                   maxLines: 1,
                                                                   overflow: TextOverflow.ellipsis,
@@ -743,7 +752,7 @@ class Printer {
                                                               Expanded(
                                                                 child: Text(
                                                                   '${subItem[indexSubItem].qty}',
-                                                                  style: kStyleDataPrinter,
+                                                                  style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                                   textAlign: TextAlign.center,
                                                                 ),
                                                               ),
@@ -751,7 +760,7 @@ class Printer {
                                                                 flex: 2,
                                                                 child: Text(
                                                                   subItem[indexSubItem].note,
-                                                                  style: kStyleDataPrinter,
+                                                                  style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                                   textAlign: TextAlign.center,
                                                                 ),
                                                               ),
@@ -778,7 +787,7 @@ class Printer {
                                           ),
                                           Text(
                                             cart.note,
-                                            style: kStyleDataPrinter,
+                                            style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                           ),
                                         ],
                                       ),
@@ -842,7 +851,7 @@ class Printer {
                 const Divider(thickness: 2),
                 Text(
                   'Kitchens Invoices'.tr,
-                  style: kStyleLargePrinter,
+                  style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                 ),
                 const Divider(thickness: 2),
                 Padding(
@@ -867,11 +876,11 @@ class Printer {
                                       children: [
                                         Text(
                                           'Void Items'.tr,
-                                          style: kStyleLargePrinter,
+                                          style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                                         ),
                                         Text(
                                           cart.orderType == OrderType.takeAway ? 'Take Away'.tr : 'Dine In'.tr,
-                                          style: kStyleLargePrinter,
+                                          style: kStyleLargePrinter.copyWith(fontSize: mySharedPreferences.sizeLargePrinter.toDouble()),
                                         ),
                                       ],
                                     ),
@@ -885,20 +894,20 @@ class Printer {
                                       children: [
                                         Text(
                                           '${'Order No'.tr} : ${cart.orderNo}',
-                                          style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                          style: kStyleTitlePrinter.copyWith(fontSize: mySharedPreferences.sizeTitlePrinter.toDouble()),
                                         ),
                                         if (cart.orderType == OrderType.dineIn)
                                           Text(
                                             '${'Table No'.tr} : ${allDataModel.tables.firstWhereOrNull((element) => element.id == cart.tableId)?.tableNo ?? ''}',
-                                            style: kStyleTitlePrinter.copyWith(fontWeight: FontWeight.bold),
+                                            style: kStyleTitlePrinter.copyWith(fontSize: mySharedPreferences.sizeTitlePrinter.toDouble()),
                                           ),
                                         Text(
                                           '${'Date'.tr} : ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
-                                          style: kStyleDataPrinter,
+                                          style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                         ),
                                         Text(
                                           '${'Time'.tr} : ${DateFormat('HH:mm:ss a').format(DateTime.now())}',
-                                          style: kStyleDataPrinter,
+                                          style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                         ),
                                       ],
                                     ),
@@ -916,14 +925,14 @@ class Printer {
                                           flex: 4,
                                           child: Text(
                                             'Item Name'.tr,
-                                            style: kStyleDataPrinter,
+                                            style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                             textAlign: TextAlign.center,
                                           ),
                                         ),
                                         Expanded(
                                           child: Text(
                                             'Qty'.tr,
-                                            style: kStyleDataPrinter,
+                                            style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                             textAlign: TextAlign.center,
                                           ),
                                         ),
@@ -931,7 +940,7 @@ class Printer {
                                           flex: 2,
                                           child: Text(
                                             'Note'.tr,
-                                            style: kStyleDataPrinter,
+                                            style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                             textAlign: TextAlign.center,
                                           ),
                                         ),
@@ -961,14 +970,14 @@ class Printer {
                                                     flex: 4,
                                                     child: Text(
                                                       invoices[index].items[indexItem].name,
-                                                      style: kStyleDataPrinter,
+                                                      style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                       textAlign: TextAlign.center,
                                                     ),
                                                   ),
                                                   Expanded(
                                                     child: Text(
                                                       '${invoices[index].items[indexItem].qty}',
-                                                      style: kStyleDataPrinter,
+                                                      style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                       textAlign: TextAlign.center,
                                                     ),
                                                   ),
@@ -976,7 +985,7 @@ class Printer {
                                                     flex: 2,
                                                     child: Text(
                                                       invoices[index].items[indexItem].note,
-                                                      style: kStyleDataPrinter,
+                                                      style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                       textAlign: TextAlign.center,
                                                     ),
                                                   ),
@@ -998,7 +1007,7 @@ class Printer {
                                                         //     Expanded(
                                                         //       child: Text(
                                                         //         '- ${cart.items[index].questions[indexQuestions].question.trim()}',
-                                                        //         style: kStyleDataPrinter,
+                                                        //         style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                         //       ),
                                                         //     ),
                                                         //   ],
@@ -1014,7 +1023,8 @@ class Printer {
                                                                   Expanded(
                                                                     child: Text(
                                                                       '  • ${invoices[index].items[indexItem].questions[indexQuestions].modifiers[indexModifiers].modifier}',
-                                                                      style: kStyleDataPrinter,
+                                                                      style:
+                                                                          kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                                     ),
                                                                   ),
                                                                 ],
@@ -1034,7 +1044,7 @@ class Printer {
                                                         Expanded(
                                                           child: Text(
                                                             '• ${invoices[index].items[indexItem].modifiers[indexModifiers].name} * ${invoices[index].items[indexItem].modifiers[indexModifiers].modifier}',
-                                                            style: kStyleDataPrinter,
+                                                            style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                           ),
                                                         ),
                                                       ],
@@ -1052,7 +1062,7 @@ class Printer {
                                                               flex: 4,
                                                               child: Text(
                                                                 subItem[indexSubItem].name,
-                                                                style: kStyleDataPrinter,
+                                                                style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                                 textAlign: TextAlign.center,
                                                                 maxLines: 1,
                                                                 overflow: TextOverflow.ellipsis,
@@ -1061,7 +1071,7 @@ class Printer {
                                                             Expanded(
                                                               child: Text(
                                                                 '${subItem[indexSubItem].qty}',
-                                                                style: kStyleDataPrinter,
+                                                                style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                                 textAlign: TextAlign.center,
                                                               ),
                                                             ),
@@ -1069,7 +1079,7 @@ class Printer {
                                                               flex: 2,
                                                               child: Text(
                                                                 subItem[indexSubItem].note,
-                                                                style: kStyleDataPrinter,
+                                                                style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                                                                 textAlign: TextAlign.center,
                                                               ),
                                                             ),

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 class Assets {
   static String kAssetsLoginBackground = "";
   static String kAssetsDinInBackground = "";
@@ -18,4 +20,5 @@ class Assets {
   static String kAssetsArrowBottom = "";
   static String kAssetsUser = "";
   static String kAssetsPlaceholder = "";
+  static List<int> kAssetsCompanyLogo = [];
 }

@@ -8,6 +8,7 @@ import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/config_screen.dart';
 import 'package:restaurant_system/screens/home_screen.dart';
 import 'package:restaurant_system/screens/network_log_screen.dart';
+import 'package:restaurant_system/screens/printer_config_screen.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
@@ -130,7 +131,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           margin: const EdgeInsets.symmetric(vertical: 20),
                           onPressed: () {
                             FocusScope.of(context).requestFocus(FocusNode());
-                            if (_controllerUsername.text.isEmpty && _controllerPassword.text == "Falcons@admin") {
+                            if (_controllerUsername.text.isEmpty && _controllerPassword.text == "Printer@admin") {
+                              _controllerPassword.text = '';
+                              Get.to(() => const PrinterConfigScreen());
+                            } else if (_controllerUsername.text.isEmpty && _controllerPassword.text == "Falcons@admin") {
                               _controllerPassword.text = '';
                               Get.to(() => const ConfigScreen())!.then((value) {
                                 RestApi.restDio.options.baseUrl = mySharedPreferences.baseUrl;
