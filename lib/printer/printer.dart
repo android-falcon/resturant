@@ -551,7 +551,7 @@ class Printer {
                           : Screenshot(
                               controller: invoices[index].screenshotController,
                               child: SizedBox(
-                                width: 215.w,
+                                width: mySharedPreferences.printerWidth.toDouble(),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -866,7 +866,7 @@ class Printer {
                         : Screenshot(
                             controller: invoices[index].screenshotController,
                             child: SizedBox(
-                              width: 215.w,
+                              width: mySharedPreferences.printerWidth.toDouble(),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
