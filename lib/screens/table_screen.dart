@@ -14,7 +14,7 @@ import 'package:restaurant_system/models/printer_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
-import 'package:restaurant_system/screens/pay_screen.dart';
+import 'package:restaurant_system/utils/assets.dart';
 import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
@@ -292,7 +292,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                kAssetsTable,
+                                                Assets.kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -433,7 +433,7 @@ class _TableScreenState extends State<TableScreen> {
                                               ),
                                             ),
                                             Image.asset(
-                                              kAssetsTable,
+                                              Assets.kAssetsTable,
                                               height: 80.h,
                                             )
                                           ],
@@ -549,7 +549,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                kAssetsTable,
+                                                Assets.kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -600,7 +600,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                kAssetsUser,
+                                                Assets.kAssetsUser,
                                                 height: 80.h,
                                               )
                                             ],
@@ -749,7 +749,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                kAssetsTable,
+                                                Assets.kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -837,7 +837,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                kAssetsTable,
+                                                Assets.kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -998,7 +998,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                kAssetsTable,
+                                                Assets.kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -1090,7 +1090,7 @@ class _TableScreenState extends State<TableScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                kAssetsTable,
+                                                Assets.kAssetsTable,
                                                 height: 80.h,
                                               )
                                             ],
@@ -1226,7 +1226,7 @@ class _TableScreenState extends State<TableScreen> {
                 Container(
                   decoration:  BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage(kAssetsPlaceholder),
+                      image: AssetImage(Assets.kAssetsPlaceholder),
                     ),
                   ),
                   height: 200.h,
@@ -1379,7 +1379,7 @@ class _TableScreenState extends State<TableScreen> {
               height: 1.sh,
             ),
             Image.asset(
-              kAssetsDinInBackground,
+              Assets.kAssetsDinInBackground,
               width: 1.sw,
               height: 1.sh,
               fit: BoxFit.cover,
@@ -1546,7 +1546,7 @@ class _TableScreenState extends State<TableScreen> {
                                                             Container(
                                                               decoration: BoxDecoration(
                                                                 image: DecorationImage(
-                                                                  image: AssetImage(kAssetsTable),
+                                                                  image: AssetImage(Assets.kAssetsTable),
                                                                 ),
                                                               ),
                                                               height: 70.h,

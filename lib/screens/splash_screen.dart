@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:restaurant_system/screens/login_screen.dart';
-import 'package:restaurant_system/utils/constant.dart';
+import 'package:restaurant_system/utils/assets.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Center(
         child: Image.asset(
-          kAssetsSplash,
+          Assets.kAssetsSplash,
           width: 0.4.sw,
         ),
       ),

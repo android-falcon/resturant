@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:typed_data';
+import 'package:restaurant_system/utils/assets.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -498,7 +499,7 @@ class Printer {
                               ),
                             SizedBox(height: 15.h),
                             Image.asset(
-                              kAssetsWelcome,
+                              Assets.kAssetsWelcome,
                               height: 80.h,
                             ),
                           ],

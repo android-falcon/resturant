@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:restaurant_system/utils/assets.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/enums/enum_company_type.dart';
 
@@ -22,69 +23,51 @@ final kStyleTextOrange = TextStyle(fontWeight: FontWeight.normal, fontSize: 14.s
 
 const companyType = CompanyType.falcons;
 
-String kAssetsLoginBackground = "";
-String kAssetsDinInBackground = "";
-String kAssetsLoginBack = "";
-String kAssetsDrawerHeader = "";
-String kAssetsHomeScreen = "";
-String kAssetsChoose = "";
-String kAssetsTakeAway = "";
-String kAssetsDineIn = "";
-String kAssetsCategory = "";
-String kAssetsItem = "";
-String kAssetsFavorite = "";
-String kAssetsWelcome = "";
-String kAssetsSplash = "";
-String kAssetsTable = "";
-String kAssetsGuests = "";
-String kAssetsArrowRight = "";
-String kAssetsArrowBottom = "";
-String kAssetsUser = "";
-String kAssetsPlaceholder = "";
+
 
 loadAssets() {
   switch (companyType) {
     case CompanyType.falcons:
-      kAssetsLoginBackground = "assets/images/rectangle60.png";
-      kAssetsDinInBackground = "assets/images/dinin_group.png";
-      kAssetsLoginBack = "assets/images/home_back.png";
-      kAssetsDrawerHeader = "assets/images/rectangle60.png";
-      kAssetsHomeScreen = "assets/images/takeway108.png";
-      kAssetsChoose = "assets/images/choose109.png";
-      kAssetsTakeAway = "assets/images/take_away_.png";
-      kAssetsDineIn = "assets/images/dine_in_.png";
-      kAssetsCategory = "assets/images/Image_1.jpg";
-      kAssetsItem = "assets/images/Image_2.png";
-      kAssetsFavorite = "assets/images/Favorite.png";
-      kAssetsWelcome = "assets/images/welcome.png";
-      kAssetsSplash = "assets/images/logo.png";
-      kAssetsTable = "assets/images/table_ellipse.png";
-      kAssetsGuests = "assets/images/guests.png";
-      kAssetsArrowRight = "assets/images/arrowchevronright.png";
-      kAssetsArrowBottom = "assets/images/drop_dark.png";
-      kAssetsUser = "assets/images/user.png";
-      kAssetsPlaceholder = "assets/images/image_placeholder.png";
+      Assets.kAssetsLoginBackground = "assets/images/rectangle60.png";
+      Assets.kAssetsDinInBackground = "assets/images/dinin_group.png";
+      Assets.kAssetsLoginBack = "assets/images/home_back.png";
+      Assets.kAssetsDrawerHeader = "assets/images/rectangle60.png";
+      Assets.kAssetsHomeScreen = "assets/images/takeway108.png";
+      Assets.kAssetsChoose = "assets/images/choose109.png";
+      Assets.kAssetsTakeAway = "assets/images/take_away_.png";
+      Assets.kAssetsDineIn = "assets/images/dine_in_.png";
+      Assets.kAssetsCategory = "assets/images/Image_1.jpg";
+      Assets.kAssetsItem = "assets/images/Image_2.png";
+      Assets.kAssetsFavorite = "assets/images/Favorite.png";
+      Assets.kAssetsWelcome = "assets/images/welcome.png";
+      Assets.kAssetsSplash = "assets/images/logo.png";
+      Assets.kAssetsTable = "assets/images/table_ellipse.png";
+      Assets.kAssetsGuests = "assets/images/guests.png";
+      Assets.kAssetsArrowRight = "assets/images/arrowchevronright.png";
+      Assets.kAssetsArrowBottom = "assets/images/drop_dark.png";
+      Assets.kAssetsUser = "assets/images/user.png";
+      Assets.kAssetsPlaceholder = "assets/images/image_placeholder.png";
       break;
     case CompanyType.umniah:
-      kAssetsLoginBackground = "assets/images/rectangle602.png";
-      kAssetsDinInBackground = "assets/images/dinin_group.png";
-      kAssetsLoginBack = "assets/images/login_back_umnia.png";
-      kAssetsDrawerHeader = "assets/images/logo_arabic.png";
-      kAssetsHomeScreen = "assets/images/takeway108.png";
-      kAssetsChoose = "assets/images/choose109.png";
-      kAssetsTakeAway = "assets/images/take_away_.png";
-      kAssetsDineIn = "assets/images/dine_in_.png";
-      kAssetsCategory = "assets/images/Image_1.jpg";
-      kAssetsItem = "assets/images/Image_2.png";
-      kAssetsFavorite = "assets/images/Favorite.png";
-      kAssetsWelcome = "assets/images/welcome.png";
-      kAssetsSplash = "assets/images/u_logo.png";
-      kAssetsTable = "assets/images/table_ellipse.png";
-      kAssetsGuests = "assets/images/guests.png";
-      kAssetsArrowRight = "assets/images/arrowchevronright.png";
-      kAssetsArrowBottom = "assets/images/drop_dark.png";
-      kAssetsUser = "assets/images/user.png";
-      kAssetsPlaceholder = "assets/images/image_placeholder.png";
+      Assets.kAssetsLoginBackground = "assets/images/rectangle602.png";
+      Assets.kAssetsDinInBackground = "assets/images/dinin_group.png";
+      Assets.kAssetsLoginBack = "assets/images/login_back_umnia.png";
+      Assets.kAssetsDrawerHeader = "assets/images/logo_arabic.png";
+      Assets.kAssetsHomeScreen = "assets/images/takeway108.png";
+      Assets.kAssetsChoose = "assets/images/choose109.png";
+      Assets.kAssetsTakeAway = "assets/images/take_away_.png";
+      Assets.kAssetsDineIn = "assets/images/dine_in_.png";
+      Assets.kAssetsCategory = "assets/images/Image_1.jpg";
+      Assets.kAssetsItem = "assets/images/Image_2.png";
+      Assets.kAssetsFavorite = "assets/images/Favorite.png";
+      Assets.kAssetsWelcome = "assets/images/welcome.png";
+      Assets.kAssetsSplash = "assets/images/u_logo.png";
+      Assets.kAssetsTable = "assets/images/table_ellipse.png";
+      Assets.kAssetsGuests = "assets/images/guests.png";
+      Assets.kAssetsArrowRight = "assets/images/arrowchevronright.png";
+      Assets.kAssetsArrowBottom = "assets/images/drop_dark.png";
+      Assets.kAssetsUser = "assets/images/user.png";
+      Assets.kAssetsPlaceholder = "assets/images/image_placeholder.png";
       break;
   }
 }

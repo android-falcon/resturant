@@ -25,7 +25,7 @@ import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_drawer.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
-import 'package:restaurant_system/screens/widgets/measure_size_widget.dart';
+import 'package:restaurant_system/utils/assets.dart';
 import 'package:restaurant_system/utils/app_config/home_menu.dart';
 import 'package:restaurant_system/utils/color.dart';
 import 'package:restaurant_system/utils/constant.dart';
@@ -1578,7 +1578,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             thickness: 2,
                           ),
                           Image.asset(
-                            kAssetsGuests,
+                            Assets.kAssetsGuests,
                             height: 45.h,
                           ),
                           Text(
@@ -1693,14 +1693,14 @@ class _OrderScreenState extends State<OrderScreen> {
                                                           fit: BoxFit.fill,
                                                           placeholder: (context, url) => Container(),
                                                           errorWidget: (context, url, error) => Image.asset(
-                                                            kAssetsItem,
+                                                            Assets.kAssetsItem,
                                                             height: 80.h,
                                                             width: 300.h,
                                                             fit: BoxFit.fill,
                                                           ),
                                                         )
                                                       : Image.asset(
-                                                          kAssetsItem,
+                                                          Assets.kAssetsItem,
                                                           height: 80.h,
                                                           width: 300.h,
                                                           fit: BoxFit.fill,
@@ -1710,7 +1710,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                     child: Align(
                                                       alignment: Alignment.topRight,
                                                       child: Image.asset(
-                                                        kAssetsFavorite,
+                                                        Assets.kAssetsFavorite,
                                                         height: 30.h,
                                                         width: 30.w,
                                                         fit: BoxFit.fitHeight,
@@ -1816,14 +1816,14 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                     fit: BoxFit.fill,
                                                                     placeholder: (context, url) => Container(),
                                                                     errorWidget: (context, url, error) => Image.asset(
-                                                                      kAssetsCategory,
+                                                                      Assets.kAssetsCategory,
                                                                       height: 80.h,
                                                                       width: 300.h,
                                                                       fit: BoxFit.fill,
                                                                     ),
                                                                   )
                                                                 : Image.asset(
-                                                                    kAssetsCategory,
+                                                                    Assets.kAssetsCategory,
                                                                     height: 80.h,
                                                                     width: 100.w,
                                                                     fit: BoxFit.fitHeight,
@@ -1894,13 +1894,13 @@ class _OrderScreenState extends State<OrderScreen> {
                                                         width: 300.h,
                                                         fit: BoxFit.cover,
                                                         placeholder: (context, url) => Image.asset(
-                                                          kAssetsCategory,
+                                                          Assets.kAssetsCategory,
                                                           height: 120.h,
                                                           width: 300.h,
                                                           fit: BoxFit.cover,
                                                         ),
                                                         errorWidget: (context, url, error) => Image.asset(
-                                                          kAssetsCategory,
+                                                          Assets.kAssetsCategory,
                                                           height: 120.h,
                                                           width: 300.h,
                                                           fit: BoxFit.cover,
@@ -1911,7 +1911,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                         child: Padding(
                                                           padding: EdgeInsets.only(top: 8.h),
                                                           child: Image.asset(
-                                                            kAssetsFavorite,
+                                                            Assets.kAssetsFavorite,
                                                             height: 30.h,
                                                             width: 30.w,
                                                             fit: BoxFit.fitHeight,
@@ -2018,7 +2018,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                               ),
                                             ),
                                             Image.asset(
-                                              kAssetsArrowRight,
+                                              Assets.kAssetsArrowRight,
                                               height: 20.h,
                                             ),
                                           ],
@@ -2107,7 +2107,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                 ),
                                               ),
                                               Image.asset(
-                                                kAssetsArrowRight,
+                                                Assets.kAssetsArrowRight,
                                                 height: 20.h,
                                               ),
                                             ],
@@ -2457,7 +2457,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 },
                                 child: Container(
                                   child: Image.asset(
-                                    kAssetsArrowBottom,
+                                    Assets.kAssetsArrowBottom,
                                     height: 20.h,
                                   ),
                                 ),

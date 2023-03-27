@@ -8,7 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:restaurant_system/models/all_data/cash_in_out_types_model.dart';
+import 'package:restaurant_system/utils/assets.dart';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/end_cash_model.dart';
@@ -1954,14 +1954,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: 10.w,
                     ),
                     Image.asset(
-                      kAssetsHomeScreen,
+                      Assets.kAssetsHomeScreen,
                       height: 250.h,
                       width: 170.w,
                     ),
                     Column(
                       children: [
                         Image.asset(
-                          kAssetsChoose,
+                          Assets.kAssetsChoose,
                           height: 40.h,
                           width: 100.w,
                         ),
@@ -1986,7 +1986,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: Column(
                                     children: [
                                       Image.asset(
-                                        kAssetsTakeAway,
+                                        Assets.kAssetsTakeAway,
                                         height: 130.h,
                                       ),
                                       Padding(
@@ -2017,7 +2017,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: Column(
                                     children: [
                                       Image.asset(
-                                        kAssetsDineIn,
+                                        Assets.kAssetsDineIn,
                                         height: 130.h,
                                       ),
                                       Padding(

@@ -17,6 +17,8 @@ import 'package:restaurant_system/utils/enums/enum_company_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
 import 'package:restaurant_system/utils/validation.dart';
+import 'package:restaurant_system/utils/assets.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -50,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(kAssetsLoginBackground),
+                    image: AssetImage(Assets.kAssetsLoginBackground),
                     fit: BoxFit.fill,
                   ),
                 ),
@@ -167,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(kAssetsLoginBack),
+                    image: AssetImage(Assets.kAssetsLoginBack),
                     fit: BoxFit.fill,
                   ),
                 ),

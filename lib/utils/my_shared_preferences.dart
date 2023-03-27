@@ -135,6 +135,12 @@ class MySharedPreferences {
   set storeNo(int value) {
     _sharedPreferences.setInt(keyStoreNo, value);
   }
+
+  bool get printerBluetooth => _sharedPreferences.getBool(keyPrinterBluetooth) ?? false;
+
+  set printerBluetooth(bool value) {
+    _sharedPreferences.setBool(keyStoreNo, value);
+  }
 }
 
 final mySharedPreferences = MySharedPreferences();
@@ -157,3 +163,4 @@ const String keyPayInOutNoNo = "key_pay_in_out_no";
 const String keyPosNo = "key_pos_no";
 const String keyCashNo = "key_cash_no";
 const String keyStoreNo = "key_store_no";
+const String keyPrinterBluetooth = "key_printer_bluetooth";
