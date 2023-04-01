@@ -47,6 +47,7 @@ class CartModel extends Equatable {
     this.seatsFemale = 0,
     this.seatsMale = 0,
     this.orderNo = 0,
+    this.splitIndex = 0,
   });
 
   OrderType orderType;
@@ -87,8 +88,9 @@ class CartModel extends Equatable {
   int seatsMale;
   String parkName;
   int orderNo;
+  int splitIndex;
 
-  factory CartModel.init({required OrderType orderType, int? tableId}) => CartModel(
+  factory CartModel.init({required OrderType orderType, int? tableId, int? splitIndex}) => CartModel(
         orderType: orderType,
         id: 0,
         total: 0,
@@ -106,6 +108,7 @@ class CartModel extends Equatable {
         items: [],
         tableId: tableId ?? 0,
         orderNo: 0,
+    splitIndex: splitIndex ?? 0,
       );
 
   factory CartModel.fromJson(Map<String, dynamic> json) => CartModel(
@@ -320,7 +323,7 @@ class CartModel extends Equatable {
 
   @override
   // TODO: implement props
-  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableId, note, payCompanyId, deliveryCompanyId, parkName, orderNo];
+  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableId, note, payCompanyId, deliveryCompanyId, parkName, orderNo, splitIndex];
 }
 
 class CartItemModel extends Equatable {
