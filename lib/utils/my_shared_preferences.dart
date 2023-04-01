@@ -133,12 +133,6 @@ class MySharedPreferences {
     _sharedPreferences.setInt(keyStoreNo, value);
   }
 
-  bool get printerBluetooth => _sharedPreferences.getBool(keyPrinterBluetooth) ?? false;
-
-  set printerBluetooth(bool value) {
-    _sharedPreferences.setBool(keyStoreNo, value);
-  }
-
   int get printerWidth => _sharedPreferences.getInt(keyPrinterWidth) ?? 450;
 
   set printerWidth(int value) {
