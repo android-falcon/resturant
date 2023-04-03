@@ -220,5 +220,7 @@ const Map<String, String> en = {
   'The quantity of this item cannot be modified': 'The quantity of this item cannot be modified',
   "A table opened by another user":"A table opened by another user",
   "The account you are logged in with does not have permission":"The account you are logged in with does not have permission",
-  "Printer Bluetooth": "Printer Bluetooth"
+  "Printer Bluetooth": "Printer Bluetooth",
+  "Please select a invoice": "Please select a invoice",
+  "Select": "Select",
 };

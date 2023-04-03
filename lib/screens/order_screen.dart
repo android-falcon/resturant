@@ -44,8 +44,9 @@ import 'package:uuid/uuid.dart';
 class OrderScreen extends StatefulWidget {
   final OrderType type;
   final DineInModel? dineIn;
+  final int indexCartDineIn;
 
-  const OrderScreen({Key? key, required this.type, this.dineIn}) : super(key: key);
+  const OrderScreen({Key? key, required this.type, this.dineIn, this.indexCartDineIn = 0}) : super(key: key);
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -113,7 +114,7 @@ class _OrderScreenState extends State<OrderScreen> {
         ),
     ];
     if (widget.type == OrderType.dineIn) {
-      _cartModel = widget.dineIn!.cart;
+      _cartModel = widget.dineIn!.carts[widget.indexCartDineIn];
     } else {
       _cartModel = CartModel.init(orderType: widget.type);
       mySharedPreferences.orderNo++;
@@ -1411,11 +1412,11 @@ class _OrderScreenState extends State<OrderScreen> {
   _saveDineIn() async {
     Utils.showLoadingDialog();
     await Printer.printInvoicesDialog(cart: _cartModel, showPrintButton: false, cashPrinter: false, kitchenPrinter: true, showInvoiceNo: false);
-    widget.dineIn!.cart = _cartModel;
-    for (var item in widget.dineIn!.cart.items) {
+    widget.dineIn!.carts[widget.indexCartDineIn] = _cartModel;
+    for (var item in widget.dineIn!.carts[widget.indexCartDineIn].items) {
       item.dineInSavedOrder = true;
     }
-    await RestApi.saveTableOrder(cart: widget.dineIn!.cart);
+    await RestApi.saveTableOrder(carts: widget.dineIn!.carts);
     _dineInChangedOrder = false;
     Utils.hideLoadingDialog();
   }
@@ -1433,7 +1434,7 @@ class _OrderScreenState extends State<OrderScreen> {
           if (result && widget.type == OrderType.dineIn && _cartModel.items.isEmpty) {
             var result = await RestApi.closeTable(widget.dineIn!.tableId);
             if (result) {
-              widget.dineIn!.cart = _cartModel;
+              widget.dineIn!.carts[widget.indexCartDineIn] = _cartModel;
               widget.dineIn!.isOpen = false;
             }
           }
@@ -1473,7 +1474,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 if (widget.type == OrderType.dineIn && _cartModel.items.isEmpty) {
                                   var result = await RestApi.closeTable(widget.dineIn!.tableId);
                                   if (result) {
-                                    widget.dineIn!.cart = _cartModel;
+                                    widget.dineIn!.carts[widget.indexCartDineIn] = _cartModel;
                                     widget.dineIn!.isOpen = false;
                                     Get.back();
                                   }
@@ -1582,7 +1583,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             height: 45.h,
                           ),
                           Text(
-                            '${widget.dineIn!.cart.totalSeats}',
+                            '${widget.dineIn!.carts[widget.indexCartDineIn].totalSeats}',
                             textAlign: TextAlign.center,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -2719,7 +2720,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         Fluttertoast.showToast(msg: 'Please save order'.tr);
                                       } else {
                                         // await _saveDineIn();
-                                        Get.to(() => PayScreen(cart: widget.dineIn!.cart, tableId: widget.dineIn!.tableId));
+                                        Get.to(() => PayScreen(cart: widget.dineIn!.carts[widget.indexCartDineIn], tableId: widget.dineIn!.tableId));
                                       }
                                     },
                                   ),

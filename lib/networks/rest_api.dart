@@ -1046,29 +1046,29 @@ class RestApi {
     }
   }
 
-  static Future<bool> saveTableOrder({required CartModel cart}) async {
+  static Future<bool> saveTableOrder({required List<CartModel> carts}) async {
     try {
-      List<Map<String, dynamic>> modifiers = [];
-      for (var item in cart.items) {
-        int rowSerial = 0;
-        modifiers.addAll(item.modifiers.map((e) {
-          rowSerial++;
-          return e.toSaveTable(itemId: item.id, rowSerial: rowSerial);
-        }));
-        for (var question in item.questions) {
-          modifiers.addAll(question.modifiers.map((e) {
-            rowSerial++;
-            return e.toSaveTable(itemId: item.id, rowSerial: rowSerial);
-          }));
-        }
-      }
+      // List<Map<String, dynamic>> modifiers = [];
+      // for (var item in cart.items) {
+      //   int rowSerial = 0;
+      //   modifiers.addAll(item.modifiers.map((e) {
+      //     rowSerial++;
+      //     return e.toSaveTable(itemId: item.id, rowSerial: rowSerial);
+      //   }));
+      //   for (var question in item.questions) {
+      //     modifiers.addAll(question.modifiers.map((e) {
+      //       rowSerial++;
+      //       return e.toSaveTable(itemId: item.id, rowSerial: rowSerial);
+      //     }));
+      //   }
+      // }
       var body = jsonEncode({
-        "TableOrderMaster": cart.toSaveTable(),
-        "TableOrderDetails": List<dynamic>.from(cart.items.map((e) => e.toSaveTable())).toList(),
-        "TableOrderModifire": modifiers,
-        "TableCart": {
-          "TBLCART": jsonEncode(cart.toJson()),
-        },
+        // "TableOrderMaster": cart.toSaveTable(),
+        // "TableOrderDetails": List<dynamic>.from(cart.items.map((e) => e.toSaveTable())).toList(),
+        // "TableOrderModifire": modifiers,
+        // "TableCart": {
+        //   "TBLCART": jsonEncode(cart.toJson()),
+        // },
       });
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
