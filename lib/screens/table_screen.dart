@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -14,6 +15,7 @@ import 'package:restaurant_system/models/printer_invoice_model.dart';
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/printer/printer.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
+import 'package:restaurant_system/screens/pay_screen.dart';
 import 'package:restaurant_system/utils/assets.dart';
 import 'package:restaurant_system/screens/widgets/custom__drop_down.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
@@ -208,16 +210,11 @@ class _TableScreenState extends State<TableScreen> {
     floors = tables.map((e) => e.floorNo).toSet();
     _selectFloor ??= floors.first;
     dineInSaved = tables.map((e) {
-      List<CartModel> carts;
+      CartModel? cart;
       try {
-        var cartsJson = jsonDecode(e.cart);
-        carts = e.cart.isEmpty
-            ? [CartModel.init(orderType: OrderType.dineIn, tableId: e.id)]
-            : cartsJson is List
-                ? List<CartModel>.from(cartsJson.map((e) => CartModel.fromJson(e)))
-                : [CartModel.fromJson(cartsJson)];
+        cart = e.cart.isEmpty ? CartModel.init(orderType: OrderType.dineIn, tableId: e.id) : CartModel.fromJson(jsonDecode(e.cart));
       } catch (ex) {
-        carts = [CartModel.init(orderType: OrderType.dineIn, tableId: e.id)];
+        cart = CartModel.init(orderType: OrderType.dineIn, tableId: e.id);
       }
       return DineInModel(
         isOpen: e.isOpened == 1,
@@ -227,297 +224,10 @@ class _TableScreenState extends State<TableScreen> {
         tableId: e.id,
         tableNo: e.tableNo,
         floorNo: e.floorNo,
-        carts: carts,
+        cart: cart,
       );
     }).toList();
     setState(() {});
-  }
-
-  Future<CartModel?> _showSelectCart(List<CartModel> carts) async {
-    CartModel? selectCart;
-    await Get.dialog(
-      CustomDialog(
-        enableScroll: false,
-        builder: (context, setState, constraints) => Column(
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: StaggeredGrid.count(
-                        crossAxisCount: 2,
-                        children: carts
-                            .map((e) => Container(
-                                  height: 200,
-                                  margin: const EdgeInsets.all(2),
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    border: selectCart == e ? Border.all(color: Colors.black) : null,
-                                  ),
-                                  child: InkWell(
-                                    onTap: () {
-                                      if (e == selectCart) {
-                                        selectCart = null;
-                                      } else {
-                                        selectCart = e;
-                                      }
-                                      setState(() {});
-                                    },
-                                    child: Column(
-                                      children: [
-                                        Text('${e.splitIndex}'),
-                                        Expanded(
-                                          child: ListView(
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border.all(),
-                                                  borderRadius: BorderRadius.circular(3.r),
-                                                ),
-                                                child: Column(
-                                                  children: [
-                                                    Container(
-                                                      color: Colors.white,
-                                                      child: Padding(
-                                                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                                        child: Row(
-                                                          children: [
-                                                            Expanded(
-                                                              child: Text(
-                                                                'Qty'.tr,
-                                                                style: kStyleHeaderTable,
-                                                                textAlign: TextAlign.center,
-                                                              ),
-                                                            ),
-                                                            Expanded(
-                                                              flex: 3,
-                                                              child: Text(
-                                                                'Pro-Nam'.tr,
-                                                                style: kStyleHeaderTable,
-                                                                textAlign: TextAlign.center,
-                                                              ),
-                                                            ),
-                                                            Expanded(
-                                                              child: Text(
-                                                                'Price'.tr,
-                                                                style: kStyleHeaderTable,
-                                                                textAlign: TextAlign.center,
-                                                              ),
-                                                            ),
-                                                            Expanded(
-                                                              child: Text(
-                                                                'Total'.tr,
-                                                                style: kStyleHeaderTable,
-                                                                textAlign: TextAlign.center,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const Divider(color: Colors.grey, height: 1),
-                                                    ListView.separated(
-                                                      itemCount: e.items.length,
-                                                      shrinkWrap: true,
-                                                      physics: const NeverScrollableScrollPhysics(),
-                                                      separatorBuilder: (context, index) => e.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
-                                                      itemBuilder: (context, index) {
-                                                        if (e.items[index].parentUuid.isNotEmpty) {
-                                                          return Container();
-                                                        } else {
-                                                          var subItem = e.items.where((element) => element.parentUuid == e.items[index].uuid).toList();
-                                                          return Column(
-                                                            children: [
-                                                              Padding(
-                                                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                                                child: Row(
-                                                                  children: [
-                                                                    Expanded(
-                                                                      child: Text(
-                                                                        '${e.items[index].qty}',
-                                                                        style: kStyleDataTable,
-                                                                        textAlign: TextAlign.center,
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      flex: 3,
-                                                                      child: Text(
-                                                                        e.items[index].name,
-                                                                        style: kStyleDataTable,
-                                                                        textAlign: TextAlign.center,
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child: Text(
-                                                                        e.items[index].priceChange.toStringAsFixed(3),
-                                                                        style: kStyleDataTable,
-                                                                        textAlign: TextAlign.center,
-                                                                      ),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child: Text(
-                                                                        (e.items[index].priceChange * e.items[index].qty).toStringAsFixed(3),
-                                                                        style: kStyleDataTable,
-                                                                        textAlign: TextAlign.center,
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                              Padding(
-                                                                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                                                child: Column(
-                                                                  children: [
-                                                                    ListView.builder(
-                                                                      itemCount: e.items[index].questions.length,
-                                                                      shrinkWrap: true,
-                                                                      physics: const NeverScrollableScrollPhysics(),
-                                                                      itemBuilder: (context, indexQuestions) => Column(
-                                                                        children: [
-                                                                          Row(
-                                                                            children: [
-                                                                              Expanded(
-                                                                                child: Text(
-                                                                                  e.items[index].questions[indexQuestions].question.trim(),
-                                                                                  style: kStyleDataTableModifiers,
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                          ListView.builder(
-                                                                            itemCount: e.items[index].questions[indexQuestions].modifiers.length,
-                                                                            shrinkWrap: true,
-                                                                            physics: const NeverScrollableScrollPhysics(),
-                                                                            itemBuilder: (context, indexModifiers) => Column(
-                                                                              children: [
-                                                                                Row(
-                                                                                  children: [
-                                                                                    Expanded(
-                                                                                      child: Text(
-                                                                                        '* ${e.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
-                                                                                        style: kStyleDataTableModifiers,
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                    ListView.builder(
-                                                                      itemCount: e.items[index].modifiers.length,
-                                                                      shrinkWrap: true,
-                                                                      physics: const NeverScrollableScrollPhysics(),
-                                                                      itemBuilder: (context, indexModifiers) => Row(
-                                                                        children: [
-                                                                          Expanded(
-                                                                            child: Text(
-                                                                              '${e.items[index].modifiers[indexModifiers].name}\n* ${e.items[index].modifiers[indexModifiers].modifier}',
-                                                                              style: kStyleDataTableModifiers,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                    if (subItem.isNotEmpty)
-                                                                      ListView.builder(
-                                                                        itemCount: subItem.length,
-                                                                        shrinkWrap: true,
-                                                                        physics: const NeverScrollableScrollPhysics(),
-                                                                        itemBuilder: (context, indexSubItem) {
-                                                                          return Row(
-                                                                            children: [
-                                                                              Expanded(
-                                                                                flex: 4,
-                                                                                child: Text(
-                                                                                  subItem[indexSubItem].name,
-                                                                                  style: kStyleDataTableModifiers,
-                                                                                  textAlign: TextAlign.center,
-                                                                                  maxLines: 1,
-                                                                                  overflow: TextOverflow.ellipsis,
-                                                                                ),
-                                                                              ),
-                                                                              Expanded(
-                                                                                child: Text(
-                                                                                  subItem[indexSubItem].priceChange.toStringAsFixed(3),
-                                                                                  style: kStyleDataTableModifiers,
-                                                                                  textAlign: TextAlign.center,
-                                                                                ),
-                                                                              ),
-                                                                              Expanded(
-                                                                                child: Text(
-                                                                                  (subItem[indexSubItem].priceChange * subItem[indexSubItem].qty).toStringAsFixed(3),
-                                                                                  style: kStyleDataTableModifiers,
-                                                                                  textAlign: TextAlign.center,
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          );
-                                                                        },
-                                                                      ),
-                                                                  ],
-                                                                ),
-                                                              )
-                                                            ],
-                                                          );
-                                                        }
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ))
-                            .toList(),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CustomButton(
-                  fixed: true,
-                  child: Text('Select'.tr),
-                  onPressed: () async {
-                    if (selectCart == null) {
-                      Fluttertoast.showToast(msg: 'Please select a invoice'.tr);
-                    } else {
-                      Get.back();
-                    }
-                  },
-                ),
-                SizedBox(width: 10.w),
-                CustomButton(
-                  fixed: true,
-                  backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.redLight,
-                  child: Text('Close'.tr),
-                  onPressed: () {
-                    selectCart = null;
-                    Get.back();
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      barrierDismissible: false,
-    );
-    return selectCart;
   }
 
   Future<void> _showPrintTablesDialog() async {
@@ -632,30 +342,21 @@ class _TableScreenState extends State<TableScreen> {
                     if (_selectTableId == null) {
                       Fluttertoast.showToast(msg: 'Please select a table'.tr);
                     } else {
-                      CartModel? cartPrint;
-                      var indexTable = dineInSaved.indexWhere((element) => element.tableId == _selectTableId);
-                      if (dineInSaved[indexTable].carts.length > 1) {
-                        cartPrint = await _showSelectCart(dineInSaved[indexTable].carts);
-                      } else {
-                        cartPrint = dineInSaved[indexTable].carts.first;
-                      }
-                      if (cartPrint != null) {
-                        var result = await Utils.showAreYouSureDialog(title: 'Print Order'.tr);
-                        if (result) {
-                          Utils.showLoadingDialog();
+                      var result = await Utils.showAreYouSureDialog(title: 'Print Order'.tr);
+                      if (result) {
+                        Utils.showLoadingDialog();
+                        var indexTable = dineInSaved.indexWhere((element) => element.tableId == _selectTableId);
+                        dineInSaved[indexTable].isPrinted = true;
+                        await RestApi.printTable(dineInSaved[indexTable].tableId);
+                        Utils.hideLoadingDialog();
+                        Get.back();
 
-                          dineInSaved[indexTable].isPrinted = true;
-                          await RestApi.printTable(dineInSaved[indexTable].tableId);
-                          Utils.hideLoadingDialog();
-                          Get.back();
-
-                          Printer.printInvoicesDialog(
-                            cart: cartPrint,
-                            showPrintButton: true,
-                            kitchenPrinter: false,
-                            showInvoiceNo: false,
-                          );
-                        }
+                        Printer.printInvoicesDialog(
+                          cart: dineInSaved[indexTable].cart,
+                          showPrintButton: true,
+                          kitchenPrinter: false,
+                          showInvoiceNo: false,
+                        );
                       }
                     }
                   },
@@ -958,7 +659,7 @@ class _TableScreenState extends State<TableScreen> {
                         if (resultApi) {
                           var indexTable = dineInSaved.indexWhere((element) => element.tableId == _selectTableId);
                           dineInSaved[indexTable].userId = _selectUserId!;
-                          await RestApi.saveTableOrder(carts: dineInSaved[indexTable].carts);
+                          await RestApi.saveTableOrder(cart: dineInSaved[indexTable].cart);
                         }
                         Utils.hideLoadingDialog();
                         Get.back();
@@ -1196,16 +897,14 @@ class _TableScreenState extends State<TableScreen> {
                           dineInSaved[indexTo].userId = dineInSaved[indexFrom].userId;
                           dineInSaved[indexTo].isOpen = dineInSaved[indexFrom].isOpen;
                           dineInSaved[indexTo].isReservation = dineInSaved[indexFrom].isReservation;
-                          dineInSaved[indexTo].carts = dineInSaved[indexFrom].carts;
+                          dineInSaved[indexTo].cart = dineInSaved[indexFrom].cart;
+                          dineInSaved[indexTo].cart.tableId = _selectToTableId!;
                           dineInSaved[indexFrom].isOpen = false;
                           dineInSaved[indexFrom].isReservation = false;
-                          dineInSaved[indexFrom].carts = [CartModel.init(orderType: OrderType.dineIn)];
-                          for (var cart in dineInSaved[indexTo].carts) {
-                            cart.tableId = _selectToTableId!;
-                            cart = Utils.calculateOrder(cart: cart, orderType: OrderType.dineIn);
-                          }
+                          dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
+                          dineInSaved[indexTo].cart = Utils.calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
 
-                          await RestApi.saveTableOrder(carts: dineInSaved[indexTo].carts);
+                          await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
                         }
                         Utils.hideLoadingDialog();
                         Get.back();
@@ -1447,23 +1146,15 @@ class _TableScreenState extends State<TableScreen> {
                         if (resultApi) {
                           var indexFrom = dineInSaved.indexWhere((element) => element.tableId == _selectFromTableId);
                           var indexTo = dineInSaved.indexWhere((element) => element.tableId == _selectToTableId);
-                          for (var cart in dineInSaved[indexFrom].carts) {
-                            dineInSaved[indexTo].carts.first.items.addAll(cart.items);
-                            dineInSaved[indexTo].carts.first.totalSeats += cart.totalSeats;
-                            dineInSaved[indexTo].carts.first.seatsFemale += cart.seatsFemale;
-                            dineInSaved[indexTo].carts.first.seatsMale += cart.seatsMale;
-                          }
-
+                          dineInSaved[indexTo].cart.items.addAll(dineInSaved[indexFrom].cart.items);
+                          dineInSaved[indexTo].cart.totalSeats += dineInSaved[indexFrom].cart.totalSeats;
+                          dineInSaved[indexTo].cart.seatsFemale += dineInSaved[indexFrom].cart.seatsFemale;
+                          dineInSaved[indexTo].cart.seatsMale += dineInSaved[indexFrom].cart.seatsMale;
                           dineInSaved[indexFrom].isOpen = false;
                           dineInSaved[indexFrom].isReservation = false;
-                          dineInSaved[indexFrom].carts = [CartModel.init(orderType: OrderType.dineIn)];
-
-                          for (var cart in dineInSaved[indexTo].carts) {
-                            cart.tableId = _selectToTableId!;
-                            cart = Utils.calculateOrder(cart: cart, orderType: OrderType.dineIn);
-                          }
-
-                          await RestApi.saveTableOrder(carts: dineInSaved[indexTo].carts);
+                          dineInSaved[indexFrom].cart = CartModel.init(orderType: OrderType.dineIn);
+                          dineInSaved[indexTo].cart = Utils.calculateOrder(cart: dineInSaved[indexTo].cart, orderType: OrderType.dineIn);
+                          await RestApi.saveTableOrder(cart: dineInSaved[indexTo].cart);
                         }
                         Utils.hideLoadingDialog();
                         Get.back();
@@ -1542,7 +1233,7 @@ class _TableScreenState extends State<TableScreen> {
                 child: StaggeredGrid.count(
                   crossAxisCount: 4,
                   children: dineInSaved
-                      .where((element) => element.isOpen && element.carts.length == 1 && element.floorNo == _selectFloor) //  && element.userId == mySharedPreferences.employee.id
+                      .where((element) => element.isOpen && element.floorNo == _selectFloor) //  && element.userId == mySharedPreferences.employee.id
                       .map((e) => Container(
                             margin: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
@@ -1619,8 +1310,7 @@ class _TableScreenState extends State<TableScreen> {
     DineInModel table = dineInSaved.firstWhere((element) => element.tableId == tableId);
     int _indexItemSelect = -1;
     int _indexItemSelectSplit = -1;
-    List<CartModel> splits = [];
-    CartModel? _selectSplit = null;
+    CartModel split = CartModel.init(orderType: OrderType.dineIn, tableId: tableId);
     await Get.dialog(
       CustomDialog(
         enableScroll: false,
@@ -1689,15 +1379,15 @@ class _TableScreenState extends State<TableScreen> {
                                     ),
                                     const Divider(color: Colors.grey, height: 1),
                                     ListView.separated(
-                                      itemCount: table.carts.first.items.length,
+                                      itemCount: table.cart.items.length,
                                       shrinkWrap: true,
                                       physics: const NeverScrollableScrollPhysics(),
-                                      separatorBuilder: (context, index) => table.carts.first.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
+                                      separatorBuilder: (context, index) => table.cart.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
                                       itemBuilder: (context, index) {
-                                        if (table.carts.first.items[index].parentUuid.isNotEmpty) {
+                                        if (table.cart.items[index].parentUuid.isNotEmpty) {
                                           return Container();
                                         } else {
-                                          var subItem = table.carts.first.items.where((element) => element.parentUuid == table.carts.first.items[index].uuid).toList();
+                                          var subItem = table.cart.items.where((element) => element.parentUuid == table.cart.items[index].uuid).toList();
                                           return InkWell(
                                             onTap: () {
                                               _indexItemSelect = index;
@@ -1713,7 +1403,7 @@ class _TableScreenState extends State<TableScreen> {
                                                       children: [
                                                         Expanded(
                                                           child: Text(
-                                                            '${table.carts.first.items[index].qty}',
+                                                            '${table.cart.items[index].qty}',
                                                             style: kStyleDataTable,
                                                             textAlign: TextAlign.center,
                                                           ),
@@ -1721,21 +1411,21 @@ class _TableScreenState extends State<TableScreen> {
                                                         Expanded(
                                                           flex: 3,
                                                           child: Text(
-                                                            table.carts.first.items[index].name,
+                                                            table.cart.items[index].name,
                                                             style: kStyleDataTable,
                                                             textAlign: TextAlign.center,
                                                           ),
                                                         ),
                                                         Expanded(
                                                           child: Text(
-                                                            table.carts.first.items[index].priceChange.toStringAsFixed(3),
+                                                            table.cart.items[index].priceChange.toStringAsFixed(3),
                                                             style: kStyleDataTable,
                                                             textAlign: TextAlign.center,
                                                           ),
                                                         ),
                                                         Expanded(
                                                           child: Text(
-                                                            (table.carts.first.items[index].priceChange * table.carts.first.items[index].qty).toStringAsFixed(3),
+                                                            (table.cart.items[index].priceChange * table.cart.items[index].qty).toStringAsFixed(3),
                                                             style: kStyleDataTable,
                                                             textAlign: TextAlign.center,
                                                           ),
@@ -1748,7 +1438,7 @@ class _TableScreenState extends State<TableScreen> {
                                                     child: Column(
                                                       children: [
                                                         ListView.builder(
-                                                          itemCount: table.carts.first.items[index].questions.length,
+                                                          itemCount: table.cart.items[index].questions.length,
                                                           shrinkWrap: true,
                                                           physics: const NeverScrollableScrollPhysics(),
                                                           itemBuilder: (context, indexQuestions) => Column(
@@ -1757,14 +1447,14 @@ class _TableScreenState extends State<TableScreen> {
                                                                 children: [
                                                                   Expanded(
                                                                     child: Text(
-                                                                      table.carts.first.items[index].questions[indexQuestions].question.trim(),
+                                                                      table.cart.items[index].questions[indexQuestions].question.trim(),
                                                                       style: kStyleDataTableModifiers,
                                                                     ),
                                                                   ),
                                                                 ],
                                                               ),
                                                               ListView.builder(
-                                                                itemCount: table.carts.first.items[index].questions[indexQuestions].modifiers.length,
+                                                                itemCount: table.cart.items[index].questions[indexQuestions].modifiers.length,
                                                                 shrinkWrap: true,
                                                                 physics: const NeverScrollableScrollPhysics(),
                                                                 itemBuilder: (context, indexModifiers) => Column(
@@ -1773,7 +1463,7 @@ class _TableScreenState extends State<TableScreen> {
                                                                       children: [
                                                                         Expanded(
                                                                           child: Text(
-                                                                            '* ${table.carts.first.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
+                                                                            '* ${table.cart.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
                                                                             style: kStyleDataTableModifiers,
                                                                           ),
                                                                         ),
@@ -1786,14 +1476,14 @@ class _TableScreenState extends State<TableScreen> {
                                                           ),
                                                         ),
                                                         ListView.builder(
-                                                          itemCount: table.carts.first.items[index].modifiers.length,
+                                                          itemCount: table.cart.items[index].modifiers.length,
                                                           shrinkWrap: true,
                                                           physics: const NeverScrollableScrollPhysics(),
                                                           itemBuilder: (context, indexModifiers) => Row(
                                                             children: [
                                                               Expanded(
                                                                 child: Text(
-                                                                  '${table.carts.first.items[index].modifiers[indexModifiers].name}\n* ${table.carts.first.items[index].modifiers[indexModifiers].modifier}',
+                                                                  '${table.cart.items[index].modifiers[indexModifiers].name}\n* ${table.cart.items[index].modifiers[indexModifiers].modifier}',
                                                                   style: kStyleDataTableModifiers,
                                                                 ),
                                                               ),
@@ -1861,12 +1551,12 @@ class _TableScreenState extends State<TableScreen> {
                       SizedBox(height: 50),
                       InkWell(
                         onTap: () {
-                          if (_indexItemSelect != -1 && _selectSplit != null) {
-                            _selectSplit!.items.add(table.carts.first.items[_indexItemSelect]);
-                            var subItem = table.carts.first.items.where((element) => element.parentUuid == table.carts.first.items[_indexItemSelect].uuid).toList();
-                            _selectSplit!.items.addAll(subItem);
-                            table.carts.first.items.removeWhere((element) => element.parentUuid == table.carts.first.items[_indexItemSelect].uuid);
-                            table.carts.first.items.remove(table.carts.first.items[_indexItemSelect]);
+                          if (_indexItemSelect != -1) {
+                            split.items.add(table.cart.items[_indexItemSelect]);
+                            var subItem = table.cart.items.where((element) => element.parentUuid == table.cart.items[_indexItemSelect].uuid).toList();
+                            split.items.addAll(subItem);
+                            table.cart.items.removeWhere((element) => element.parentUuid == table.cart.items[_indexItemSelect].uuid);
+                            table.cart.items.remove(table.cart.items[_indexItemSelect]);
                             _indexItemSelect = -1;
                             setState(() {});
                           }
@@ -1882,12 +1572,12 @@ class _TableScreenState extends State<TableScreen> {
                       SizedBox(height: 50),
                       InkWell(
                         onTap: () {
-                          if (_selectSplit != null && _indexItemSelectSplit != -1) {
-                            table.carts.first.items.add(_selectSplit!.items[_indexItemSelectSplit]);
-                            var subItem = _selectSplit!.items.where((element) => element.parentUuid == _selectSplit!.items[_indexItemSelectSplit].uuid).toList();
-                            table.carts.first.items.addAll(subItem);
-                            _selectSplit!.items.removeWhere((element) => element.parentUuid == _selectSplit!.items[_indexItemSelectSplit].uuid);
-                            _selectSplit!.items.remove(_selectSplit!.items[_indexItemSelectSplit]);
+                          if (_indexItemSelectSplit != -1) {
+                            table.cart.items.add(split.items[_indexItemSelectSplit]);
+                            var subItem = split.items.where((element) => element.parentUuid == split.items[_indexItemSelectSplit].uuid).toList();
+                            table.cart.items.addAll(subItem);
+                            split.items.removeWhere((element) => element.parentUuid == split.items[_indexItemSelectSplit].uuid);
+                            split.items.remove(split.items[_indexItemSelectSplit]);
                             _indexItemSelectSplit = -1;
                             setState(() {});
                           }
@@ -1908,281 +1598,220 @@ class _TableScreenState extends State<TableScreen> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        TextButton.icon(
-                          onPressed: () {
-                            splits.add(CartModel.init(orderType: OrderType.dineIn, tableId: table.tableId, splitIndex: splits.length + 1));
-                            setState(() {});
-                          },
-                          icon: Icon(Icons.add),
-                          label: Text('Split Invoice'.tr),
-                        ),
+                        Text('Split Invoice'.tr),
                         const Divider(),
                         Expanded(
-                          child: SingleChildScrollView(
-                            child: StaggeredGrid.count(
-                              crossAxisCount: 2,
-                              children: splits
-                                  .map((e) => Container(
-                                        height: 200,
-                                        margin: const EdgeInsets.all(2),
-                                        padding: const EdgeInsets.all(2),
-                                        decoration: BoxDecoration(
-                                          border: _selectSplit == e ? Border.all(color: Colors.black) : null,
-                                        ),
-                                        child: InkWell(
-                                          onTap: () {
-                                            if (e == _selectSplit) {
-                                              _selectSplit = null;
-                                            } else {
-                                              _selectSplit = e;
-                                            }
-                                            _indexItemSelectSplit = -1;
-                                            setState(() {});
-                                          },
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Text('${e.splitIndex}'),
-                                                  IconButton(
-                                                    onPressed: () {
-                                                      table.carts.first.items.addAll(e.items);
-                                                      splits.remove(e);
-                                                      _indexItemSelectSplit = -1;
-                                                      _selectSplit = null;
-                                                      for (int i = 0; i < splits.length; i++) {
-                                                        splits[i].splitIndex = i + 1;
-                                                      }
-                                                      setState(() {});
-                                                    },
-                                                    icon: Icon(Icons.clear),
-                                                  ),
-                                                ],
+                          child: ListView(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(),
+                                  borderRadius: BorderRadius.circular(3.r),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      color: Colors.white,
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                'Qty'.tr,
+                                                style: kStyleHeaderTable,
+                                                textAlign: TextAlign.center,
                                               ),
-                                              Expanded(
-                                                child: ListView(
-                                                  children: [
-                                                    Container(
-                                                      decoration: BoxDecoration(
-                                                        border: Border.all(),
-                                                        borderRadius: BorderRadius.circular(3.r),
-                                                      ),
-                                                      child: Column(
-                                                        children: [
-                                                          Container(
-                                                            color: Colors.white,
-                                                            child: Padding(
-                                                              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                                              child: Row(
+                                            ),
+                                            Expanded(
+                                              flex: 3,
+                                              child: Text(
+                                                'Pro-Nam'.tr,
+                                                style: kStyleHeaderTable,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Text(
+                                                'Price'.tr,
+                                                style: kStyleHeaderTable,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Text(
+                                                'Total'.tr,
+                                                style: kStyleHeaderTable,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const Divider(color: Colors.grey, height: 1),
+                                    ListView.separated(
+                                      itemCount: split.items.length,
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      separatorBuilder: (context, index) => split.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
+                                      itemBuilder: (context, index) {
+                                        if (split.items[index].parentUuid.isNotEmpty) {
+                                          return Container();
+                                        } else {
+                                          var subItem = split.items.where((element) => element.parentUuid == split.items[index].uuid).toList();
+                                          return InkWell(
+                                            onTap: () {
+                                              _indexItemSelectSplit = index;
+                                              setState(() {});
+                                            },
+                                            child: Container(
+                                              color: index == _indexItemSelectSplit ? ColorsApp.primaryColor : null,
+                                              child: Column(
+                                                children: [
+                                                  Padding(
+                                                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                                    child: Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            '${split.items[index].qty}',
+                                                            style: kStyleDataTable,
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                        ),
+                                                        Expanded(
+                                                          flex: 3,
+                                                          child: Text(
+                                                            split.items[index].name,
+                                                            style: kStyleDataTable,
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                        ),
+                                                        Expanded(
+                                                          child: Text(
+                                                            split.items[index].priceChange.toStringAsFixed(3),
+                                                            style: kStyleDataTable,
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                        ),
+                                                        Expanded(
+                                                          child: Text(
+                                                            (split.items[index].priceChange * split.items[index].qty).toStringAsFixed(3),
+                                                            style: kStyleDataTable,
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
+                                                    child: Column(
+                                                      children: [
+                                                        ListView.builder(
+                                                          itemCount: split.items[index].questions.length,
+                                                          shrinkWrap: true,
+                                                          physics: const NeverScrollableScrollPhysics(),
+                                                          itemBuilder: (context, indexQuestions) => Column(
+                                                            children: [
+                                                              Row(
                                                                 children: [
                                                                   Expanded(
                                                                     child: Text(
-                                                                      'Qty'.tr,
-                                                                      style: kStyleHeaderTable,
-                                                                      textAlign: TextAlign.center,
-                                                                    ),
-                                                                  ),
-                                                                  Expanded(
-                                                                    flex: 3,
-                                                                    child: Text(
-                                                                      'Pro-Nam'.tr,
-                                                                      style: kStyleHeaderTable,
-                                                                      textAlign: TextAlign.center,
-                                                                    ),
-                                                                  ),
-                                                                  Expanded(
-                                                                    child: Text(
-                                                                      'Price'.tr,
-                                                                      style: kStyleHeaderTable,
-                                                                      textAlign: TextAlign.center,
-                                                                    ),
-                                                                  ),
-                                                                  Expanded(
-                                                                    child: Text(
-                                                                      'Total'.tr,
-                                                                      style: kStyleHeaderTable,
-                                                                      textAlign: TextAlign.center,
+                                                                      split.items[index].questions[indexQuestions].question.trim(),
+                                                                      style: kStyleDataTableModifiers,
                                                                     ),
                                                                   ),
                                                                 ],
                                                               ),
-                                                            ),
-                                                          ),
-                                                          const Divider(color: Colors.grey, height: 1),
-                                                          ListView.separated(
-                                                            itemCount: e.items.length,
-                                                            shrinkWrap: true,
-                                                            physics: const NeverScrollableScrollPhysics(),
-                                                            separatorBuilder: (context, index) => e.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
-                                                            itemBuilder: (context, index) {
-                                                              if (e.items[index].parentUuid.isNotEmpty) {
-                                                                return Container();
-                                                              } else {
-                                                                var subItem = e.items.where((element) => element.parentUuid == e.items[index].uuid).toList();
-                                                                return InkWell(
-                                                                  onTap: _selectSplit != e
-                                                                      ? null
-                                                                      : () {
-                                                                          _selectSplit = e;
-                                                                          _indexItemSelectSplit = index;
-                                                                          setState(() {});
-                                                                        },
-                                                                  child: Container(
-                                                                    color: (_selectSplit == e && index == _indexItemSelectSplit) ? ColorsApp.primaryColor : null,
-                                                                    child: Column(
+                                                              ListView.builder(
+                                                                itemCount: split.items[index].questions[indexQuestions].modifiers.length,
+                                                                shrinkWrap: true,
+                                                                physics: const NeverScrollableScrollPhysics(),
+                                                                itemBuilder: (context, indexModifiers) => Column(
+                                                                  children: [
+                                                                    Row(
                                                                       children: [
-                                                                        Padding(
-                                                                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                                                          child: Row(
-                                                                            children: [
-                                                                              Expanded(
-                                                                                child: Text(
-                                                                                  '${e.items[index].qty}',
-                                                                                  style: kStyleDataTable,
-                                                                                  textAlign: TextAlign.center,
-                                                                                ),
-                                                                              ),
-                                                                              Expanded(
-                                                                                flex: 3,
-                                                                                child: Text(
-                                                                                  e.items[index].name,
-                                                                                  style: kStyleDataTable,
-                                                                                  textAlign: TextAlign.center,
-                                                                                ),
-                                                                              ),
-                                                                              Expanded(
-                                                                                child: Text(
-                                                                                  e.items[index].priceChange.toStringAsFixed(3),
-                                                                                  style: kStyleDataTable,
-                                                                                  textAlign: TextAlign.center,
-                                                                                ),
-                                                                              ),
-                                                                              Expanded(
-                                                                                child: Text(
-                                                                                  (e.items[index].priceChange * e.items[index].qty).toStringAsFixed(3),
-                                                                                  style: kStyleDataTable,
-                                                                                  textAlign: TextAlign.center,
-                                                                                ),
-                                                                              ),
-                                                                            ],
+                                                                        Expanded(
+                                                                          child: Text(
+                                                                            '* ${split.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
+                                                                            style: kStyleDataTableModifiers,
                                                                           ),
                                                                         ),
-                                                                        Padding(
-                                                                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 4.h),
-                                                                          child: Column(
-                                                                            children: [
-                                                                              ListView.builder(
-                                                                                itemCount: e.items[index].questions.length,
-                                                                                shrinkWrap: true,
-                                                                                physics: const NeverScrollableScrollPhysics(),
-                                                                                itemBuilder: (context, indexQuestions) => Column(
-                                                                                  children: [
-                                                                                    Row(
-                                                                                      children: [
-                                                                                        Expanded(
-                                                                                          child: Text(
-                                                                                            e.items[index].questions[indexQuestions].question.trim(),
-                                                                                            style: kStyleDataTableModifiers,
-                                                                                          ),
-                                                                                        ),
-                                                                                      ],
-                                                                                    ),
-                                                                                    ListView.builder(
-                                                                                      itemCount: e.items[index].questions[indexQuestions].modifiers.length,
-                                                                                      shrinkWrap: true,
-                                                                                      physics: const NeverScrollableScrollPhysics(),
-                                                                                      itemBuilder: (context, indexModifiers) => Column(
-                                                                                        children: [
-                                                                                          Row(
-                                                                                            children: [
-                                                                                              Expanded(
-                                                                                                child: Text(
-                                                                                                  '* ${e.items[index].questions[indexQuestions].modifiers[indexModifiers].modifier}',
-                                                                                                  style: kStyleDataTableModifiers,
-                                                                                                ),
-                                                                                              ),
-                                                                                            ],
-                                                                                          ),
-                                                                                        ],
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                              ),
-                                                                              ListView.builder(
-                                                                                itemCount: e.items[index].modifiers.length,
-                                                                                shrinkWrap: true,
-                                                                                physics: const NeverScrollableScrollPhysics(),
-                                                                                itemBuilder: (context, indexModifiers) => Row(
-                                                                                  children: [
-                                                                                    Expanded(
-                                                                                      child: Text(
-                                                                                        '${e.items[index].modifiers[indexModifiers].name}\n* ${e.items[index].modifiers[indexModifiers].modifier}',
-                                                                                        style: kStyleDataTableModifiers,
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                              ),
-                                                                              if (subItem.isNotEmpty)
-                                                                                ListView.builder(
-                                                                                  itemCount: subItem.length,
-                                                                                  shrinkWrap: true,
-                                                                                  physics: const NeverScrollableScrollPhysics(),
-                                                                                  itemBuilder: (context, indexSubItem) {
-                                                                                    return Row(
-                                                                                      children: [
-                                                                                        Expanded(
-                                                                                          flex: 4,
-                                                                                          child: Text(
-                                                                                            subItem[indexSubItem].name,
-                                                                                            style: kStyleDataTableModifiers,
-                                                                                            textAlign: TextAlign.center,
-                                                                                            maxLines: 1,
-                                                                                            overflow: TextOverflow.ellipsis,
-                                                                                          ),
-                                                                                        ),
-                                                                                        Expanded(
-                                                                                          child: Text(
-                                                                                            subItem[indexSubItem].priceChange.toStringAsFixed(3),
-                                                                                            style: kStyleDataTableModifiers,
-                                                                                            textAlign: TextAlign.center,
-                                                                                          ),
-                                                                                        ),
-                                                                                        Expanded(
-                                                                                          child: Text(
-                                                                                            (subItem[indexSubItem].priceChange * subItem[indexSubItem].qty).toStringAsFixed(3),
-                                                                                            style: kStyleDataTableModifiers,
-                                                                                            textAlign: TextAlign.center,
-                                                                                          ),
-                                                                                        ),
-                                                                                      ],
-                                                                                    );
-                                                                                  },
-                                                                                ),
-                                                                            ],
-                                                                          ),
-                                                                        )
                                                                       ],
                                                                     ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        ListView.builder(
+                                                          itemCount: split.items[index].modifiers.length,
+                                                          shrinkWrap: true,
+                                                          physics: const NeverScrollableScrollPhysics(),
+                                                          itemBuilder: (context, indexModifiers) => Row(
+                                                            children: [
+                                                              Expanded(
+                                                                child: Text(
+                                                                  '${split.items[index].modifiers[indexModifiers].name}\n* ${split.items[index].modifiers[indexModifiers].modifier}',
+                                                                  style: kStyleDataTableModifiers,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        if (subItem.isNotEmpty)
+                                                          ListView.builder(
+                                                            itemCount: subItem.length,
+                                                            shrinkWrap: true,
+                                                            physics: const NeverScrollableScrollPhysics(),
+                                                            itemBuilder: (context, indexSubItem) {
+                                                              return Row(
+                                                                children: [
+                                                                  Expanded(
+                                                                    flex: 4,
+                                                                    child: Text(
+                                                                      subItem[indexSubItem].name,
+                                                                      style: kStyleDataTableModifiers,
+                                                                      textAlign: TextAlign.center,
+                                                                      maxLines: 1,
+                                                                      overflow: TextOverflow.ellipsis,
+                                                                    ),
                                                                   ),
-                                                                );
-                                                              }
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      subItem[indexSubItem].priceChange.toStringAsFixed(3),
+                                                                      style: kStyleDataTableModifiers,
+                                                                      textAlign: TextAlign.center,
+                                                                    ),
+                                                                  ),
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      (subItem[indexSubItem].priceChange * subItem[indexSubItem].qty).toStringAsFixed(3),
+                                                                      style: kStyleDataTableModifiers,
+                                                                      textAlign: TextAlign.center,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              );
                                                             },
                                                           ),
-                                                        ],
-                                                      ),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
+                                                  )
+                                                ],
                                               ),
-                                            ],
-                                          ),
-                                        ),
-                                      ))
-                                  .toList(),
-                            ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -2201,8 +1830,31 @@ class _TableScreenState extends State<TableScreen> {
                   onPressed: () async {
                     var result = await Utils.showAreYouSureDialog(title: 'Split'.tr);
                     if (result) {
-                      Get.back();
-                      _initData(true);
+                      if (split.items.isNotEmpty) {
+                        table.cart = Utils.calculateOrder(cart: table.cart, orderType: OrderType.dineIn);
+                        split = Utils.calculateOrder(cart: split, orderType: OrderType.dineIn);
+                        Get.to(() => PayScreen(
+                                  cart: split,
+                                  openTypeDialog: 2,
+                                  tableId: split.tableId,
+                                  split: true,
+                                ))!
+                            .then((value) async {
+                          log('saveTable1 $value');
+                          if (value != null && value) {
+                            log('saveTable');
+                            Get.back();
+                            Utils.showLoadingDialog();
+                            await RestApi.saveTableOrder(cart: table.cart);
+                            Utils.hideLoadingDialog();
+                            _initData(true);
+                          }
+                        });
+                      } else {
+                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                      }
+                      // Get.back();
+                      // _initData(true);
                     }
                   },
                 ),
@@ -2212,9 +1864,7 @@ class _TableScreenState extends State<TableScreen> {
                   backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.redLight,
                   child: Text('Close'.tr),
                   onPressed: () {
-                    for (var element in splits) {
-                      table.carts.first.items.addAll(element.items);
-                    }
+                    table.cart.items.addAll(split.items);
                     Get.back();
                     _initData(true);
                   },
@@ -2556,24 +2206,16 @@ class _TableScreenState extends State<TableScreen> {
                                               bool isOpened = await RestApi.openTable(e.tableId);
                                               Utils.hideLoadingDialog();
                                               if (isOpened) {
-                                                CartModel? selectCart;
-                                                if (e.carts.length > 1) {
-                                                  selectCart = await _showSelectCart(e.carts);
-                                                } else {
-                                                  selectCart = e.carts.first;
-                                                }
-                                                if (selectCart != null) {
-                                                  mySharedPreferences.orderNo++;
-                                                  e.isOpen = true;
-                                                  selectCart.orderNo = mySharedPreferences.orderNo;
-                                                  selectCart.totalSeats = totalSeats['number_seats'];
-                                                  selectCart.seatsMale = totalSeats['male'];
-                                                  selectCart.seatsFemale = totalSeats['female'];
-                                                  Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e, indexCartDineIn: e.carts.indexOf(selectCart!)))!.then((value) {
-                                                    RestApi.unlockTable(e.tableId);
-                                                    _initData(false);
-                                                  });
-                                                }
+                                                mySharedPreferences.orderNo++;
+                                                e.isOpen = true;
+                                                e.cart.orderNo = mySharedPreferences.orderNo;
+                                                e.cart.totalSeats = totalSeats['number_seats'];
+                                                e.cart.seatsMale = totalSeats['male'];
+                                                e.cart.seatsFemale = totalSeats['female'];
+                                                Get.to(() => OrderScreen(type: OrderType.dineIn, dineIn: e))!.then((value) {
+                                                  RestApi.unlockTable(e.tableId);
+                                                  _initData(false);
+                                                });
                                               }
                                             }
                                           }

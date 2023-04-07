@@ -10,7 +10,7 @@ class DineInModel {
     required this.tableId,
     required this.tableNo,
     required this.floorNo,
-    required this.carts,
+    required this.cart,
   });
 
   bool isOpen;
@@ -20,7 +20,7 @@ class DineInModel {
   int tableId;
   int tableNo;
   int floorNo;
-  List<CartModel> carts;
+  CartModel cart;
 
   factory DineInModel.init() => DineInModel(
         isOpen: false,
@@ -30,7 +30,7 @@ class DineInModel {
         tableId: 0,
         tableNo: 0,
         floorNo: 0,
-        carts: [CartModel.init(orderType: OrderType.dineIn)],
+        cart: CartModel.init(orderType: OrderType.dineIn),
       );
 
   factory DineInModel.fromJson(Map<String, dynamic> json) => DineInModel(
@@ -41,11 +41,7 @@ class DineInModel {
         tableId: json['tableId'] ?? 0,
         tableNo: json['tableNo'] ?? 0,
         floorNo: json['floorNo'] ?? 0,
-        carts: json['cart'] == null
-            ? [CartModel.init(orderType: OrderType.dineIn)]
-            : json['cart'] is List
-                ? List<CartModel>.from(json['cart'].map((e) => CartModel.fromJson(e)))
-                : [CartModel.fromJson(json['cart'])],
+        cart: json['cart'] == null ? CartModel.init(orderType: OrderType.dineIn) : CartModel.fromJson(json['cart']),
       );
 
   Map<String, dynamic> toJson() => {
@@ -56,6 +52,6 @@ class DineInModel {
         'tableId': tableId,
         'tableNo': tableNo,
         'floorNo': floorNo,
-        'cart': List<dynamic>.from(carts.map((e) => e.toJson())) ,
+        'cart': cart.toJson(),
       };
 }
