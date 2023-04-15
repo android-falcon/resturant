@@ -39,21 +39,42 @@ class PayScreen extends StatefulWidget {
   final int? tableId;
   final int? openTypeDialog;
   final bool split;
+  final bool network;
 
-  const PayScreen({Key? key, required this.cart, this.tableId, this.openTypeDialog, this.split = false}) : super(key: key);
+  const PayScreen({Key? key, required this.cart, this.tableId, this.openTypeDialog, this.split = false, this.network = false}) : super(key: key);
 
   @override
   State<PayScreen> createState() => _PayScreenState();
 }
 
 class _PayScreenState extends State<PayScreen> {
+  static const platform = MethodChannel('Alnajjar.dev.fultter/channel');
   double remaining = 0;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_) => _calculateRemaining());
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _calculateRemaining();
+      if(widget.network){
+        _networkPayment();
+      }
+    });
+  }
+
+  _networkPayment() async{
+    var result = await platform.invokeMethod('txnSale', {
+      "amount": widget.cart.amountDue.toStringAsFixed(3),
+    });
+    log(' anan ${result}');
+    if(result != null && result['isApproved']){
+      widget.cart.credit = widget.cart.amountDue;
+      _calculateRemaining();
+      _finishInvoice();
+    } else{
+      Get.back();
+    }
   }
 
   _calculateRemaining() {

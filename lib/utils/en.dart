@@ -223,4 +223,5 @@ const Map<String, String> en = {
   "Printer Bluetooth": "Printer Bluetooth",
   "Please select a invoice": "Please select a invoice",
   "Select": "Select",
+  "Enable Payment Network": "Enable Payment Network",
 };

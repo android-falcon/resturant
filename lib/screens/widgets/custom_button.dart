@@ -37,6 +37,8 @@ class CustomButton extends StatelessWidget {
       child: ElevatedButton(
         child:  child,
         style: ElevatedButton.styleFrom(
+
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           onPrimary: Colors.black,
           primary: backgroundColor,
           padding: padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

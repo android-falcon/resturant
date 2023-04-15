@@ -156,6 +156,12 @@ class MySharedPreferences {
   set sizeLargePrinter(int value) {
     _sharedPreferences.setInt(keySizeLargePrinter, value);
   }
+
+  bool get enablePaymentNetwork => _sharedPreferences.getBool(keyEnablePaymentNetwork) ?? false;
+
+  set enablePaymentNetwork(bool value) {
+    _sharedPreferences.setBool(keyEnablePaymentNetwork, value);
+  }
 }
 
 final mySharedPreferences = MySharedPreferences();
@@ -183,3 +189,4 @@ const String keyPrinterWidth = "key_printer_width";
 const String keySizeDataPrinter = "key_size_data_printer";
 const String keySizeTitlePrinter = "key_size_title_printer";
 const String keySizeLargePrinter = "key_size_large_printer";
+const String keyEnablePaymentNetwork = "key_enable_payment_network";
