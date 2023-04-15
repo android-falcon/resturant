@@ -48,7 +48,7 @@ class PayScreen extends StatefulWidget {
 }
 
 class _PayScreenState extends State<PayScreen> {
-  static const platform = MethodChannel('Alnajjar.dev.fultter/channel');
+
   double remaining = 0;
 
   @override
@@ -64,10 +64,9 @@ class _PayScreenState extends State<PayScreen> {
   }
 
   _networkPayment() async{
-    var result = await platform.invokeMethod('txnSale', {
+    var result = await Utils.platform.invokeMethod('txnSale', {
       "amount": widget.cart.amountDue.toStringAsFixed(3),
     });
-    log(' anan ${result}');
     if(result != null && result['isApproved']){
       widget.cart.credit = widget.cart.amountDue;
       _calculateRemaining();

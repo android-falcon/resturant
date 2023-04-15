@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -780,6 +781,9 @@ class _HomeScreenState extends State<HomeScreen> {
       Future.delayed(const Duration(milliseconds: 100)).then((value) async {
         var screenshot = await _screenshotController.capture(delay: const Duration(milliseconds: 10));
         _printer!.image = screenshot;
+        if (screenshot != null && mySharedPreferences.enablePaymentNetwork) {
+          Printer.printPaymentNetwork(invoice: base64Encode(screenshot));
+        }
         await Printer.payInOut(printerImageModel: _printer);
       });
 
@@ -797,6 +801,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       fixed: true,
                       child: Text('Print'.tr),
                       onPressed: () async {
+                        if (_printer != null && mySharedPreferences.enablePaymentNetwork) {
+                          Printer.printPaymentNetwork(invoice: base64Encode(_printer.image!));
+                        }
                         await Printer.payInOut(printerImageModel: _printer!);
                       },
                     ),
@@ -1057,6 +1064,9 @@ class _HomeScreenState extends State<HomeScreen> {
       Future.delayed(const Duration(milliseconds: 100)).then((value) async {
         var screenshot = await _screenshotController.capture(delay: const Duration(milliseconds: 10));
         _printer!.image = screenshot;
+        if (screenshot != null && mySharedPreferences.enablePaymentNetwork) {
+          Printer.printPaymentNetwork(invoice: base64Encode(screenshot));
+        }
         await Printer.payInOut(printerImageModel: _printer);
       });
 
@@ -1074,6 +1084,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       fixed: true,
                       child: Text('Print'.tr),
                       onPressed: () async {
+                        if (_printer != null && mySharedPreferences.enablePaymentNetwork) {
+                          Printer.printPaymentNetwork(invoice: base64Encode(_printer.image!));
+                        }
                         await Printer.payInOut(printerImageModel: _printer!);
                       },
                     ),

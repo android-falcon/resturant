@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
+
 // import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart' as esc_bluetooth;
 import 'package:restaurant_system/utils/assets.dart';
 
@@ -19,6 +21,7 @@ import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
+import 'package:restaurant_system/utils/utils.dart';
 import 'package:screenshot/screenshot.dart';
 
 class Printer {
@@ -65,6 +68,9 @@ class Printer {
       Uint8List? screenshotCash;
       if (cashPrinter) {
         screenshotCash = await _screenshotControllerCash.capture(delay: const Duration(milliseconds: 10));
+        if (screenshotCash != null && mySharedPreferences.enablePaymentNetwork) {
+          Printer.printPaymentNetwork(invoice: base64Encode(screenshotCash));
+        }
       }
       await Future.forEach(invoices, (PrinterInvoiceModel element) async {
         if (cashPrinter && element.items.isEmpty) {
@@ -76,6 +82,7 @@ class Printer {
       });
       invoices.removeWhere((element) => element.invoice == null);
       Printer.invoices(invoices: invoices);
+
     });
 
     await Get.dialog(
@@ -1108,6 +1115,12 @@ class Printer {
       ),
       barrierDismissible: false,
     );
+  }
+
+  static Future<void> printPaymentNetwork({required String invoice}) async {
+    Utils.platform.invokeMethod('printerNetwork', {
+      "invoice": invoice,
+    });
   }
 
   static Future<void> invoices({required List<PrinterInvoiceModel> invoices}) async {

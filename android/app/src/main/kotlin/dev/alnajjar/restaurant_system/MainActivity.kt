@@ -25,13 +25,14 @@ class MainActivity : FlutterActivity() {
     private val CHANNEL = "Alnajjar.dev.fultter/channel"
     private var methodResultWrapper: MethodResultWrapper? = null
     private val TAG = "Apex.TPP.Activity"
+
     companion object {
         @SuppressLint("StaticFieldLeak")
         lateinit var a: Activity
+
         @SuppressLint("StaticFieldLeak")
         lateinit var c: Context
     }
-
 
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -44,6 +45,25 @@ class MainActivity : FlutterActivity() {
             if (call.method == "txnSale") {
                 var amount: String = call.argument("amount")!!
                 TXN.Sale(amount)
+            } else if (call.method == "printerNetwork") {
+                val printerData = ArrayList<LIB.PrinterData?>()
+                printerData.add(
+                    LIB.PrinterData(
+                        IsBold = false,
+                        IsImage = true,
+                        FontSize = 0,
+                        Data = call.argument("invoice")!!
+                    )
+                )
+                printerData.add(
+                    LIB.PrinterData(
+                        IsBold = false,
+                        IsImage = false,
+                        FontSize = 16,
+                        Data = "\n\n\n\n"
+                    )
+                )
+                TXN.Util_Print(printerData)
             } else {
                 methodResultWrapper!!.notImplemented()
             }
@@ -59,7 +79,8 @@ class MainActivity : FlutterActivity() {
             try {
                 val packageManager = a.packageManager
                 val app = packageManager.getApplicationInfo(a.packageName, 0)
-                LIB.clientInfo!!.ApplicationLabel = packageManager.getApplicationLabel(app).toString()
+                LIB.clientInfo!!.ApplicationLabel =
+                    packageManager.getApplicationLabel(app).toString()
                 LIB.clientInfo!!.PackageName = a.packageName
                 LIB.clientInfo!!.CalssName = a.intent.component!!.className
                 LIB.clientInfo!!.PackageVersion =
@@ -97,7 +118,9 @@ class MainActivity : FlutterActivity() {
             }
 
             override fun onPrinterResult(printerResponse: LIB.PrinterResponse?) {
-
+                val response = HashMap<String, Any>()
+                response["code"] = printerResponse!!.Code
+                methodResultWrapper!!.success(response)
             }
 
             override fun OnError(i: Int, s: String?) {

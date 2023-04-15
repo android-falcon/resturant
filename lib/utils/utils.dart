@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -25,6 +26,8 @@ import 'package:restaurant_system/utils/validation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class Utils {
+  static const platform = MethodChannel('Alnajjar.dev.fultter/channel');
+
   static Future<PackageInfo> packageInfo() async => await PackageInfo.fromPlatform();
 
   static bool isNotEmpty(String? s) => s != null && s.isNotEmpty;
