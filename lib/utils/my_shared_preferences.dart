@@ -133,6 +133,12 @@ class MySharedPreferences {
     _sharedPreferences.setInt(keyStoreNo, value);
   }
 
+  int get bookingNo => _sharedPreferences.getInt(keyBookingNo) ?? 0;
+
+  set bookingNo(int value) {
+    _sharedPreferences.setInt(keyBookingNo, value);
+  }
+
   int get printerWidth => _sharedPreferences.getInt(keyPrinterWidth) ?? 450;
 
   set printerWidth(int value) {
@@ -162,6 +168,17 @@ class MySharedPreferences {
   set enablePaymentNetwork(bool value) {
     _sharedPreferences.setBool(keyEnablePaymentNetwork, value);
   }
+
+  bool get enableDineIn => _sharedPreferences.getBool(keyEnableDineIn) ?? true;
+
+  set enableDineIn(bool value) {
+    _sharedPreferences.setBool(keyEnableDineIn, value);
+  }
+  bool get enableTakeAway => _sharedPreferences.getBool(keyEnableTakeAway) ?? true;
+
+  set enableTakeAway(bool value) {
+    _sharedPreferences.setBool(keyEnableTakeAway, value);
+  }
 }
 
 final mySharedPreferences = MySharedPreferences();
@@ -190,3 +207,6 @@ const String keySizeDataPrinter = "key_size_data_printer";
 const String keySizeTitlePrinter = "key_size_title_printer";
 const String keySizeLargePrinter = "key_size_large_printer";
 const String keyEnablePaymentNetwork = "key_enable_payment_network";
+const String keyEnableDineIn = "key_enable_dine_in";
+const String keyEnableTakeAway = "key_enable_take_away";
+const String keyBookingNo = "key_booking_no";

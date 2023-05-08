@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:restaurant_system/database/network_table.dart';
 import 'package:restaurant_system/models/all_data/tables_model.dart';
 import 'package:restaurant_system/models/all_data_model.dart';
+import 'package:restaurant_system/models/booking_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
 import 'package:restaurant_system/models/cash_last_serials_model.dart';
 import 'package:restaurant_system/models/dine_in_model.dart';
@@ -1418,6 +1419,172 @@ class RestApi {
     } catch (e) {
       _traceCatch(e);
       // Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+    }
+  }
+
+  static Future<List<BookingModel>> getBooking() async {
+    try {
+      Utils.showLoadingDialog();
+      var queryParameters = {
+        "PosNo": mySharedPreferences.posNo,
+        "Year": mySharedPreferences.dailyClose.year,
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'GET_BOOKING',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.GET_BOOKING,
+        method: 'GET',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.get(ApiUrl.GET_BOOKING, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      Utils.hideLoadingDialog();
+      if (response.statusCode == 200) {
+        return List<BookingModel>.from(response.data.map((e) => BookingModel.fromJson(e)));
+      } else {
+        Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+        return [];
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Utils.hideLoadingDialog();
+      return [];
+    } catch (e) {
+      _traceCatch(e);
+      Utils.hideLoadingDialog();
+      return [];
+    }
+  }
+
+  static Future<bool> saveBooking(
+      {required int hours, required int persons, required String phoneNumber, required String name, required String bookingDate}) async {
+    try {
+      Utils.showLoadingDialog();
+      var body = jsonEncode({
+        "Id": mySharedPreferences.bookingNo,
+        "CashNo": mySharedPreferences.cashNo,
+        "PosNo": mySharedPreferences.posNo,
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "UserId": mySharedPreferences.employee.id,
+        "CustomerPhone": phoneNumber,
+        "CustomerName": name,
+        "BookingDate": bookingDate,
+        "NoOfHours": hours,
+        "NoOfPersons": persons,
+        "BookingFlag": 0,
+      });
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'SAVE_BOOKING',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.SAVE_BOOKING,
+        method: 'POST',
+        params: '',
+        body: body,
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      mySharedPreferences.bookingNo++;
+      final response = await restDio.post(ApiUrl.SAVE_BOOKING, data: body);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      Utils.hideLoadingDialog();
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
+      Utils.hideLoadingDialog();
+      return false;
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Utils.hideLoadingDialog();
+      return false;
+    }
+  }
+
+  static Future<bool> deleteBooking({required int id}) async {
+    try {
+      Utils.showLoadingDialog();
+      var queryParameters = {
+        "Id": id,
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'CHANGE_BOOKING',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.CHANGE_BOOKING,
+        method: 'PUT',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.put(ApiUrl.CHANGE_BOOKING, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      Utils.hideLoadingDialog();
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
+      Utils.hideLoadingDialog();
+      return false;
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Utils.hideLoadingDialog();
+      return false;
     }
   }
 }

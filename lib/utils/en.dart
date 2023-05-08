@@ -224,4 +224,12 @@ const Map<String, String> en = {
   "Please select a invoice": "Please select a invoice",
   "Select": "Select",
   "Enable Payment Network": "Enable Payment Network",
+  "Enable Take Away": "Enable Take Away",
+  "Enable Dine In": "Enable Dine In",
+  "Booking No": "Booking No",
+  "Booking": "Booking",
+  "Add Booking": "Add Booking",
+  "Phone Number": "Phone Number",
+  "Hours": "Hours",
+  "Persons": "Persons",
 };
