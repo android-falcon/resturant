@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/widgets/custom_button.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
@@ -21,6 +22,8 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
   final _controllerName = TextEditingController();
   final _controllerHours = TextEditingController();
   final _controllerPersons = TextEditingController();
+  final _controllerBookingDate = TextEditingController();
+  final String dateFormat = 'yyyy-MM-dd HH:mm';
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +73,36 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
                   },
                   enableInteractiveSelection: false,
                   keyboardType: const TextInputType.numberWithOptions(),
+                ),
+                CustomTextField(
+                  controller: _controllerBookingDate,
+                  label: Text('Date'.tr),
+                  textDirection: TextDirection.ltr,
+                  readOnly: true,
+                  validator: (value) {
+                    return Validation.isRequired(value);
+                  },
+                  onTap: () async {
+                    var selectedDate = _controllerBookingDate.text.isNotEmpty ? intl.DateFormat(dateFormat).parse(_controllerBookingDate.text) : DateTime.now();
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: DateTime(2000), //DateTime.now() - not to allow to choose before today.
+                      lastDate: DateTime(2101),
+                    );
+                    if (pickedDate != null) {
+                      TimeOfDay? pickedTime = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay(hour: selectedDate.hour, minute: selectedDate.minute),
+                      );
+                      if(pickedTime != null){
+                        pickedDate = pickedDate.copyWith(hour: pickedTime.hour, minute: pickedTime.minute);
+                        String formattedDate = intl.DateFormat(dateFormat).format(pickedDate);
+                        _controllerBookingDate.text = formattedDate; //set output date to TextField value.
+                      }
+
+                    }
+                  },
                 ),
                 CustomButton(
                   backgroundColor: ColorsApp.primaryColor,
