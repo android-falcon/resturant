@@ -75,7 +75,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     );
                     if (result) {
                       Get.back();
-                      Get.to(() => const OrderScreen(type: OrderType.takeAway));
+                      Get.to(() => OrderScreen(type: OrderType.takeAway, customerName: booking[index].customerName));
                     }
                   }
                 },

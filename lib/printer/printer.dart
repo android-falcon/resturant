@@ -82,7 +82,6 @@ class Printer {
       });
       invoices.removeWhere((element) => element.invoice == null);
       Printer.invoices(invoices: invoices);
-
     });
 
     await Get.dialog(
@@ -213,6 +212,11 @@ class Printer {
                           ),
                         ],
                       ),
+                      if (Utils.isNotEmpty(cart.customerName))
+                        Text(
+                          '${'Customer Name'.tr} : ${cart.customerName}',
+                          style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
+                        ),
                       const Divider(color: Colors.black, thickness: 2),
                       Column(
                         children: [

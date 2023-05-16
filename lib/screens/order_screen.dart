@@ -45,8 +45,9 @@ import 'package:uuid/uuid.dart';
 class OrderScreen extends StatefulWidget {
   final OrderType type;
   final DineInModel? dineIn;
+  final String customerName;
 
-  const OrderScreen({Key? key, required this.type, this.dineIn}) : super(key: key);
+  const OrderScreen({Key? key, required this.type, this.dineIn, this.customerName = ''}) : super(key: key);
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -117,7 +118,7 @@ class _OrderScreenState extends State<OrderScreen> {
     if (widget.type == OrderType.dineIn) {
       _cartModel = widget.dineIn!.cart;
     } else {
-      _cartModel = CartModel.init(orderType: widget.type);
+      _cartModel = CartModel.init(orderType: widget.type, customerName: widget.customerName);
       mySharedPreferences.orderNo++;
       _cartModel.orderNo = mySharedPreferences.orderNo;
     }
