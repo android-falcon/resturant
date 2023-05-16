@@ -25,6 +25,7 @@ import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_drawer.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
+import 'package:restaurant_system/screens/widgets/custom_text_field_num.dart';
 import 'package:restaurant_system/utils/assets.dart';
 import 'package:restaurant_system/utils/app_config/home_menu.dart';
 import 'package:restaurant_system/utils/color.dart';
@@ -1123,6 +1124,133 @@ class _OrderScreenState extends State<OrderScreen> {
     return double.parse(qty);
   }
 
+  Future<List<CartItemModel>> _showSubItemsQtyDialog({double? maxQty, double minQty = 0, required List<CartItemModel> subItems}) async {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    TextEditingController? _controllerSelectEdit;
+    List<TextEditingController> subItemsController = subItems.map((e) => TextEditingController(text: e.qty.toStringAsFixed(3).replaceFirst('.000', ''))).toList();
+    List<double> subItemsDefaultQty = subItems.map((e) => e.qty).toList();
+    await Get.dialog(
+      CustomDialog(
+        gestureDetectorOnTap: () {
+          _controllerSelectEdit = null;
+        },
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Form(
+              key: _keyForm,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child:           Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Container(),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Qty'.tr,
+                                textAlign: TextAlign.center,
+                                style: kStyleTextDefault,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Total'.tr,
+                                textAlign: TextAlign.center,
+                                style: kStyleTextDefault,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ListView.builder(
+                          itemCount: subItems.length,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        subItems[index].qty = subItems[index].qty + 1;
+                                        subItemsController[index].text = '${subItems[index].qty}';
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 4.h),
+                                      child: Text(
+                                        subItems[index].name,
+                                        textAlign: TextAlign.center,
+                                        style: kStyleTextDefault,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: CustomTextFieldNum(
+                                    enableInteractiveSelection: false,
+                                    controller: subItemsController[index],
+                                    fillColor:
+                                    _controllerSelectEdit == subItemsController[index] ? ColorsApp.primaryColor.withOpacity(0.2) : null,
+                                    onTap: () {
+                                      FocusScope.of(context).requestFocus(FocusNode());
+                                      _controllerSelectEdit = subItemsController[index];
+                                      setState(() {});
+                                    },
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    (subItems[index].priceChange * subItems[index].qty).toStringAsFixed(3),
+                                    textAlign: TextAlign.center,
+                                    style: kStyleTextDefault,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Utils.numPadWidget(
+                        _controllerSelectEdit,
+                        setState,
+                        onSubmit: () {
+                          if (_keyForm.currentState!.validate()) {
+                            Get.back();
+                          }
+                        },
+                        onExit: () {
+                          for(int i = 0; i < subItems.length; i++){
+                            subItems[i].qty = subItemsDefaultQty[i];
+                          }
+                          Get.back();
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return subItems;
+  }
+
   Future<String> _showNoteItemDialog({required String note}) async {
     TextEditingController _controllerNote = TextEditingController(text: note);
     await Get.dialog(
@@ -1273,6 +1401,20 @@ class _OrderScreenState extends State<OrderScreen> {
                 element.qty = _cartModel.items[_indexItemSelect].qty;
               }
             }
+            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+            setState(() {});
+          } else {
+            Fluttertoast.showToast(msg: 'The quantity of this item cannot be modified'.tr);
+          }
+        } else {
+          Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
+        }
+        break;
+      case 'Qty Sub Item':
+        if (_indexItemSelect != -1) {
+          if (!_cartModel.items[_indexItemSelect].dineInSavedOrder) {
+            var subItems = _cartModel.items.where((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid).toList();
+            subItems = await _showSubItemsQtyDialog(subItems: subItems, minQty: 0);
             _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
             setState(() {});
           } else {
@@ -2035,7 +2177,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                           }
                                         }
                                       },
-                                      child:  Center(
+                                      child: Center(
                                         child: Text(
                                           'Discount'.tr,
                                           textAlign: TextAlign.center,
@@ -2053,72 +2195,72 @@ class _OrderScreenState extends State<OrderScreen> {
                               if (mySharedPreferences.employee.hasVoidAllPermission)
                                 Expanded(
                                     child: Container(
-                                      height: 30.h,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color: ColorsApp.primaryColor),
-                                        borderRadius: BorderRadius.circular(
-                                          10.0,
-                                        ),
-                                      ),
-                                      child: InkWell(
-                                        onTap: () async {
-                                          var permission = false;
-                                          if (mySharedPreferences.employee.hasVoidAllPermission) {
+                                  height: 30.h,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: ColorsApp.primaryColor),
+                                    borderRadius: BorderRadius.circular(
+                                      10.0,
+                                    ),
+                                  ),
+                                  child: InkWell(
+                                    onTap: () async {
+                                      var permission = false;
+                                      if (mySharedPreferences.employee.hasVoidAllPermission) {
+                                        permission = true;
+                                      } else {
+                                        EmployeeModel? employee = await Utils.showLoginDialog();
+                                        if (employee != null) {
+                                          if (employee.hasVoidAllPermission) {
                                             permission = true;
                                           } else {
-                                            EmployeeModel? employee = await Utils.showLoginDialog();
-                                            if (employee != null) {
-                                              if (employee.hasVoidAllPermission) {
-                                                permission = true;
-                                              } else {
-                                                Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
-                                              }
+                                            Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                                          }
+                                        }
+                                      }
+                                      if (permission) {
+                                        if (_cartModel.items.isEmpty) {
+                                          Fluttertoast.showToast(msg: 'There must be items'.tr);
+                                        } else {
+                                          VoidReasonModel? result;
+                                          if (allDataModel.companyConfig[0].useVoidReason) {
+                                            result = await _showVoidReasonDialog();
+                                          } else {
+                                            var areYouSure = await Utils.showAreYouSureDialog(
+                                              title: 'Void All'.tr,
+                                            );
+                                            if (areYouSure) {
+                                              result = VoidReasonModel.fromJson({});
                                             }
                                           }
-                                          if (permission) {
-                                            if (_cartModel.items.isEmpty) {
-                                              Fluttertoast.showToast(msg: 'There must be items'.tr);
-                                            } else {
-                                              VoidReasonModel? result;
-                                              if (allDataModel.companyConfig[0].useVoidReason) {
-                                                result = await _showVoidReasonDialog();
-                                              } else {
-                                                var areYouSure = await Utils.showAreYouSureDialog(
-                                                  title: 'Void All'.tr,
-                                                );
-                                                if (areYouSure) {
-                                                  result = VoidReasonModel.fromJson({});
-                                                }
-                                              }
-                                              if (result != null) {
-                                                RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
-                                                List<CartItemModel> voidItems = [];
-                                                voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
-                                                if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
-                                                  Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
-                                                }
-                                                _indexItemSelect = -1;
-                                                _cartModel.items = [];
-                                                _cartModel.deliveryCharge = 0;
-                                                _cartModel.discount = 0;
-                                                _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                                _dineInChangedOrder = true;
-                                                setState(() {});
-                                              }
+                                          if (result != null) {
+                                            RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
+                                            List<CartItemModel> voidItems = [];
+                                            voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
+                                            if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
+                                              Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
                                             }
+                                            _indexItemSelect = -1;
+                                            _cartModel.items = [];
+                                            _cartModel.deliveryCharge = 0;
+                                            _cartModel.discount = 0;
+                                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                            _dineInChangedOrder = true;
+                                            setState(() {});
                                           }
-                                        },
-                                        child: Center(
-                                          child: Text(
-                                            'Void All'.tr,
-                                            textAlign: TextAlign.center,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: kStyleTextOrange,
-                                          ),
-                                        ),
+                                        }
+                                      }
+                                    },
+                                    child: Center(
+                                      child: Text(
+                                        'Void All'.tr,
+                                        textAlign: TextAlign.center,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        style: kStyleTextOrange,
                                       ),
-                                    )),
+                                    ),
+                                  ),
+                                )),
                               SizedBox(
                                 width: 1.w,
                               ),
@@ -2309,6 +2451,13 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                     ),
                                                                   ),
                                                                   PopupMenuItem(
+                                                                    value: 'Qty Sub Item',
+                                                                    child: Text(
+                                                                      'Qty Sub Item'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
+                                                                  ),
+                                                                  PopupMenuItem(
                                                                     value: 'Modifier',
                                                                     child: Text(
                                                                       'Modifier'.tr,
@@ -2411,6 +2560,15 @@ class _OrderScreenState extends State<OrderScreen> {
                                                               itemBuilder: (context, indexSubItem) {
                                                                 return Row(
                                                                   children: [
+                                                                    Expanded(
+                                                                      child: Text(
+                                                                        '${subItem[indexSubItem].qty}',
+                                                                        style: kStyleDataTableModifiers,
+                                                                        textAlign: TextAlign.center,
+                                                                        maxLines: 1,
+                                                                        overflow: TextOverflow.ellipsis,
+                                                                      ),
+                                                                    ),
                                                                     Expanded(
                                                                       flex: 4,
                                                                       child: Text(
@@ -2604,139 +2762,139 @@ class _OrderScreenState extends State<OrderScreen> {
                           SizedBox(
                             height: 5.h,
                           ),
-                          if(!_isShowTotal)
-                          Container(
-                            width: 150.w,
-                            height: 35.h,
-                            decoration: BoxDecoration(
-                                color: ColorsApp.backgroundDialog,
-                                borderRadius: BorderRadius.circular(
-                                  5.0,
+                          if (!_isShowTotal)
+                            Container(
+                              width: 150.w,
+                              height: 35.h,
+                              decoration: BoxDecoration(
+                                  color: ColorsApp.backgroundDialog,
+                                  borderRadius: BorderRadius.circular(
+                                    5.0,
+                                  ),
+                                  border: Border.all(color: ColorsApp.black)),
+                              child: Center(
+                                child: Text(
+                                  'Amount Due'.tr + '\t\t\t' + _cartModel.amountDue.toStringAsFixed(3),
+                                  style: kStyleTextDefault.copyWith(color: ColorsApp.black, fontWeight: FontWeight.bold),
                                 ),
-                                border: Border.all(color: ColorsApp.black)),
-                            child: Center(
-                              child: Text(
-                                'Amount Due'.tr + '\t\t\t' + _cartModel.amountDue.toStringAsFixed(3),
-                                style: kStyleTextDefault.copyWith(color: ColorsApp.black, fontWeight: FontWeight.bold),
                               ),
                             ),
-                          ),
-                          if(!_isShowTotal)
-                          Row(
-                            children: [
-                              if (widget.type == OrderType.takeAway)
-                                Expanded(
-                                  child: CustomButton(
-                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                    child: Text(
-                                      'Cash'.tr,
-                                      style: kStyleTextButton,
+                          if (!_isShowTotal)
+                            Row(
+                              children: [
+                                if (widget.type == OrderType.takeAway)
+                                  Expanded(
+                                    child: CustomButton(
+                                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                      child: Text(
+                                        'Cash'.tr,
+                                        style: kStyleTextButton,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.primaryColor,
+                                      onPressed: () async {
+                                        if (_cartModel.items.isNotEmpty) {
+                                          Get.to(() => PayScreen(
+                                                cart: _cartModel,
+                                                openTypeDialog: 1,
+                                              ));
+                                        } else {
+                                          Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.primaryColor,
-                                    onPressed: () async {
-                                      if (_cartModel.items.isNotEmpty) {
-                                        Get.to(() => PayScreen(
-                                              cart: _cartModel,
-                                              openTypeDialog: 1,
-                                            ));
-                                      } else {
-                                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
-                                      }
-                                    },
                                   ),
-                                ),
-                              if (widget.type == OrderType.takeAway)
-                                Expanded(
-                                  child: CustomButton(
-                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                    child: Text(
-                                      'Visa'.tr,
-                                      style: kStyleTextButton,
+                                if (widget.type == OrderType.takeAway)
+                                  Expanded(
+                                    child: CustomButton(
+                                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                      child: Text(
+                                        'Visa'.tr,
+                                        style: kStyleTextButton,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.primaryColor,
+                                      onPressed: () async {
+                                        if (_cartModel.items.isNotEmpty) {
+                                          Get.to(() => PayScreen(
+                                                cart: _cartModel,
+                                                openTypeDialog: 0,
+                                              ));
+                                        } else {
+                                          Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.primaryColor,
-                                    onPressed: () async {
-                                      if (_cartModel.items.isNotEmpty) {
-                                        Get.to(() => PayScreen(
-                                              cart: _cartModel,
-                                              openTypeDialog: 0,
-                                            ));
-                                      } else {
-                                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
-                                      }
-                                    },
                                   ),
-                                ),
-                              if (widget.type == OrderType.takeAway)
-                                Expanded(
-                                  child: CustomButton(
-                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                    child: Text(
-                                      'Multi Pay'.tr,
-                                      style: kStyleTextButton,
-                                      overflow: TextOverflow.ellipsis,
+                                if (widget.type == OrderType.takeAway)
+                                  Expanded(
+                                    child: CustomButton(
+                                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                      child: Text(
+                                        'Multi Pay'.tr,
+                                        style: kStyleTextButton,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.primaryColor,
+                                      onPressed: () {
+                                        if (_cartModel.items.isNotEmpty) {
+                                          Get.to(() => PayScreen(
+                                                cart: _cartModel,
+                                                openTypeDialog: 2,
+                                              ));
+                                        } else {
+                                          Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.primaryColor,
-                                    onPressed: () {
-                                      if (_cartModel.items.isNotEmpty) {
-                                        Get.to(() => PayScreen(
-                                              cart: _cartModel,
-                                              openTypeDialog: 2,
-                                            ));
-                                      } else {
-                                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
-                                      }
-                                    },
                                   ),
-                                ),
-                              if (widget.type == OrderType.dineIn)
-                                Expanded(
-                                  child: CustomButton(
-                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                    child: Text(
-                                      'Order'.tr,
-                                      style: kStyleTextButton,
+                                if (widget.type == OrderType.dineIn)
+                                  Expanded(
+                                    child: CustomButton(
+                                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                      child: Text(
+                                        'Order'.tr,
+                                        style: kStyleTextButton,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.red,
+                                      onPressed: () async {
+                                        if (_cartModel.items.isEmpty) {
+                                          Fluttertoast.showToast(msg: 'Please add items'.tr);
+                                        } else {
+                                          await _saveDineIn();
+                                          Get.back();
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.red,
-                                    onPressed: () async {
-                                      if (_cartModel.items.isEmpty) {
-                                        Fluttertoast.showToast(msg: 'Please add items'.tr);
-                                      } else {
-                                        await _saveDineIn();
-                                        Get.back();
-                                      }
-                                    },
                                   ),
-                                ),
-                              if (widget.type == OrderType.dineIn)
-                                Expanded(
-                                  child: CustomButton(
-                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                    child: Text(
-                                      'Check Out'.tr,
-                                      style: kStyleTextButton,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                if (widget.type == OrderType.dineIn)
+                                  Expanded(
+                                    child: CustomButton(
+                                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                      child: Text(
+                                        'Check Out'.tr,
+                                        style: kStyleTextButton,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.green,
+                                      onPressed: () async {
+                                        if (_cartModel.items.isEmpty) {
+                                          Fluttertoast.showToast(msg: 'Please add items'.tr);
+                                        } else if (_dineInChangedOrder) {
+                                          Fluttertoast.showToast(msg: 'Please save order'.tr);
+                                        } else {
+                                          // await _saveDineIn();
+                                          Get.to(() => PayScreen(cart: widget.dineIn!.cart, tableId: widget.dineIn!.tableId));
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.green,
-                                    onPressed: () async {
-                                      if (_cartModel.items.isEmpty) {
-                                        Fluttertoast.showToast(msg: 'Please add items'.tr);
-                                      } else if (_dineInChangedOrder) {
-                                        Fluttertoast.showToast(msg: 'Please save order'.tr);
-                                      } else {
-                                        // await _saveDineIn();
-                                        Get.to(() => PayScreen(cart: widget.dineIn!.cart, tableId: widget.dineIn!.tableId));
-                                      }
-                                    },
                                   ),
-                                ),
-                            ],
-                          ),
+                              ],
+                            ),
                           if (!_isShowTotal && mySharedPreferences.enablePaymentNetwork)
                             CustomButton(
                               margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 2),
