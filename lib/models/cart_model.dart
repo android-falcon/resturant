@@ -48,6 +48,7 @@ class CartModel extends Equatable {
     this.seatsMale = 0,
     this.orderNo = 0,
     this.customerName = '',
+    this.customerPhone = '',
   });
 
   OrderType orderType;
@@ -89,8 +90,9 @@ class CartModel extends Equatable {
   String parkName;
   int orderNo;
   String customerName;
+  String customerPhone;
 
-  factory CartModel.init({required OrderType orderType, int? tableId, int? splitIndex, String? customerName}) => CartModel(
+  factory CartModel.init({required OrderType orderType, int? tableId, int? splitIndex, String? customerName, String? customerPhone}) => CartModel(
         orderType: orderType,
         id: 0,
         total: 0,
@@ -109,6 +111,7 @@ class CartModel extends Equatable {
         tableId: tableId ?? 0,
         orderNo: 0,
         customerName: customerName ?? '',
+    customerPhone: customerPhone ?? '',
       );
 
   factory CartModel.fromJson(Map<String, dynamic> json) => CartModel(
@@ -151,6 +154,7 @@ class CartModel extends Equatable {
         seatsMale: json['seatsMale'] ?? 0,
         orderNo: json['orderNo'] ?? 0,
         customerName: json['customerName'] ?? '',
+    customerPhone: json['customerPhone'] ?? '',
       );
 
   factory CartModel.fromJsonServer(Map<String, dynamic> json) => CartModel(
@@ -189,6 +193,7 @@ class CartModel extends Equatable {
         parkName: '',
         orderNo: 0,
         customerName: '',
+    customerPhone: '',
       );
 
   Map<String, dynamic> toJson() => {
@@ -231,6 +236,7 @@ class CartModel extends Equatable {
         'seatsMale': seatsMale,
         'orderNo': orderNo,
         'customerName': customerName,
+        'customerPhone': customerPhone,
       };
 
   Map<String, dynamic> toInvoice() => {
@@ -326,7 +332,7 @@ class CartModel extends Equatable {
 
   @override
   // TODO: implement props
-  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableId, note, payCompanyId, deliveryCompanyId, parkName, orderNo, customerName];
+  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableId, note, payCompanyId, deliveryCompanyId, parkName, orderNo, customerName, customerPhone];
 }
 
 class CartItemModel extends Equatable {

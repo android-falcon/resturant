@@ -233,4 +233,5 @@ const Map<String, String> en = {
   "Hours": "Hours",
   "Persons": "Persons",
   "Customer Name": "Customer Name",
+  "Customer Phone": "Customer Phone",
 };

@@ -217,6 +217,11 @@ class Printer {
                           '${'Customer Name'.tr} : ${cart.customerName}',
                           style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
                         ),
+                      if (Utils.isNotEmpty(cart.customerPhone))
+                        Text(
+                          '${'Customer Phone'.tr} : ${cart.customerPhone}',
+                          style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
+                        ),
                       const Divider(color: Colors.black, thickness: 2),
                       Column(
                         children: [

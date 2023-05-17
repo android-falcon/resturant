@@ -46,8 +46,9 @@ class OrderScreen extends StatefulWidget {
   final OrderType type;
   final DineInModel? dineIn;
   final String customerName;
+  final String customerPhone;
 
-  const OrderScreen({Key? key, required this.type, this.dineIn, this.customerName = ''}) : super(key: key);
+  const OrderScreen({Key? key, required this.type, this.dineIn, this.customerName = '', this.customerPhone = ''}) : super(key: key);
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -118,7 +119,7 @@ class _OrderScreenState extends State<OrderScreen> {
     if (widget.type == OrderType.dineIn) {
       _cartModel = widget.dineIn!.cart;
     } else {
-      _cartModel = CartModel.init(orderType: widget.type, customerName: widget.customerName);
+      _cartModel = CartModel.init(orderType: widget.type, customerName: widget.customerName, customerPhone: widget.customerPhone);
       mySharedPreferences.orderNo++;
       _cartModel.orderNo = mySharedPreferences.orderNo;
     }
@@ -1128,12 +1129,14 @@ class _OrderScreenState extends State<OrderScreen> {
   Future<List<CartItemModel>> _showSubItemsQtyDialog({double? maxQty, double minQty = 0, required List<CartItemModel> subItems}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     TextEditingController? _controllerSelectEdit;
+    int? _selectIndex;
     List<TextEditingController> subItemsController = subItems.map((e) => TextEditingController(text: e.qty.toStringAsFixed(3).replaceFirst('.000', ''))).toList();
     List<double> subItemsDefaultQty = subItems.map((e) => e.qty).toList();
     await Get.dialog(
       CustomDialog(
         gestureDetectorOnTap: () {
           _controllerSelectEdit = null;
+          _selectIndex = null;
         },
         builder: (context, setState, constraints) => Column(
           children: [
@@ -1203,6 +1206,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                     onTap: () {
                                       FocusScope.of(context).requestFocus(FocusNode());
                                       _controllerSelectEdit = subItemsController[index];
+                                      _selectIndex = index;
                                       setState(() {});
                                     },
                                   ),
@@ -1226,7 +1230,10 @@ class _OrderScreenState extends State<OrderScreen> {
                       padding: const EdgeInsets.all(4),
                       child: Utils.numPadWidget(
                         _controllerSelectEdit,
-                        setState,
+                        (value) {
+                          subItems[_selectIndex!].qty = double.parse(_controllerSelectEdit!.text);
+                          setState(() {});
+                        },
                         onSubmit: () {
                           if (_keyForm.currentState!.validate()) {
                             Get.back();
