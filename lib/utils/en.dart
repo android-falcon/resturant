@@ -234,4 +234,7 @@ const Map<String, String> en = {
   "Persons": "Persons",
   "Customer Name": "Customer Name",
   "Customer Phone": "Customer Phone",
+  "Please select booking type": "Please select booking type",
+  "Booking Type": "Booking Type",
+  "Confirm Invoice": "Confirm Invoice",
 };

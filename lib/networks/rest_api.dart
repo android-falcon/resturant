@@ -14,6 +14,7 @@ import 'package:restaurant_system/models/dine_in_model.dart';
 import 'package:restaurant_system/models/end_cash_model.dart';
 import 'package:restaurant_system/models/get_pay_in_out_model.dart';
 import 'package:restaurant_system/models/refund_model.dart';
+import 'package:restaurant_system/models/un_confirm_invoice_model.dart';
 import 'package:restaurant_system/networks/api_url.dart';
 import 'package:restaurant_system/utils/enums/enum_invoice_kind.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
@@ -1475,7 +1476,7 @@ class RestApi {
   }
 
   static Future<bool> saveBooking(
-      {required int hours, required int persons, required String phoneNumber, required String name, required String bookingDate}) async {
+      {required int hours, required int persons, required String phoneNumber, required String name, required String bookingDate, required String note, required int bookingType}) async {
     try {
       Utils.showLoadingDialog();
       var body = jsonEncode({
@@ -1490,6 +1491,8 @@ class RestApi {
         "NoOfHours": hours,
         "NoOfPersons": persons,
         "BookingFlag": 0,
+        "note": note,
+        "bookingType": bookingType,
       });
       var networkId = await NetworkTable.insert(NetworkTableModel(
         id: 0,
@@ -1562,6 +1565,112 @@ class RestApi {
       ));
       var networkModel = await NetworkTable.queryById(id: networkId);
       final response = await restDio.put(ApiUrl.CHANGE_BOOKING, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      Utils.hideLoadingDialog();
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Fluttertoast.showToast(msg: '${e.response?.data ?? 'Please try again'.tr}', timeInSecForIosWeb: 3);
+      Utils.hideLoadingDialog();
+      return false;
+    } catch (e) {
+      _traceCatch(e);
+      Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+      Utils.hideLoadingDialog();
+      return false;
+    }
+  }
+
+  static Future<List<UnConfirmInvoiceModel>> getUnConfirmInvoice() async {
+    try {
+      Utils.showLoadingDialog();
+      var queryParameters = {
+        "PosNo": mySharedPreferences.posNo,
+        "coYear": mySharedPreferences.dailyClose.year,
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'GET_UN_CONFIRMED_INVOICES',
+        status: 3,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.GET_UN_CONFIRMED_INVOICES,
+        method: 'GET',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.get(ApiUrl.GET_UN_CONFIRMED_INVOICES, queryParameters: queryParameters);
+      _networkLog(response);
+      if (networkModel != null) {
+        networkModel.status = 2;
+        networkModel.statusCode = response.statusCode!;
+        networkModel.response = response.data is String ? response.data : jsonEncode(response.data);
+        networkModel.uploadedAt = DateTime.now().toIso8601String();
+        await NetworkTable.update(networkModel);
+      }
+      Utils.hideLoadingDialog();
+      if (response.statusCode == 200) {
+        return List<UnConfirmInvoiceModel>.from(response.data.map((e) => UnConfirmInvoiceModel.fromJson(e)));
+      } else {
+        Fluttertoast.showToast(msg: 'Please try again'.tr, timeInSecForIosWeb: 3);
+        return [];
+      }
+    } on dio.DioError catch (e) {
+      _traceError(e);
+      Utils.hideLoadingDialog();
+      return [];
+    } catch (e) {
+      _traceCatch(e);
+      Utils.hideLoadingDialog();
+      return [];
+    }
+  }
+
+  static Future<bool> confirmInvoice({required int id}) async {
+    try {
+      Utils.showLoadingDialog();
+      var queryParameters = {
+        "CashNo": mySharedPreferences.cashNo,
+        "PosNo": mySharedPreferences.posNo,
+        "CoYear": mySharedPreferences.dailyClose.year,
+        "InvNo": id,
+      };
+      var networkId = await NetworkTable.insert(NetworkTableModel(
+        id: 0,
+        type: 'CONFIRM_INVOICE',
+        status: 1,
+        baseUrl: restDio.options.baseUrl,
+        path: ApiUrl.CONFIRM_INVOICE,
+        method: 'PUT',
+        params: jsonEncode(queryParameters),
+        body: '',
+        headers: '',
+        countRequest: 1,
+        statusCode: 0,
+        response: '',
+        createdAt: DateTime.now().toIso8601String(),
+        uploadedAt: DateTime.now().toIso8601String(),
+        dailyClose: mySharedPreferences.dailyClose.millisecondsSinceEpoch,
+      ));
+      var networkModel = await NetworkTable.queryById(id: networkId);
+      final response = await restDio.put(ApiUrl.CONFIRM_INVOICE, queryParameters: queryParameters);
       _networkLog(response);
       if (networkModel != null) {
         networkModel.status = 2;

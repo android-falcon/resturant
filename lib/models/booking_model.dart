@@ -17,6 +17,8 @@ class BookingModel {
   String customerPhone;
   String customerName;
   String bookingDate;
+  String note;
+  int bookingType;
   int noOfHours;
   int noOfPersons;
   int bookingFlag;
@@ -30,6 +32,8 @@ class BookingModel {
     required this.customerPhone,
     required this.customerName,
     required this.bookingDate,
+    required this.bookingType,
+    required this.note,
     required this.noOfHours,
     required this.noOfPersons,
     required this.bookingFlag,
@@ -44,6 +48,8 @@ class BookingModel {
         customerPhone: json["CustomerPhone"] ?? "",
         customerName: json["CustomerName"] ?? "",
         bookingDate: json["BookingDate"] ?? "",
+        bookingType: json["bookingType"] ?? 0,
+        note: json["note"] ?? "",
         noOfHours: json["NoOfHours"] ?? 0,
         noOfPersons: json["NoOfPersons"] ?? 0,
         bookingFlag: json["BookingFlag"] ?? 0,
@@ -58,6 +64,8 @@ class BookingModel {
         "CustomerPhone": customerPhone,
         "CustomerName": customerName,
         "BookingDate": bookingDate,
+        "bookingType": bookingType,
+        "note": note,
         "NoOfHours": noOfHours,
         "NoOfPersons": noOfPersons,
         "BookingFlag": bookingFlag,

@@ -1130,7 +1130,8 @@ class _OrderScreenState extends State<OrderScreen> {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     TextEditingController? _controllerSelectEdit;
     int? _selectIndex;
-    List<TextEditingController> subItemsController = subItems.map((e) => TextEditingController(text: e.qty.toStringAsFixed(3).replaceFirst('.000', ''))).toList();
+    List<TextEditingController> subItemsController =
+        subItems.map((e) => TextEditingController(text: e.qty.toStringAsFixed(3).replaceFirst('.000', ''))).toList();
     List<double> subItemsDefaultQty = subItems.map((e) => e.qty).toList();
     await Get.dialog(
       CustomDialog(
@@ -1147,7 +1148,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child:           Column(
+                    child: Column(
                       children: [
                         Row(
                           children: [
@@ -1201,8 +1202,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                   child: CustomTextFieldNum(
                                     enableInteractiveSelection: false,
                                     controller: subItemsController[index],
-                                    fillColor:
-                                    _controllerSelectEdit == subItemsController[index] ? ColorsApp.primaryColor.withOpacity(0.2) : null,
+                                    fillColor: _controllerSelectEdit == subItemsController[index] ? ColorsApp.primaryColor.withOpacity(0.2) : null,
                                     onTap: () {
                                       FocusScope.of(context).requestFocus(FocusNode());
                                       _controllerSelectEdit = subItemsController[index];
@@ -1240,7 +1240,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           }
                         },
                         onExit: () {
-                          for(int i = 0; i < subItems.length; i++){
+                          for (int i = 0; i < subItems.length; i++) {
                             subItems[i].qty = subItemsDefaultQty[i];
                           }
                           Get.back();
@@ -1419,18 +1419,34 @@ class _OrderScreenState extends State<OrderScreen> {
         }
         break;
       case 'Qty Sub Item':
-        if (_indexItemSelect != -1) {
-          if (!_cartModel.items[_indexItemSelect].dineInSavedOrder) {
-            var subItems = _cartModel.items.where((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid).toList();
-            subItems = await _showSubItemsQtyDialog(subItems: subItems, minQty: 0);
-            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-            setState(() {});
-          } else {
-            Fluttertoast.showToast(msg: 'The quantity of this item cannot be modified'.tr);
-          }
+        var permission = false;
+        if (mySharedPreferences.employee.hasChangeSubQtyPermission) {
+          permission = true;
         } else {
-          Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
+          EmployeeModel? employee = await Utils.showLoginDialog();
+          if (employee != null) {
+            if (employee.hasChangeSubQtyPermission) {
+              permission = true;
+            } else {
+              Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+            }
+          }
         }
+        if (permission) {
+          if (_indexItemSelect != -1) {
+            if (!_cartModel.items[_indexItemSelect].dineInSavedOrder) {
+              var subItems = _cartModel.items.where((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid).toList();
+              subItems = await _showSubItemsQtyDialog(subItems: subItems, minQty: 0);
+              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+              setState(() {});
+            } else {
+              Fluttertoast.showToast(msg: 'The quantity of this item cannot be modified'.tr);
+            }
+          } else {
+            Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
+          }
+        }
+
         break;
       case 'Modifier':
         if (_indexItemSelect != -1) {

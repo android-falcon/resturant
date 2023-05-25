@@ -7,6 +7,7 @@ import 'package:restaurant_system/networks/rest_api.dart';
 import 'package:restaurant_system/screens/add_booking_screen.dart';
 import 'package:restaurant_system/screens/order_screen.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
+import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/utils.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -61,6 +62,8 @@ class _BookingScreenState extends State<BookingScreen> {
               Text('${'Date'.tr} : ${booking[index].bookingDate.isEmpty ? "" : intl.DateFormat(dateFormat).format(DateTime.parse(booking[index].bookingDate))}'),
               Text('${'Hours'.tr} : ${booking[index].noOfHours}'),
               Text('${'Persons'.tr} : ${booking[index].noOfPersons}'),
+              Text('${'Booking Type'.tr} : ${allDataModel.bookingTypesModel.firstWhereOrNull((element) => element.id == booking[index].bookingType)?.name ?? ""}'),
+              Text('${'Note'.tr} : ${booking[index].note}'),
             ],
           ),
           trailing: Row(

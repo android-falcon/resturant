@@ -68,9 +68,6 @@ class Printer {
       Uint8List? screenshotCash;
       if (cashPrinter) {
         screenshotCash = await _screenshotControllerCash.capture(delay: const Duration(milliseconds: 10));
-        if (screenshotCash != null && mySharedPreferences.enablePaymentNetwork) {
-          Printer.printPaymentNetwork(invoice: base64Encode(screenshotCash));
-        }
       }
       await Future.forEach(invoices, (PrinterInvoiceModel element) async {
         if (cashPrinter && element.items.isEmpty) {
@@ -1134,6 +1131,10 @@ class Printer {
 
   static Future<void> invoices({required List<PrinterInvoiceModel> invoices}) async {
     for (var invoice in invoices) {
+      if (mySharedPreferences.enablePaymentNetwork) {
+        Printer.printPaymentNetwork(invoice: base64Encode(invoice.invoice!));
+      }
+
       // if(mySharedPreferences.printerBluetooth){
       // esc_bluetooth.PrinterBluetoothManager printerManager = esc_bluetooth.PrinterBluetoothManager();
       // printerManager.scanResults.listen((printers) async {

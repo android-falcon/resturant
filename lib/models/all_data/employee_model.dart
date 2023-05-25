@@ -36,6 +36,7 @@ class EmployeeModel {
     required this.hasChangeTableCaptinPermission,
     required this.hasReportsPermission,
     required this.hasSeeEndCashPermission,
+    required this.hasChangeSubQtyPermission,
     required this.deviceIp,
     required this.devicePort,
   });
@@ -65,6 +66,7 @@ class EmployeeModel {
   bool hasChangeTableCaptinPermission;
   bool hasReportsPermission;
   bool hasSeeEndCashPermission;
+  bool hasChangeSubQtyPermission;
   String deviceIp;
   int devicePort;
 
@@ -94,6 +96,7 @@ class EmployeeModel {
         hasChangeTableCaptinPermission: json["HasChangeTableCaptinPermission"] ?? false,
         hasReportsPermission: json["HasReportsPermission"] ?? false,
         hasSeeEndCashPermission: json["HasSeeEndCashPermission"] ?? false,
+        hasChangeSubQtyPermission: json["HasChangeSubQtyPermission"] ?? false,
         deviceIp: json["DeviceIp"] ?? "",
         devicePort: json["DevicePort"] ?? 3000,
       );
@@ -124,6 +127,7 @@ class EmployeeModel {
         "HasChangeTableCaptinPermission": hasChangeTableCaptinPermission,
         "HasReportsPermission": hasReportsPermission,
         "HasSeeEndCashPermission": hasSeeEndCashPermission,
+        "HasChangeSubQtyPermission": hasChangeSubQtyPermission,
         "DeviceIp": deviceIp,
         "DevicePort": devicePort,
       };

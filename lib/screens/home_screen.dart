@@ -11,6 +11,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restaurant_system/screens/booking_screen.dart';
+import 'package:restaurant_system/screens/confirm_invoice_screen.dart';
 import 'package:restaurant_system/utils/assets.dart';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
@@ -82,6 +83,13 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: Icon(Icons.linear_scale, color: ColorsApp.gray),
           onTab: () async {
             Get.to(const BookingScreen());
+          },
+        ),
+        HomeMenu(
+          name: 'Confirm Invoice'.tr,
+          icon: Icon(Icons.confirmation_num, color: ColorsApp.gray),
+          onTab: () async {
+            Get.to(const ConfirmInvoiceScreen());
           },
         ),
         HomeMenu(
