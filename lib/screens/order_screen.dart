@@ -102,8 +102,8 @@ class _OrderScreenState extends State<OrderScreen> {
                 }
               } else {
                 for (var element in allDataModel.items) {
-                  var indexDeliveryCompanyItemPrice = allDataModel.deliveryCompanyItemPriceModel.indexWhere((elementDeliveryCompany) =>
-                      elementDeliveryCompany.itemId == element.id && elementDeliveryCompany.deliveryCoId == _cartModel.deliveryCompanyId);
+                  var indexDeliveryCompanyItemPrice = allDataModel.deliveryCompanyItemPriceModel
+                      .indexWhere((elementDeliveryCompany) => elementDeliveryCompany.itemId == element.id && elementDeliveryCompany.deliveryCoId == _cartModel.deliveryCompanyId);
                   if (indexDeliveryCompanyItemPrice != -1) {
                     element.companyPrice = allDataModel.deliveryCompanyItemPriceModel[indexDeliveryCompanyItemPrice].price;
                   } else {
@@ -194,8 +194,7 @@ class _OrderScreenState extends State<OrderScreen> {
     return _delivery == null ? _delivery : double.parse(_delivery);
   }
 
-  Future<Map<String, dynamic>> _showDiscountDialog(
-      {TextEditingController? controller, required double discount, required double price, required DiscountType type}) async {
+  Future<Map<String, dynamic>> _showDiscountDialog({TextEditingController? controller, required double discount, required double price, required DiscountType type}) async {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     controller ??= TextEditingController(text: '$discount');
     if (controller.text.endsWith('.0')) {
@@ -542,9 +541,7 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Future<List<CartItemModifierModel>> _showModifierDialog(
-      {required List<ItemWithModifireModel> modifiersItem,
-      required List<CategoryWithModifireModel> modifiersCategory,
-      required List<CartItemModifierModel> addedModifiers}) async {
+      {required List<ItemWithModifireModel> modifiersItem, required List<CategoryWithModifireModel> modifiersCategory, required List<CartItemModifierModel> addedModifiers}) async {
     int _selectedModifierId = 0;
     List<CartItemModifierModel> modifiers = [];
     modifiers.addAll(List<CartItemModifierModel>.from(modifiersItem.map((e) => CartItemModifierModel(id: e.modifiresId, name: e.name, modifier: ''))));
@@ -675,15 +672,12 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Future<List<CartItemQuestionModel>?> _showForceQuestionDialog({required List<ItemWithQuestionsModel> questionsItem}) async {
-    List<CartItemQuestionModel> answersModifire =
-        List<CartItemQuestionModel>.from(questionsItem.map((e) => CartItemQuestionModel(id: e.forceQuestionId, question: e.qtext, modifiers: [])));
+    List<CartItemQuestionModel> answersModifire = List<CartItemQuestionModel>.from(questionsItem.map((e) => CartItemQuestionModel(id: e.forceQuestionId, question: e.qtext, modifiers: [])));
     bool isCancel = false;
     int i = 0;
     while (i < answersModifire.length) {
-      var modifireForceQuestions = allDataModel.modifireForceQuestions.indexWhere((element) =>
-          element.forceQuestion.id == answersModifire[i].id &&
-          element.modifires.isNotEmpty &&
-          element.modifires.any((modifiresElement) => modifiresElement.active == 1));
+      var modifireForceQuestions = allDataModel.modifireForceQuestions
+          .indexWhere((element) => element.forceQuestion.id == answersModifire[i].id && element.modifires.isNotEmpty && element.modifires.any((modifiresElement) => modifiresElement.active == 1));
       if (modifireForceQuestions == -1) {
         i++;
       } else {
@@ -849,14 +843,13 @@ class _OrderScreenState extends State<OrderScreen> {
     }
   }
 
-  Future<List<CartItemModel>?> _showQuestionSubItemDialog(
-      {required List<ComboItemsForceQuestionModel> questionsSubItems, required String parentRandomId}) async {
+  Future<List<CartItemModel>?> _showQuestionSubItemDialog({required List<ComboItemsForceQuestionModel> questionsSubItems, required String parentRandomId}) async {
     List<CartItemModel> answersSubItem = [];
     int i = 0;
     bool isCancel = false;
     while (i < questionsSubItems.length) {
-      var indexSubItemsForceQuestions = allDataModel.subItemsForceQuestions
-          .indexWhere((element) => element.subItemsForceQuestion.id == questionsSubItems[i].subItemsForceQuestionId && element.items.isNotEmpty);
+      var indexSubItemsForceQuestions =
+          allDataModel.subItemsForceQuestions.indexWhere((element) => element.subItemsForceQuestion.id == questionsSubItems[i].subItemsForceQuestionId && element.items.isNotEmpty);
       if (indexSubItemsForceQuestions == -1) {
         i++;
       } else {
@@ -903,8 +896,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                         answersSubItem.removeAt(indexSubItem);
                                       } else {
                                         if (allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].subItemsForceQuestion.isMultible == 0) {
-                                          answersSubItem.removeWhere((elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items
-                                              .any((element) => elementSubItem.id == element.id));
+                                          answersSubItem.removeWhere(
+                                              (elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id));
                                         }
                                         answersSubItem.add(CartItemModel(
                                           uuid: const Uuid().v1(),
@@ -999,8 +992,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             backgroundColor: ColorsApp.primaryColor,
                             onPressed: () {
                               if (allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].subItemsForceQuestion.isMandatory == 1) {
-                                if (answersSubItem.any((elementSubItem) =>
-                                    allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id))) {
+                                if (answersSubItem.any((elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id))) {
                                   i++;
                                   Get.back();
                                 } else {
@@ -1021,8 +1013,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             backgroundColor: ColorsApp.primaryColor,
                             onPressed: () {
                               if (allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].subItemsForceQuestion.isMandatory == 1) {
-                                if (answersSubItem.any((elementSubItem) =>
-                                    allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id))) {
+                                if (answersSubItem.any((elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id))) {
                                   i++;
                                   Get.back();
                                 } else {
@@ -1130,8 +1121,7 @@ class _OrderScreenState extends State<OrderScreen> {
     GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     TextEditingController? _controllerSelectEdit;
     int? _selectIndex;
-    List<TextEditingController> subItemsController =
-        subItems.map((e) => TextEditingController(text: e.qty.toStringAsFixed(3).replaceFirst('.000', ''))).toList();
+    List<TextEditingController> subItemsController = subItems.map((e) => TextEditingController(text: e.qty.toStringAsFixed(3).replaceFirst('.000', ''))).toList();
     List<double> subItemsDefaultQty = subItems.map((e) => e.qty).toList();
     await Get.dialog(
       CustomDialog(
@@ -1451,18 +1441,14 @@ class _OrderScreenState extends State<OrderScreen> {
       case 'Modifier':
         if (_indexItemSelect != -1) {
           var modifiersItem = allDataModel.itemWithModifires.where((element) => element.itemsId == _cartModel.items[_indexItemSelect].id).toList();
-          var modifiersCategory =
-              allDataModel.categoryWithModifires.where((element) => element.categoryId == _cartModel.items[_indexItemSelect].categoryId).toList();
+          var modifiersCategory = allDataModel.categoryWithModifires.where((element) => element.categoryId == _cartModel.items[_indexItemSelect].categoryId).toList();
           modifiersCategory.removeWhere((elementCategory) => modifiersItem.any((elementItem) => elementItem.modifiresId == elementCategory.modifireId));
-          modifiersCategory
-              .removeWhere((elementCategory) => allDataModel.modifires.any((element) => element.id == elementCategory.modifireId && element.active == 0));
+          modifiersCategory.removeWhere((elementCategory) => allDataModel.modifires.any((element) => element.id == elementCategory.modifireId && element.active == 0));
           modifiersItem.removeWhere((elementItem) => allDataModel.modifires.any((element) => element.id == elementItem.modifiresId && element.active == 0));
           if (modifiersItem.isNotEmpty || modifiersCategory.isNotEmpty) {
-            modifiersCategory
-                .removeWhere((elementCategory) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementCategory.modifireId));
+            modifiersCategory.removeWhere((elementCategory) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementCategory.modifireId));
             modifiersItem.removeWhere((elementItem) => _cartModel.items[_indexItemSelect].modifiers.any((element) => element.id == elementItem.modifiresId));
-            var modifiers = await _showModifierDialog(
-                modifiersItem: modifiersItem, modifiersCategory: modifiersCategory, addedModifiers: _cartModel.items[_indexItemSelect].modifiers);
+            var modifiers = await _showModifierDialog(modifiersItem: modifiersItem, modifiersCategory: modifiersCategory, addedModifiers: _cartModel.items[_indexItemSelect].modifiers);
             if (modifiers.isNotEmpty) {
               _cartModel.items[_indexItemSelect].modifiers = modifiers;
             }
@@ -1578,8 +1564,8 @@ class _OrderScreenState extends State<OrderScreen> {
         if (permission) {
           if (_indexItemSelect != -1) {
             if (_cartModel.items[_indexItemSelect].openPrice) {
-              _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(
-                  itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
+              _cartModel.items[_indexItemSelect].priceChange =
+                  await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
               _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
               _dineInChangedOrder = true;
               setState(() {});
@@ -1748,6 +1734,20 @@ class _OrderScreenState extends State<OrderScreen> {
                         width: 1,
                         thickness: 2,
                       ),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _cartModel.isFreeTax == 1,
+                          onChanged: (value) {
+                            _cartModel.isFreeTax = value! ? 1 : 0;
+                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                            setState(() {});
+                          },
+                        ),
+                        Text('No Tax'.tr)
+                      ],
+                    ),
+
                     Expanded(
                       child: Text(
                         DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose),
@@ -1813,8 +1813,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         borderRadius: BorderRadius.circular(5.r),
                                         onTap: () async {
                                           bool itemIsAdded = false;
-                                          var indexItem = _cartModel.items
-                                              .lastIndexWhere((element) => element.id == e.id && element.parentUuid == '' && element.modifiers.isEmpty);
+                                          var indexItem = _cartModel.items.lastIndexWhere((element) => element.id == e.id && element.parentUuid == '' && element.modifiers.isEmpty);
                                           var questionsItem = allDataModel.itemWithQuestions.where((element) => element.itemsId == e.id).toList();
                                           var questionsSubItems = allDataModel.comboItemsForceQuestion.where((element) => element.itemId == e.id).toList();
                                           if (indexItem != -1 && questionsItem.isEmpty && questionsSubItems.isEmpty) {
@@ -1847,8 +1846,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                             ));
                                             int indexAddedItem = _cartModel.items.length - 1;
                                             if (questionsSubItems.isNotEmpty) {
-                                              var cartSubItems = await _showQuestionSubItemDialog(
-                                                  questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid);
+                                              var cartSubItems = await _showQuestionSubItemDialog(questionsSubItems: questionsSubItems, parentRandomId: _cartModel.items[indexAddedItem].uuid);
                                               if (cartSubItems == null) {
                                                 _cartModel.items = _cartModel.items.sublist(0, indexAddedItem);
                                               } else {
@@ -1949,9 +1947,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                     children: [
                                                       Expanded(
                                                         child: Text(
-                                                          _cartModel.deliveryCompanyId == 0
-                                                              ? "${e.price.toStringAsFixed(3)} JD"
-                                                              : "${e.companyPrice.toStringAsFixed(3)} JD",
+                                                          _cartModel.deliveryCompanyId == 0 ? "${e.price.toStringAsFixed(3)} JD" : "${e.companyPrice.toStringAsFixed(3)} JD",
                                                           style: kStyleTextTitle.copyWith(color: ColorsApp.primaryColor),
                                                         ),
                                                       ),
@@ -2126,8 +2122,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                                           Opacity(
                                                             opacity: 0.7,
                                                             child: Container(
-                                                              decoration: BoxDecoration(
-                                                                  color: ColorsApp.orangeLight, borderRadius: BorderRadius.all(Radius.circular(5.r))),
+                                                              decoration: BoxDecoration(color: ColorsApp.orangeLight, borderRadius: BorderRadius.all(Radius.circular(5.r))),
                                                               height: 65.h,
                                                               child: Center(
                                                                 child: Text(
@@ -2410,8 +2405,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                         itemCount: _cartModel.items.length,
                                         shrinkWrap: true,
                                         physics: const NeverScrollableScrollPhysics(),
-                                        separatorBuilder: (context, index) =>
-                                            _cartModel.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
+                                        separatorBuilder: (context, index) => _cartModel.items[index].parentUuid.isNotEmpty ? Container() : const Divider(color: Colors.black, height: 1),
                                         itemBuilder: (context, index) {
                                           if (_cartModel.items[index].parentUuid.isNotEmpty) {
                                             return Container();

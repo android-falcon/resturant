@@ -237,4 +237,5 @@ const Map<String, String> en = {
   "Please select booking type": "Please select booking type",
   "Booking Type": "Booking Type",
   "Confirm Invoice": "Confirm Invoice",
+  "No Tax": "No Tax",
 };
