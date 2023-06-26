@@ -25,6 +25,7 @@ import 'package:restaurant_system/screens/widgets/custom_dialog.dart';
 import 'package:restaurant_system/screens/widgets/custom_drawer.dart';
 import 'package:restaurant_system/screens/widgets/custom_single_child_scroll_view.dart';
 import 'package:restaurant_system/screens/widgets/custom_text_field.dart';
+import 'package:restaurant_system/screens/widgets/custom_text_field_num.dart';
 import 'package:restaurant_system/utils/assets.dart';
 import 'package:restaurant_system/utils/app_config/home_menu.dart';
 import 'package:restaurant_system/utils/color.dart';
@@ -44,8 +45,10 @@ import 'package:uuid/uuid.dart';
 class OrderScreen extends StatefulWidget {
   final OrderType type;
   final DineInModel? dineIn;
+  final String customerName;
+  final String customerPhone;
 
-  const OrderScreen({Key? key, required this.type, this.dineIn}) : super(key: key);
+  const OrderScreen({Key? key, required this.type, this.dineIn, this.customerName = '', this.customerPhone = ''}) : super(key: key);
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -99,7 +102,8 @@ class _OrderScreenState extends State<OrderScreen> {
                 }
               } else {
                 for (var element in allDataModel.items) {
-                  var indexDeliveryCompanyItemPrice = allDataModel.deliveryCompanyItemPriceModel.indexWhere((elementDeliveryCompany) => elementDeliveryCompany.itemId == element.id && elementDeliveryCompany.deliveryCoId == _cartModel.deliveryCompanyId);
+                  var indexDeliveryCompanyItemPrice = allDataModel.deliveryCompanyItemPriceModel
+                      .indexWhere((elementDeliveryCompany) => elementDeliveryCompany.itemId == element.id && elementDeliveryCompany.deliveryCoId == _cartModel.deliveryCompanyId);
                   if (indexDeliveryCompanyItemPrice != -1) {
                     element.companyPrice = allDataModel.deliveryCompanyItemPriceModel[indexDeliveryCompanyItemPrice].price;
                   } else {
@@ -115,7 +119,7 @@ class _OrderScreenState extends State<OrderScreen> {
     if (widget.type == OrderType.dineIn) {
       _cartModel = widget.dineIn!.cart;
     } else {
-      _cartModel = CartModel.init(orderType: widget.type);
+      _cartModel = CartModel.init(orderType: widget.type, customerName: widget.customerName, customerPhone: widget.customerPhone);
       mySharedPreferences.orderNo++;
       _cartModel.orderNo = mySharedPreferences.orderNo;
     }
@@ -536,7 +540,8 @@ class _OrderScreenState extends State<OrderScreen> {
     return _controllerPark.text;
   }
 
-  Future<List<CartItemModifierModel>> _showModifierDialog({required List<ItemWithModifireModel> modifiersItem, required List<CategoryWithModifireModel> modifiersCategory, required List<CartItemModifierModel> addedModifiers}) async {
+  Future<List<CartItemModifierModel>> _showModifierDialog(
+      {required List<ItemWithModifireModel> modifiersItem, required List<CategoryWithModifireModel> modifiersCategory, required List<CartItemModifierModel> addedModifiers}) async {
     int _selectedModifierId = 0;
     List<CartItemModifierModel> modifiers = [];
     modifiers.addAll(List<CartItemModifierModel>.from(modifiersItem.map((e) => CartItemModifierModel(id: e.modifiresId, name: e.name, modifier: ''))));
@@ -671,7 +676,8 @@ class _OrderScreenState extends State<OrderScreen> {
     bool isCancel = false;
     int i = 0;
     while (i < answersModifire.length) {
-      var modifireForceQuestions = allDataModel.modifireForceQuestions.indexWhere((element) => element.forceQuestion.id == answersModifire[i].id && element.modifires.isNotEmpty && element.modifires.any((modifiresElement) => modifiresElement.active == 1));
+      var modifireForceQuestions = allDataModel.modifireForceQuestions
+          .indexWhere((element) => element.forceQuestion.id == answersModifire[i].id && element.modifires.isNotEmpty && element.modifires.any((modifiresElement) => modifiresElement.active == 1));
       if (modifireForceQuestions == -1) {
         i++;
       } else {
@@ -712,7 +718,12 @@ class _OrderScreenState extends State<OrderScreen> {
                                 allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name,
                                 style: kStyleForceQuestion,
                               ),
-                              value: answersModifire[i].modifiers.any((element) => element == CartItemModifierModel(id: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].id, name: '', modifier: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name)),
+                              value: answersModifire[i].modifiers.any((element) =>
+                                  element ==
+                                  CartItemModifierModel(
+                                      id: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].id,
+                                      name: '',
+                                      modifier: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name)),
                               onChanged: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].active == 0
                                   ? null
                                   : (value) {
@@ -732,7 +743,10 @@ class _OrderScreenState extends State<OrderScreen> {
                                 allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name,
                                 style: kStyleForceQuestion,
                               ),
-                              value: CartItemModifierModel(id: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].id, name: '', modifier: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name),
+                              value: CartItemModifierModel(
+                                  id: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].id,
+                                  name: '',
+                                  modifier: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].name),
                               groupValue: answersModifire[i].modifiers.isEmpty ? '' : answersModifire[i].modifiers.first,
                               onChanged: allDataModel.modifireForceQuestions[modifireForceQuestions].modifires[indexModifire].active == 0
                                   ? null
@@ -834,7 +848,8 @@ class _OrderScreenState extends State<OrderScreen> {
     int i = 0;
     bool isCancel = false;
     while (i < questionsSubItems.length) {
-      var indexSubItemsForceQuestions = allDataModel.subItemsForceQuestions.indexWhere((element) => element.subItemsForceQuestion.id == questionsSubItems[i].subItemsForceQuestionId && element.items.isNotEmpty);
+      var indexSubItemsForceQuestions =
+          allDataModel.subItemsForceQuestions.indexWhere((element) => element.subItemsForceQuestion.id == questionsSubItems[i].subItemsForceQuestionId && element.items.isNotEmpty);
       if (indexSubItemsForceQuestions == -1) {
         i++;
       } else {
@@ -881,7 +896,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                         answersSubItem.removeAt(indexSubItem);
                                       } else {
                                         if (allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].subItemsForceQuestion.isMultible == 0) {
-                                          answersSubItem.removeWhere((elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id));
+                                          answersSubItem.removeWhere(
+                                              (elementSubItem) => allDataModel.subItemsForceQuestions[indexSubItemsForceQuestions].items.any((element) => elementSubItem.id == element.id));
                                         }
                                         answersSubItem.add(CartItemModel(
                                           uuid: const Uuid().v1(),
@@ -909,7 +925,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                       child: Row(
                                         children: [
                                           CachedNetworkImage(
-                                            imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
+                                            imageUrl:
+                                                '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
                                             height: 50.h,
                                             width: 50.w,
                                             fit: BoxFit.contain,
@@ -1101,6 +1118,138 @@ class _OrderScreenState extends State<OrderScreen> {
     return double.parse(qty);
   }
 
+  Future<List<CartItemModel>> _showSubItemsQtyDialog({double? maxQty, double minQty = 0, required List<CartItemModel> subItems}) async {
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    TextEditingController? _controllerSelectEdit;
+    int? _selectIndex;
+    List<TextEditingController> subItemsController = subItems.map((e) => TextEditingController(text: e.qty.toStringAsFixed(3).replaceFirst('.000', ''))).toList();
+    List<double> subItemsDefaultQty = subItems.map((e) => e.qty).toList();
+    await Get.dialog(
+      CustomDialog(
+        gestureDetectorOnTap: () {
+          _controllerSelectEdit = null;
+          _selectIndex = null;
+        },
+        builder: (context, setState, constraints) => Column(
+          children: [
+            Form(
+              key: _keyForm,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Container(),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Qty'.tr,
+                                textAlign: TextAlign.center,
+                                style: kStyleTextDefault,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Total'.tr,
+                                textAlign: TextAlign.center,
+                                style: kStyleTextDefault,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ListView.builder(
+                          itemCount: subItems.length,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        subItems[index].qty = subItems[index].qty + 1;
+                                        subItemsController[index].text = '${subItems[index].qty}';
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 4.h),
+                                      child: Text(
+                                        subItems[index].name,
+                                        textAlign: TextAlign.center,
+                                        style: kStyleTextDefault,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: CustomTextFieldNum(
+                                    enableInteractiveSelection: false,
+                                    controller: subItemsController[index],
+                                    fillColor: _controllerSelectEdit == subItemsController[index] ? ColorsApp.primaryColor.withOpacity(0.2) : null,
+                                    onTap: () {
+                                      FocusScope.of(context).requestFocus(FocusNode());
+                                      _controllerSelectEdit = subItemsController[index];
+                                      _selectIndex = index;
+                                      setState(() {});
+                                    },
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    (subItems[index].priceChange * subItems[index].qty).toStringAsFixed(3),
+                                    textAlign: TextAlign.center,
+                                    style: kStyleTextDefault,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Utils.numPadWidget(
+                        _controllerSelectEdit,
+                        (value) {
+                          subItems[_selectIndex!].qty = double.parse(_controllerSelectEdit!.text);
+                          setState(() {});
+                        },
+                        onSubmit: () {
+                          if (_keyForm.currentState!.validate()) {
+                            Get.back();
+                          }
+                        },
+                        onExit: () {
+                          for (int i = 0; i < subItems.length; i++) {
+                            subItems[i].qty = subItemsDefaultQty[i];
+                          }
+                          Get.back();
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+    return subItems;
+  }
+
   Future<String> _showNoteItemDialog({required String note}) async {
     TextEditingController _controllerNote = TextEditingController(text: note);
     await Get.dialog(
@@ -1260,6 +1409,36 @@ class _OrderScreenState extends State<OrderScreen> {
           Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
         }
         break;
+      case 'Qty Sub Item':
+        var permission = false;
+        if (mySharedPreferences.employee.hasChangeSubQtyPermission) {
+          permission = true;
+        } else {
+          EmployeeModel? employee = await Utils.showLoginDialog();
+          if (employee != null) {
+            if (employee.hasChangeSubQtyPermission) {
+              permission = true;
+            } else {
+              Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+            }
+          }
+        }
+        if (permission) {
+          if (_indexItemSelect != -1) {
+            if (!_cartModel.items[_indexItemSelect].dineInSavedOrder) {
+              var subItems = _cartModel.items.where((element) => element.parentUuid == _cartModel.items[_indexItemSelect].uuid).toList();
+              subItems = await _showSubItemsQtyDialog(subItems: subItems, minQty: 0);
+              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+              setState(() {});
+            } else {
+              Fluttertoast.showToast(msg: 'The quantity of this item cannot be modified'.tr);
+            }
+          } else {
+            Fluttertoast.showToast(msg: 'Please select the item you want to change quantity'.tr);
+          }
+        }
+
+        break;
       case 'Modifier':
         if (_indexItemSelect != -1) {
           var modifiersItem = allDataModel.itemWithModifires.where((element) => element.itemsId == _cartModel.items[_indexItemSelect].id).toList();
@@ -1386,7 +1565,8 @@ class _OrderScreenState extends State<OrderScreen> {
         if (permission) {
           if (_indexItemSelect != -1) {
             if (_cartModel.items[_indexItemSelect].openPrice) {
-              _cartModel.items[_indexItemSelect].priceChange = await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
+              _cartModel.items[_indexItemSelect].priceChange =
+                  await _showPriceChangeDialog(itemPrice: _cartModel.items[_indexItemSelect].price, priceChange: _cartModel.items[_indexItemSelect].priceChange);
               _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
               _dineInChangedOrder = true;
               setState(() {});
@@ -1555,6 +1735,20 @@ class _OrderScreenState extends State<OrderScreen> {
                         width: 1,
                         thickness: 2,
                       ),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _cartModel.isFreeTax == 1,
+                          onChanged: (value) {
+                            _cartModel.isFreeTax = value! ? 1 : 0;
+                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                            setState(() {});
+                          },
+                        ),
+                        Text('No Tax'.tr)
+                      ],
+                    ),
+
                     Expanded(
                       child: Text(
                         DateFormat('yyyy-MM-dd').format(mySharedPreferences.dailyClose),
@@ -1688,7 +1882,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                                 children: [
                                                   e.itemPicture.isNotEmpty
                                                       ? CachedNetworkImage(
-                                                          imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
+                                                          imageUrl:
+                                                              '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Items')?.imgPath ?? ''}${e.itemPicture}',
                                                           height: 80.h,
                                                           width: 300.h,
                                                           fit: BoxFit.fill,
@@ -1751,12 +1946,14 @@ class _OrderScreenState extends State<OrderScreen> {
                                                   //   ),
                                                   Row(
                                                     children: [
-                                                      Text(
-                                                        _cartModel.deliveryCompanyId == 0 ? e.price.toStringAsFixed(3) + " JD" : e.companyPrice.toStringAsFixed(3) + " JD",
-                                                        style: kStyleTextTitle.copyWith(color: ColorsApp.primaryColor),
+                                                      Expanded(
+                                                        child: Text(
+                                                          _cartModel.deliveryCompanyId == 0 ? "${e.price.toStringAsFixed(3)} JD" : "${e.companyPrice.toStringAsFixed(3)} JD",
+                                                          style: kStyleTextTitle.copyWith(color: ColorsApp.primaryColor),
+                                                        ),
                                                       ),
                                                       SizedBox(
-                                                        width: 10.w,
+                                                        width: 3.w,
                                                       ),
                                                       Container(
                                                         decoration: BoxDecoration(
@@ -1764,9 +1961,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                                           borderRadius: BorderRadius.circular(15.r),
                                                           border: Border.all(color: ColorsApp.primaryColor),
                                                         ),
-                                                        width: 30.w,
-                                                        height: 40.h,
-                                                        margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                                        margin: EdgeInsets.zero,
+                                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 3),
                                                         child: Center(
                                                           child: Text(
                                                             'Add + '.tr,
@@ -1811,7 +2007,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                                             alignment: Alignment.topRight,
                                                             child: e.categoryPic.isNotEmpty
                                                                 ? CachedNetworkImage(
-                                                                    imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                                                    imageUrl:
+                                                                        '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
                                                                     height: 80.h,
                                                                     width: 300.h,
                                                                     fit: BoxFit.fill,
@@ -1890,7 +2087,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                                   child: Stack(
                                                     children: [
                                                       CachedNetworkImage(
-                                                        imageUrl: '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
+                                                        imageUrl:
+                                                            '${mySharedPreferences.baseUrl}${allDataModel.imagePaths.firstWhereOrNull((element) => element.description == 'Categories')?.imgPath ?? ''}${e.categoryPic}',
                                                         height: 120.h,
                                                         width: 300.h,
                                                         fit: BoxFit.cover,
@@ -1950,20 +2148,16 @@ class _OrderScreenState extends State<OrderScreen> {
                       ),
                     ),
                     Container(
-                      width: 130.w,
+                      width: 135.w,
                       color: ColorsApp.orangeLight,
                       padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
                       child: Column(
                         children: [
-                          SizedBox(
-                            height: 5.h,
-                          ),
                           Row(
                             children: [
                               if (mySharedPreferences.employee.hasDiscPermission)
                                 Expanded(
                                   child: Container(
-                                    width: 50.w,
                                     height: 30.h,
                                     decoration: BoxDecoration(
                                       border: Border.all(color: ColorsApp.primaryColor),
@@ -2003,38 +2197,95 @@ class _OrderScreenState extends State<OrderScreen> {
                                           }
                                         }
                                       },
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Center(
-                                              child: Text(
-                                                'Discount'.tr,
-                                                textAlign: TextAlign.center,
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 1,
-                                                style: kStyleTextOrange,
-                                              ),
-                                            ),
-                                            Image.asset(
-                                              Assets.kAssetsArrowRight,
-                                              height: 20.h,
-                                            ),
-                                          ],
+                                      child: Center(
+                                        child: Text(
+                                          'Discount'.tr,
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: kStyleTextOrange,
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
                               SizedBox(
-                                width: 5.w,
+                                width: 1.w,
                               ),
                               if (mySharedPreferences.employee.hasVoidAllPermission)
                                 Expanded(
-                                    child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
+                                    child: Container(
+                                  height: 30.h,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: ColorsApp.primaryColor),
+                                    borderRadius: BorderRadius.circular(
+                                      10.0,
+                                    ),
+                                  ),
+                                  child: InkWell(
+                                    onTap: () async {
+                                      var permission = false;
+                                      if (mySharedPreferences.employee.hasVoidAllPermission) {
+                                        permission = true;
+                                      } else {
+                                        EmployeeModel? employee = await Utils.showLoginDialog();
+                                        if (employee != null) {
+                                          if (employee.hasVoidAllPermission) {
+                                            permission = true;
+                                          } else {
+                                            Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
+                                          }
+                                        }
+                                      }
+                                      if (permission) {
+                                        if (_cartModel.items.isEmpty) {
+                                          Fluttertoast.showToast(msg: 'There must be items'.tr);
+                                        } else {
+                                          VoidReasonModel? result;
+                                          if (allDataModel.companyConfig[0].useVoidReason) {
+                                            result = await _showVoidReasonDialog();
+                                          } else {
+                                            var areYouSure = await Utils.showAreYouSureDialog(
+                                              title: 'Void All'.tr,
+                                            );
+                                            if (areYouSure) {
+                                              result = VoidReasonModel.fromJson({});
+                                            }
+                                          }
+                                          if (result != null) {
+                                            RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
+                                            List<CartItemModel> voidItems = [];
+                                            voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
+                                            if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
+                                              Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
+                                            }
+                                            _indexItemSelect = -1;
+                                            _cartModel.items = [];
+                                            _cartModel.deliveryCharge = 0;
+                                            _cartModel.discount = 0;
+                                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                            _dineInChangedOrder = true;
+                                            setState(() {});
+                                          }
+                                        }
+                                      }
+                                    },
+                                    child: Center(
+                                      child: Text(
+                                        'Void All'.tr,
+                                        textAlign: TextAlign.center,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        style: kStyleTextOrange,
+                                      ),
+                                    ),
+                                  ),
+                                )),
+                              SizedBox(
+                                width: 1.w,
+                              ),
+                              if (widget.type == OrderType.takeAway)
+                                Expanded(
                                   child: Container(
                                     height: 30.h,
                                     decoration: BoxDecoration(
@@ -2043,123 +2294,32 @@ class _OrderScreenState extends State<OrderScreen> {
                                         10.0,
                                       ),
                                     ),
-                                    child: InkWell(
-                                      onTap: () async {
-                                        var permission = false;
-                                        if (mySharedPreferences.employee.hasVoidAllPermission) {
-                                          permission = true;
-                                        } else {
-                                          EmployeeModel? employee = await Utils.showLoginDialog();
-                                          if (employee != null) {
-                                            if (employee.hasVoidAllPermission) {
-                                              permission = true;
-                                            } else {
-                                              Fluttertoast.showToast(msg: 'The account you are logged in with does not have permission');
-                                            }
-                                          }
-                                        }
-                                        if (permission) {
-                                          if (_cartModel.items.isEmpty) {
-                                            Fluttertoast.showToast(msg: 'There must be items'.tr);
+                                    child: Center(
+                                      child: InkWell(
+                                        onTap: () async {
+                                          if (_cartModel.items.isNotEmpty) {
+                                            _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
+                                            _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
+                                            setState(() {});
                                           } else {
-                                            VoidReasonModel? result;
-                                            if (allDataModel.companyConfig[0].useVoidReason) {
-                                              result = await _showVoidReasonDialog();
-                                            } else {
-                                              var areYouSure = await Utils.showAreYouSureDialog(
-                                                title: 'Void All'.tr,
-                                              );
-                                              if (areYouSure) {
-                                                result = VoidReasonModel.fromJson({});
-                                              }
-                                            }
-                                            if (result != null) {
-                                              RestApi.saveVoidAllItems(items: _cartModel.items, reason: result.reasonName);
-                                              List<CartItemModel> voidItems = [];
-                                              voidItems.addAll(_cartModel.items.where((element) => element.dineInSavedOrder));
-                                              if (_cartModel.orderType == OrderType.dineIn && voidItems.isNotEmpty) {
-                                                Printer.printKitchenVoidItemsDialog(cart: _cartModel, itemsVoid: voidItems);
-                                              }
-                                              _indexItemSelect = -1;
-                                              _cartModel.items = [];
-                                              _cartModel.deliveryCharge = 0;
-                                              _cartModel.discount = 0;
-                                              _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                              _dineInChangedOrder = true;
-                                              setState(() {});
-                                            }
+                                            Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
                                           }
-                                        }
-                                      },
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: Center(
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Center(
-                                                child: Text(
-                                                  'Void All'.tr,
-                                                  textAlign: TextAlign.center,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                  style: kStyleTextOrange,
-                                                ),
-                                              ),
-                                              Image.asset(
-                                                Assets.kAssetsArrowRight,
-                                                height: 20.h,
-                                              ),
-                                            ],
-                                          ),
+                                        },
+                                        child: Text(
+                                          'Delivery'.tr,
+                                          style: kStyleTextOrange,
                                         ),
                                       ),
                                     ),
                                   ),
-                                )),
+                                ),
                               SizedBox(
-                                width: 5.w,
-                              ),
-                              if (widget.type == OrderType.takeAway)
-                                Expanded(
-                                    child: Container(
-                                  width: 50.w,
-                                  height: 30.h,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: ColorsApp.primaryColor),
-                                    borderRadius: BorderRadius.circular(
-                                      10.0,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: InkWell(
-                                      onTap: () async {
-                                        if (_cartModel.items.isNotEmpty) {
-                                          _cartModel.deliveryCharge = await _showDeliveryDialog(delivery: _cartModel.deliveryCharge);
-                                          _cartModel = Utils.calculateOrder(cart: _cartModel, orderType: widget.type);
-                                          setState(() {});
-                                        } else {
-                                          Fluttertoast.showToast(msg: 'Delivery price cannot be added and there are no selected items'.tr);
-                                        }
-                                      },
-                                      child: Text(
-                                        'Delivery'.tr,
-                                        style: kStyleTextOrange,
-                                      ),
-                                    ),
-                                  ),
-                                )),
-                              SizedBox(
-                                width: 5.w,
+                                width: 1.w,
                               ),
                               Expanded(
                                 child: CustomButton(
-                                  margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                  child: Text(
-                                    'Park'.tr,
-                                    style: kStyleTextButton,
-                                  ),
+                                  margin: EdgeInsets.zero,
+                                  padding: EdgeInsets.zero,
                                   fixed: true,
                                   backgroundColor: companyType == CompanyType.umniah ? ColorsApp.darkBlue : ColorsApp.redLight,
                                   onPressed: () async {
@@ -2178,8 +2338,12 @@ class _OrderScreenState extends State<OrderScreen> {
                                       Fluttertoast.showToast(msg: 'Please add items to complete an park'.tr);
                                     }
                                   },
+                                  child: Text(
+                                    'Park'.tr,
+                                    style: kStyleTextButton,
+                                  ),
                                 ),
-                              )
+                              ),
                             ],
                           ),
                           SizedBox(
@@ -2229,6 +2393,9 @@ class _OrderScreenState extends State<OrderScreen> {
                                                   style: kStyleHeaderTable,
                                                   textAlign: TextAlign.center,
                                                 ),
+                                              ),
+                                              Expanded(
+                                                child: Container(),
                                               ),
                                             ],
                                           ),
@@ -2291,49 +2458,58 @@ class _OrderScreenState extends State<OrderScreen> {
                                                               textAlign: TextAlign.center,
                                                             ),
                                                           ),
-                                                          PopupMenuButton(
-                                                            itemBuilder: (context) {
-                                                              return [
-                                                                PopupMenuItem(
-                                                                  value: 'Qty',
-                                                                  child: Text(
-                                                                    'Qty'.tr,
-                                                                    style: kStyleTextDefault,
+                                                          Expanded(
+                                                            child: PopupMenuButton(
+                                                              itemBuilder: (context) {
+                                                                return [
+                                                                  PopupMenuItem(
+                                                                    value: 'Qty',
+                                                                    child: Text(
+                                                                      'Qty'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
                                                                   ),
-                                                                ),
-                                                                PopupMenuItem(
-                                                                  value: 'Modifier',
-                                                                  child: Text(
-                                                                    'Modifier'.tr,
-                                                                    style: kStyleTextDefault,
+                                                                  PopupMenuItem(
+                                                                    value: 'Qty Sub Item',
+                                                                    child: Text(
+                                                                      'Qty Sub Item'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
                                                                   ),
-                                                                ),
-                                                                PopupMenuItem(
-                                                                  value: 'Void',
-                                                                  child: Text(
-                                                                    'Void'.tr,
-                                                                    style: kStyleTextDefault,
+                                                                  PopupMenuItem(
+                                                                    value: 'Modifier',
+                                                                    child: Text(
+                                                                      'Modifier'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
                                                                   ),
-                                                                ),
-                                                                PopupMenuItem(
-                                                                  value: 'Line Discount',
-                                                                  child: Text(
-                                                                    'Line Discount'.tr,
-                                                                    style: kStyleTextDefault,
+                                                                  PopupMenuItem(
+                                                                    value: 'Void',
+                                                                    child: Text(
+                                                                      'Void'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
                                                                   ),
-                                                                ),
-                                                                PopupMenuItem(
-                                                                  value: 'Price Change',
-                                                                  child: Text(
-                                                                    'Price Change'.tr,
-                                                                    style: kStyleTextDefault,
+                                                                  PopupMenuItem(
+                                                                    value: 'Line Discount',
+                                                                    child: Text(
+                                                                      'Line Discount'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
                                                                   ),
-                                                                ),
-                                                              ];
-                                                            },
-                                                            onSelected: (String value) {
-                                                              _actionPopUpItemSelected(value, index);
-                                                            },
+                                                                  PopupMenuItem(
+                                                                    value: 'Price Change',
+                                                                    child: Text(
+                                                                      'Price Change'.tr,
+                                                                      style: kStyleTextDefault,
+                                                                    ),
+                                                                  ),
+                                                                ];
+                                                              },
+                                                              onSelected: (String value) {
+                                                                _actionPopUpItemSelected(value, index);
+                                                              },
+                                                            ),
                                                           ),
                                                         ],
                                                       ),
@@ -2403,6 +2579,15 @@ class _OrderScreenState extends State<OrderScreen> {
                                                               itemBuilder: (context, indexSubItem) {
                                                                 return Row(
                                                                   children: [
+                                                                    Expanded(
+                                                                      child: Text(
+                                                                        '${subItem[indexSubItem].qty}',
+                                                                        style: kStyleDataTableModifiers,
+                                                                        textAlign: TextAlign.center,
+                                                                        maxLines: 1,
+                                                                        overflow: TextOverflow.ellipsis,
+                                                                      ),
+                                                                    ),
                                                                     Expanded(
                                                                       flex: 4,
                                                                       child: Text(
@@ -2596,137 +2781,163 @@ class _OrderScreenState extends State<OrderScreen> {
                           SizedBox(
                             height: 5.h,
                           ),
-                          Container(
-                            width: 150.w,
-                            height: 35.h,
-                            decoration: BoxDecoration(
-                                color: ColorsApp.backgroundDialog,
-                                borderRadius: BorderRadius.circular(
-                                  5.0,
+                          if (!_isShowTotal)
+                            Container(
+                              width: 150.w,
+                              height: 35.h,
+                              decoration: BoxDecoration(
+                                  color: ColorsApp.backgroundDialog,
+                                  borderRadius: BorderRadius.circular(
+                                    5.0,
+                                  ),
+                                  border: Border.all(color: ColorsApp.black)),
+                              child: Center(
+                                child: Text(
+                                  'Amount Due'.tr + '\t\t\t' + _cartModel.amountDue.toStringAsFixed(3),
+                                  style: kStyleTextDefault.copyWith(color: ColorsApp.black, fontWeight: FontWeight.bold),
                                 ),
-                                border: Border.all(color: ColorsApp.black)),
-                            child: Center(
-                              child: Text(
-                                'Amount Due'.tr + '\t\t\t' + _cartModel.amountDue.toStringAsFixed(3),
-                                style: kStyleTextDefault.copyWith(color: ColorsApp.black, fontWeight: FontWeight.bold),
                               ),
                             ),
-                          ),
-                          Row(
-                            children: [
-                              if (widget.type == OrderType.takeAway)
-                                Expanded(
-                                  child: CustomButton(
-                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                    child: Text(
-                                      'Cash'.tr,
-                                      style: kStyleTextButton,
+                          if (!_isShowTotal)
+                            Row(
+                              children: [
+                                if (widget.type == OrderType.takeAway)
+                                  Expanded(
+                                    child: CustomButton(
+                                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                      child: Text(
+                                        'Cash'.tr,
+                                        style: kStyleTextButton,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.primaryColor,
+                                      onPressed: () async {
+                                        if (_cartModel.items.isNotEmpty) {
+                                          Get.to(() => PayScreen(
+                                                cart: _cartModel,
+                                                openTypeDialog: 1,
+                                              ));
+                                        } else {
+                                          Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.primaryColor,
-                                    onPressed: () async {
-                                      if (_cartModel.items.isNotEmpty) {
-                                        Get.to(() => PayScreen(
-                                              cart: _cartModel,
-                                              openTypeDialog: 1,
-                                            ));
-                                      } else {
-                                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
-                                      }
-                                    },
                                   ),
-                                ),
-                              if (widget.type == OrderType.takeAway)
-                                Expanded(
-                                  child: CustomButton(
-                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                    child: Text(
-                                      'Visa'.tr,
-                                      style: kStyleTextButton,
+                                if (widget.type == OrderType.takeAway)
+                                  Expanded(
+                                    child: CustomButton(
+                                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                      child: Text(
+                                        'Visa'.tr,
+                                        style: kStyleTextButton,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.primaryColor,
+                                      onPressed: () async {
+                                        if (_cartModel.items.isNotEmpty) {
+                                          Get.to(() => PayScreen(
+                                                cart: _cartModel,
+                                                openTypeDialog: 0,
+                                              ));
+                                        } else {
+                                          Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.primaryColor,
-                                    onPressed: () async {
-                                      if (_cartModel.items.isNotEmpty) {
-                                        Get.to(() => PayScreen(
-                                              cart: _cartModel,
-                                              openTypeDialog: 0,
-                                            ));
-                                      } else {
-                                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
-                                      }
-                                    },
                                   ),
-                                ),
-                              if (widget.type == OrderType.takeAway)
-                                Expanded(
-                                  child: CustomButton(
-                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                    child: Text(
-                                      'Multi Pay'.tr,
-                                      style: kStyleTextButton,
-                                      overflow: TextOverflow.ellipsis,
+                                if (widget.type == OrderType.takeAway)
+                                  Expanded(
+                                    child: CustomButton(
+                                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                      child: Text(
+                                        'Multi Pay'.tr,
+                                        style: kStyleTextButton,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.primaryColor,
+                                      onPressed: () {
+                                        if (_cartModel.items.isNotEmpty) {
+                                          Get.to(() => PayScreen(
+                                                cart: _cartModel,
+                                                openTypeDialog: 2,
+                                              ));
+                                        } else {
+                                          Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.primaryColor,
-                                    onPressed: () {
-                                      if (_cartModel.items.isNotEmpty) {
-                                        Get.to(() => PayScreen(
-                                              cart: _cartModel,
-                                              openTypeDialog: 2,
-                                            ));
-                                      } else {
-                                        Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
-                                      }
-                                    },
                                   ),
-                                ),
-                              if (widget.type == OrderType.dineIn)
-                                Expanded(
-                                  child: CustomButton(
-                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                    child: Text(
-                                      'Order'.tr,
-                                      style: kStyleTextButton,
+                                if (widget.type == OrderType.dineIn)
+                                  Expanded(
+                                    child: CustomButton(
+                                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                      child: Text(
+                                        'Order'.tr,
+                                        style: kStyleTextButton,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.red,
+                                      onPressed: () async {
+                                        if (_cartModel.items.isEmpty) {
+                                          Fluttertoast.showToast(msg: 'Please add items'.tr);
+                                        } else {
+                                          await _saveDineIn();
+                                          Get.back();
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.red,
-                                    onPressed: () async {
-                                      if (_cartModel.items.isEmpty) {
-                                        Fluttertoast.showToast(msg: 'Please add items'.tr);
-                                      } else {
-                                        await _saveDineIn();
-                                        Get.back();
-                                      }
-                                    },
                                   ),
-                                ),
-                              if (widget.type == OrderType.dineIn)
-                                Expanded(
-                                  child: CustomButton(
-                                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                                    child: Text(
-                                      'Check Out'.tr,
-                                      style: kStyleTextButton,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                if (widget.type == OrderType.dineIn)
+                                  Expanded(
+                                    child: CustomButton(
+                                      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                                      child: Text(
+                                        'Check Out'.tr,
+                                        style: kStyleTextButton,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      fixed: true,
+                                      backgroundColor: ColorsApp.green,
+                                      onPressed: () async {
+                                        if (_cartModel.items.isEmpty) {
+                                          Fluttertoast.showToast(msg: 'Please add items'.tr);
+                                        } else if (_dineInChangedOrder) {
+                                          Fluttertoast.showToast(msg: 'Please save order'.tr);
+                                        } else {
+                                          // await _saveDineIn();
+                                          Get.to(() => PayScreen(cart: widget.dineIn!.cart, tableId: widget.dineIn!.tableId));
+                                        }
+                                      },
                                     ),
-                                    fixed: true,
-                                    backgroundColor: ColorsApp.green,
-                                    onPressed: () async {
-                                      if (_cartModel.items.isEmpty) {
-                                        Fluttertoast.showToast(msg: 'Please add items'.tr);
-                                      } else if (_dineInChangedOrder) {
-                                        Fluttertoast.showToast(msg: 'Please save order'.tr);
-                                      } else {
-                                        // await _saveDineIn();
-                                        Get.to(() => PayScreen(cart: widget.dineIn!.cart, tableId: widget.dineIn!.tableId));
-                                      }
-                                    },
                                   ),
-                                ),
-                            ],
-                          ),
+                              ],
+                            ),
+                          if (!_isShowTotal && mySharedPreferences.enablePaymentNetwork)
+                            CustomButton(
+                              margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 2),
+                              child: Text(
+                                'Network'.tr,
+                                style: kStyleTextButton,
+                              ),
+                              backgroundColor: ColorsApp.primaryColor,
+                              onPressed: () async {
+                                if (widget.type == OrderType.dineIn && _dineInChangedOrder) {
+                                  Fluttertoast.showToast(msg: 'Please save order'.tr);
+                                } else {
+                                  if (_cartModel.items.isNotEmpty) {
+                                    Get.to(() => PayScreen(
+                                          cart: _cartModel,
+                                          openTypeDialog: 1,
+                                          network: true,
+                                        ));
+                                  } else {
+                                    Fluttertoast.showToast(msg: 'Please add items to complete an order'.tr);
+                                  }
+                                }
+                              },
+                            ),
                         ],
                       ),
                     ),

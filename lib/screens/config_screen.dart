@@ -21,7 +21,10 @@ class _ConfigScreenState extends State<ConfigScreen> {
   final TextEditingController _controllerStoreNo = TextEditingController(text: '${mySharedPreferences.storeNo}');
   final TextEditingController _controllerInVocNo = TextEditingController(text: '${mySharedPreferences.inVocNo}');
   final TextEditingController _controllerOutVocNo = TextEditingController(text: '${mySharedPreferences.payInOutNo}');
-  bool printerBluetooth = false;
+  final TextEditingController _controllerBookingNo = TextEditingController(text: '${mySharedPreferences.bookingNo}');
+  bool enablePaymentNetwork = mySharedPreferences.enablePaymentNetwork;
+  bool enableTakeAway = mySharedPreferences.enableTakeAway;
+  bool enableDineIn = mySharedPreferences.enableDineIn;
 
   @override
   Widget build(BuildContext context) {
@@ -62,15 +65,38 @@ class _ConfigScreenState extends State<ConfigScreen> {
                   controller: _controllerOutVocNo,
                   label: Text('Pay In Out No'.tr),
                 ),
-                // CheckboxListTile(
-                //   title: Text('Printer Bluetooth'.tr),
-                //   controlAffinity: ListTileControlAffinity.leading,
-                //   onChanged: (value) {
-                //     printerBluetooth = value!;
-                //     setState(() {});
-                //   },
-                //   value: printerBluetooth,
-                // ),
+                CustomTextField(
+                  borderColor: ColorsApp.primaryColor,
+                  controller: _controllerBookingNo,
+                  label: Text('Booking No'.tr),
+                ),
+                CheckboxListTile(
+                  controlAffinity: ListTileControlAffinity.leading,
+                  value: enableTakeAway,
+                  title: Text('Enable Take Away'.tr),
+                  onChanged: (value) {
+                    enableTakeAway = value!;
+                    setState(() {});
+                  },
+                ),
+                CheckboxListTile(
+                  controlAffinity: ListTileControlAffinity.leading,
+                  value: enableDineIn,
+                  title: Text('Enable Dine In'.tr),
+                  onChanged: (value) {
+                    enableDineIn = value!;
+                    setState(() {});
+                  },
+                ),
+                CheckboxListTile(
+                  controlAffinity: ListTileControlAffinity.leading,
+                  value: enablePaymentNetwork,
+                  title: Text('Enable Payment Network'.tr),
+                  onChanged: (value) {
+                    enablePaymentNetwork = value!;
+                    setState(() {});
+                  },
+                ),
                 Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Row(
@@ -91,7 +117,10 @@ class _ConfigScreenState extends State<ConfigScreen> {
                             mySharedPreferences.storeNo = _controllerStoreNo.text.isEmpty ? 0 : int.parse(_controllerStoreNo.text);
                             mySharedPreferences.inVocNo = _controllerInVocNo.text.isEmpty ? 0 : int.parse(_controllerInVocNo.text);
                             mySharedPreferences.payInOutNo = _controllerOutVocNo.text.isEmpty ? 0 : int.parse(_controllerOutVocNo.text);
-                            mySharedPreferences.printerBluetooth = printerBluetooth;
+                            mySharedPreferences.bookingNo = _controllerBookingNo.text.isEmpty ? 0 : int.parse(_controllerBookingNo.text);
+                            mySharedPreferences.enableTakeAway = enableTakeAway;
+                            mySharedPreferences.enableDineIn = enableDineIn;
+                            mySharedPreferences.enablePaymentNetwork = enablePaymentNetwork;
                             Get.back();
                           },
                         ),

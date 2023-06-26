@@ -47,6 +47,9 @@ class CartModel extends Equatable {
     this.seatsFemale = 0,
     this.seatsMale = 0,
     this.orderNo = 0,
+    this.customerName = '',
+    this.customerPhone = '',
+    this.isFreeTax = 0,
   });
 
   OrderType orderType;
@@ -87,8 +90,11 @@ class CartModel extends Equatable {
   int seatsMale;
   String parkName;
   int orderNo;
+  String customerName;
+  String customerPhone;
+  int isFreeTax;
 
-  factory CartModel.init({required OrderType orderType, int? tableId}) => CartModel(
+  factory CartModel.init({required OrderType orderType, int? tableId, int? splitIndex, String? customerName, String? customerPhone}) => CartModel(
         orderType: orderType,
         id: 0,
         total: 0,
@@ -106,6 +112,8 @@ class CartModel extends Equatable {
         items: [],
         tableId: tableId ?? 0,
         orderNo: 0,
+        customerName: customerName ?? '',
+        customerPhone: customerPhone ?? '',
       );
 
   factory CartModel.fromJson(Map<String, dynamic> json) => CartModel(
@@ -147,6 +155,9 @@ class CartModel extends Equatable {
         seatsFemale: json['seatsFemale'] ?? 0,
         seatsMale: json['seatsMale'] ?? 0,
         orderNo: json['orderNo'] ?? 0,
+        customerName: json['customerName'] ?? '',
+        customerPhone: json['customerPhone'] ?? '',
+        isFreeTax: json['IsFreeTax'] ?? 0,
       );
 
   factory CartModel.fromJsonServer(Map<String, dynamic> json) => CartModel(
@@ -184,6 +195,9 @@ class CartModel extends Equatable {
         deliveryCompanyId: 0,
         parkName: '',
         orderNo: 0,
+        customerName: '',
+        customerPhone: '',
+        isFreeTax: 0,
       );
 
   Map<String, dynamic> toJson() => {
@@ -225,6 +239,9 @@ class CartModel extends Equatable {
         'seatsFemale': seatsFemale,
         'seatsMale': seatsMale,
         'orderNo': orderNo,
+        'customerName': customerName,
+        'customerPhone': customerPhone,
+        'IsFreeTax': isFreeTax,
       };
 
   Map<String, dynamic> toInvoice() => {
@@ -260,6 +277,7 @@ class CartModel extends Equatable {
         "PayCompanyId": payCompanyId,
         "DeliveryCompanyId": deliveryCompanyId,
         "InvFlag": 1,
+        "IsFreeTax": isFreeTax,
       };
 
   Map<String, dynamic> toSaveTable() => {
@@ -281,6 +299,7 @@ class CartModel extends Equatable {
         "OrdDisc": totalDiscount,
         "OrdNetTotal": amountDue,
         "TotSeats": totalSeats,
+        "IsFreeTax": isFreeTax,
       };
 
   Map<String, dynamic> toReturnInvoice() => {
@@ -316,11 +335,12 @@ class CartModel extends Equatable {
         "PayCompanyId": 0,
         "DeliveryCompanyId": 0,
         "InvFlag": -1,
+        "IsFreeTax": isFreeTax,
       };
 
   @override
   // TODO: implement props
-  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableId, note, payCompanyId, deliveryCompanyId, parkName, orderNo];
+  List<Object?> get props => [orderType, id, total, deliveryCharge, totalLineDiscount, totalDiscount, discount, discountType, subTotal, service, serviceTax, itemsTax, tax, amountDue, items, cash, credit, creditCardNumber, creditCardType, cheque, coupon, gift, point, tableId, note, payCompanyId, deliveryCompanyId, parkName, orderNo, customerName, customerPhone, isFreeTax];
 }
 
 class CartItemModel extends Equatable {

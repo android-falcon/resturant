@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
+
 // import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart' as esc_bluetooth;
 import 'package:restaurant_system/utils/assets.dart';
 
@@ -19,6 +21,7 @@ import 'package:restaurant_system/utils/constant.dart';
 import 'package:restaurant_system/utils/enums/enum_order_type.dart';
 import 'package:restaurant_system/utils/global_variable.dart';
 import 'package:restaurant_system/utils/my_shared_preferences.dart';
+import 'package:restaurant_system/utils/utils.dart';
 import 'package:screenshot/screenshot.dart';
 
 class Printer {
@@ -206,6 +209,16 @@ class Printer {
                           ),
                         ],
                       ),
+                      if (Utils.isNotEmpty(cart.customerName))
+                        Text(
+                          '${'Customer Name'.tr} : ${cart.customerName}',
+                          style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
+                        ),
+                      if (Utils.isNotEmpty(cart.customerPhone))
+                        Text(
+                          '${'Customer Phone'.tr} : ${cart.customerPhone}',
+                          style: kStyleDataPrinter.copyWith(fontSize: mySharedPreferences.sizeDataPrinter.toDouble()),
+                        ),
                       const Divider(color: Colors.black, thickness: 2),
                       Column(
                         children: [
@@ -1110,8 +1123,18 @@ class Printer {
     );
   }
 
+  static Future<void> printPaymentNetwork({required String invoice}) async {
+    Utils.platform.invokeMethod('printerNetwork', {
+      "invoice": invoice,
+    });
+  }
+
   static Future<void> invoices({required List<PrinterInvoiceModel> invoices}) async {
     for (var invoice in invoices) {
+      if (mySharedPreferences.enablePaymentNetwork) {
+        Printer.printPaymentNetwork(invoice: base64Encode(invoice.invoice!));
+      }
+
       // if(mySharedPreferences.printerBluetooth){
       // esc_bluetooth.PrinterBluetoothManager printerManager = esc_bluetooth.PrinterBluetoothManager();
       // printerManager.scanResults.listen((printers) async {

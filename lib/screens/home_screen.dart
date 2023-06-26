@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -9,6 +10,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restaurant_system/screens/booking_screen.dart';
+import 'package:restaurant_system/screens/confirm_invoice_screen.dart';
 import 'package:restaurant_system/utils/assets.dart';
 import 'package:restaurant_system/models/all_data/employee_model.dart';
 import 'package:restaurant_system/models/cart_model.dart';
@@ -75,6 +78,20 @@ class _HomeScreenState extends State<HomeScreen> {
         //     _showInOutDialog(type: InOutType.cashOut);
         //   },
         // ),
+        HomeMenu(
+          name: 'Booking'.tr,
+          icon: Icon(Icons.linear_scale, color: ColorsApp.gray),
+          onTab: () async {
+            Get.to(const BookingScreen());
+          },
+        ),
+        HomeMenu(
+          name: 'Confirm Invoice'.tr,
+          icon: Icon(Icons.confirmation_num, color: ColorsApp.gray),
+          onTab: () async {
+            Get.to(const ConfirmInvoiceScreen());
+          },
+        ),
         HomeMenu(
           name: 'Pay In'.tr,
           icon: Icon(Icons.money, color: ColorsApp.gray),
@@ -780,6 +797,9 @@ class _HomeScreenState extends State<HomeScreen> {
       Future.delayed(const Duration(milliseconds: 100)).then((value) async {
         var screenshot = await _screenshotController.capture(delay: const Duration(milliseconds: 10));
         _printer!.image = screenshot;
+        if (screenshot != null && mySharedPreferences.enablePaymentNetwork) {
+          Printer.printPaymentNetwork(invoice: base64Encode(screenshot));
+        }
         await Printer.payInOut(printerImageModel: _printer);
       });
 
@@ -797,6 +817,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       fixed: true,
                       child: Text('Print'.tr),
                       onPressed: () async {
+                        if (_printer != null && mySharedPreferences.enablePaymentNetwork) {
+                          Printer.printPaymentNetwork(invoice: base64Encode(_printer.image!));
+                        }
                         await Printer.payInOut(printerImageModel: _printer!);
                       },
                     ),
@@ -1057,6 +1080,9 @@ class _HomeScreenState extends State<HomeScreen> {
       Future.delayed(const Duration(milliseconds: 100)).then((value) async {
         var screenshot = await _screenshotController.capture(delay: const Duration(milliseconds: 10));
         _printer!.image = screenshot;
+        if (screenshot != null && mySharedPreferences.enablePaymentNetwork) {
+          Printer.printPaymentNetwork(invoice: base64Encode(screenshot));
+        }
         await Printer.payInOut(printerImageModel: _printer);
       });
 
@@ -1074,6 +1100,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       fixed: true,
                       child: Text('Print'.tr),
                       onPressed: () async {
+                        if (_printer != null && mySharedPreferences.enablePaymentNetwork) {
+                          Printer.printPaymentNetwork(invoice: base64Encode(_printer.image!));
+                        }
                         await Printer.payInOut(printerImageModel: _printer!);
                       },
                     ),
@@ -2005,68 +2034,70 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 6.w),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(15.0),
-                                onTap: () {
-                                  Get.to(() => const OrderScreen(type: OrderType.takeAway));
-                                },
-                                child: Container(
-                                  width: 70.w,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15.0),
-                                    border: Border.all(color: ColorsApp.primaryColor),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Image.asset(
-                                        Assets.kAssetsTakeAway,
-                                        height: 130.h,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(5.0),
-                                        child: Text(
-                                          'Take Away'.tr,
-                                          style: kStyleButtonPayment,
+                            if (mySharedPreferences.enableTakeAway)
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 6.w),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  onTap: () {
+                                    Get.to(() => const OrderScreen(type: OrderType.takeAway));
+                                  },
+                                  child: Container(
+                                    width: 70.w,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15.0),
+                                      border: Border.all(color: ColorsApp.primaryColor),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Image.asset(
+                                          Assets.kAssetsTakeAway,
+                                          height: 130.h,
                                         ),
-                                      ),
-                                    ],
+                                        Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Text(
+                                            'Take Away'.tr,
+                                            style: kStyleButtonPayment,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 6.w),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(15.0),
-                                onTap: () {
-                                  Get.to(() => const TableScreen());
-                                },
-                                child: Container(
-                                  width: 70.w,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15.0),
-                                    border: Border.all(color: ColorsApp.primaryColor),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Image.asset(
-                                        Assets.kAssetsDineIn,
-                                        height: 130.h,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(5.0),
-                                        child: Text(
-                                          'Dine In'.tr,
-                                          style: kStyleButtonPayment,
+                            if (mySharedPreferences.enableDineIn)
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 6.w),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  onTap: () {
+                                    Get.to(() => const TableScreen());
+                                  },
+                                  child: Container(
+                                    width: 70.w,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15.0),
+                                      border: Border.all(color: ColorsApp.primaryColor),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Image.asset(
+                                          Assets.kAssetsDineIn,
+                                          height: 130.h,
                                         ),
-                                      ),
-                                    ],
+                                        Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Text(
+                                            'Dine In'.tr,
+                                            style: kStyleButtonPayment,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                       ],

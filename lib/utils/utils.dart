@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -25,6 +26,8 @@ import 'package:restaurant_system/utils/validation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class Utils {
+  static const platform = MethodChannel('Alnajjar.dev.fultter/channel');
+
   static Future<PackageInfo> packageInfo() async => await PackageInfo.fromPlatform();
 
   static bool isNotEmpty(String? s) => s != null && s.isNotEmpty;
@@ -107,7 +110,7 @@ class Utils {
       cart.totalDiscount = cart.discountType == DiscountType.percentage ? (cart.total - cart.totalLineDiscount) * (cart.discount / 100) : cart.discount;
       cart.subTotal = cart.total - cart.totalDiscount - cart.totalLineDiscount;
       cart.service = orderType == OrderType.takeAway ? 0 : cart.subTotal * (allDataModel.companyConfig.first.servicePerc / 100);
-      cart.serviceTax = orderType == OrderType.takeAway ? 0 : cart.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+      cart.serviceTax = (cart.isFreeTax == 1 ? 0 : 1) * (orderType == OrderType.takeAway ? 0 : cart.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100));
       double totalDiscountAvailableItem = cart.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? (item.total - item.totalLineDiscount) : 0));
       for (var element in cart.items) {
         if (element.discountAvailable) {
@@ -115,13 +118,13 @@ class Utils {
         } else {
           element.discount = 0;
         }
-        element.tax = element.taxType == 2 ? 0 : (element.total - element.totalLineDiscount - element.discount) * (element.taxPercent / 100);
+        element.tax = (cart.isFreeTax == 1 ? 0 : 1) * (element.taxType == 2 ? 0 : (element.total - element.totalLineDiscount - element.discount) * (element.taxPercent / 100));
         element.service = cart.service * ((element.total - element.totalLineDiscount - element.discount) / cart.subTotal);
-        element.serviceTax = element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+        element.serviceTax = (cart.isFreeTax == 1 ? 0 : 1) * (element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100));
       }
 
-      cart.itemsTax = cart.items.fold(0.0, (sum, item) => sum + item.tax);
-      cart.tax = cart.itemsTax + cart.serviceTax;
+      cart.itemsTax = (cart.isFreeTax == 1 ? 0 : 1) * (cart.items.fold(0.0, (sum, item) => sum + item.tax));
+      cart.tax = (cart.isFreeTax == 1 ? 0 : 1) * (cart.itemsTax + cart.serviceTax);
       cart.amountDue = cart.subTotal + cart.deliveryCharge + cart.service + cart.tax;
     } else {
       // شامل
@@ -146,7 +149,7 @@ class Utils {
       cart.totalDiscount = cart.discountType == DiscountType.percentage ? (cart.total - cart.totalLineDiscount) * (cart.discount / 100) : cart.discount;
       cart.subTotal = cart.total - cart.totalDiscount - cart.totalLineDiscount;
       cart.service = orderType == OrderType.takeAway ? 0 : cart.subTotal * (allDataModel.companyConfig.first.servicePerc / 100);
-      cart.serviceTax = orderType == OrderType.takeAway ? 0 : cart.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+      cart.serviceTax = (cart.isFreeTax == 1 ? 0 : 1) * (orderType == OrderType.takeAway ? 0 : cart.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100));
       double totalDiscountAvailableItem = cart.items.fold(0.0, (sum, item) => sum + (item.discountAvailable ? (item.total - item.totalLineDiscount) : 0));
       for (var element in cart.items) {
         if (element.discountAvailable) {
@@ -154,13 +157,13 @@ class Utils {
         } else {
           element.discount = 0;
         }
-        element.tax = element.taxType == 2 ? 0 : (element.total - element.totalLineDiscount - element.discount) * (element.taxPercent / 100);
+        element.tax = (cart.isFreeTax == 1 ? 0 : 1) * (element.taxType == 2 ? 0 : (element.total - element.totalLineDiscount - element.discount) * (element.taxPercent / 100));
         element.service = cart.service * ((element.total - element.totalLineDiscount - element.discount) / cart.subTotal);
-        element.serviceTax = element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100);
+        element.serviceTax = (cart.isFreeTax == 1 ? 0 : 1) * (element.service * (allDataModel.companyConfig.first.serviceTaxPerc / 100));
       }
 
-      cart.itemsTax = cart.items.fold(0.0, (sum, item) => sum + item.tax);
-      cart.tax = cart.itemsTax + cart.serviceTax;
+      cart.itemsTax = (cart.isFreeTax == 1 ? 0 : 1) * (cart.items.fold(0.0, (sum, item) => sum + item.tax));
+      cart.tax =(cart.isFreeTax == 1 ? 0 : 1) * (cart.itemsTax + cart.serviceTax);
       cart.amountDue = cart.subTotal + cart.deliveryCharge + cart.service + cart.tax;
     }
     return cart;

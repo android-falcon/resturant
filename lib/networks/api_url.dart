@@ -51,4 +51,14 @@ class ApiUrl{
   static String DELETE_PAY_IN_OUT = "/api/postData/DeletePayInOut";
   // ignore: non_constant_identifier_names
   static String GET_CASH_LAST_SERIALS = "/api/GetData/GetCashLastSerials";
+  // ignore: non_constant_identifier_names
+  static String SAVE_BOOKING = "/api/postData/SaveCustBooking";
+  // ignore: non_constant_identifier_names
+  static String CHANGE_BOOKING = "/api/postData/PostCustBooking";
+  // ignore: non_constant_identifier_names
+  static String GET_BOOKING = "/api/GetData/GetAllBookings";
+  // ignore: non_constant_identifier_names
+  static String GET_UN_CONFIRMED_INVOICES = "/api/GetData/GetUnConfirmedInvoices";
+  // ignore: non_constant_identifier_names
+  static String CONFIRM_INVOICE = "/api/postData/ConfirmInvoice";
 }

@@ -38,21 +38,42 @@ class PayScreen extends StatefulWidget {
   final CartModel cart;
   final int? tableId;
   final int? openTypeDialog;
+  final bool split;
+  final bool network;
 
-  const PayScreen({Key? key, required this.cart, this.tableId, this.openTypeDialog}) : super(key: key);
+  const PayScreen({Key? key, required this.cart, this.tableId, this.openTypeDialog, this.split = false, this.network = false}) : super(key: key);
 
   @override
   State<PayScreen> createState() => _PayScreenState();
 }
 
 class _PayScreenState extends State<PayScreen> {
+
   double remaining = 0;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_) => _calculateRemaining());
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _calculateRemaining();
+      if(widget.network){
+        _networkPayment();
+      }
+    });
+  }
+
+  _networkPayment() async{
+    var result = await Utils.platform.invokeMethod('txnSale', {
+      "amount": widget.cart.amountDue.toStringAsFixed(3),
+    });
+    if(result != null && result['isApproved']){
+      widget.cart.credit = widget.cart.amountDue;
+      _calculateRemaining();
+      _finishInvoice();
+    } else{
+      Get.back();
+    }
   }
 
   _calculateRemaining() {
@@ -71,14 +92,20 @@ class _PayScreenState extends State<PayScreen> {
       mySharedPreferences.inVocNo++;
 
       Printer.printInvoicesDialog(cart: widget.cart, showPrintButton: false, invNo: '${mySharedPreferences.inVocNo - 1}').then((value) {
-        Get.offAll(() => HomeScreen());
-        if (widget.tableId != null) {
-          Get.to(() => TableScreen());
+        if(widget.split){
+          Get.back(result: true);
+          Get.back(result: true);
         } else {
-          Get.to(() => OrderScreen(type: widget.cart.orderType));
+          Get.offAll(() => HomeScreen());
+          if (widget.tableId != null) {
+            Get.to(() => TableScreen());
+          } else {
+            Get.to(() => OrderScreen(type: widget.cart.orderType));
+          }
         }
+
       });
-      if (widget.tableId != null) {
+      if (widget.tableId != null && !widget.split) {
         RestApi.closeTable(widget.tableId!);
       }
     } else {
